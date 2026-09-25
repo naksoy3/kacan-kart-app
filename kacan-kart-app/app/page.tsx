@@ -1,141 +1,92 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import KacanKart from "@/components/KacanKart";
+import React, { useState } from "react";
+import EscapeCard, { CardTheme, THEME_NAMES } from "@/components/EscapeCard";
 
-export default function Home() {
-  const [soru, setSoru] = useState("Benimle yemeğe çıkar mısın?");
-  const [evet, setEvet] = useState("Evet!");
-  const [hayir, setHayir] = useState("Hayır");
-  const [gifUrl, setGifUrl] = useState("");
-  const [link, setLink] = useState<string | null>(null);
-  const [kopyalandi, setKopyalandi] = useState(false);
+export default function CardPage() {
+  const [selectedTheme, setSelectedTheme] = useState<CardTheme | null>(null);
 
-  const olusturDisabled = soru.trim().length === 0;
-
-  const linkOlustur = () => {
-    const params = new URLSearchParams({
-      soru: soru.trim() || "Benimle çıkar mısın?",
-      evet: evet.trim() || "Evet",
-      hayir: hayir.trim() || "Hayır",
-    });
-
-    if (gifUrl.trim()) {
-      params.set("gif", gifUrl.trim());
-    }
-
-    const taban =
-      typeof window !== "undefined" ? window.location.origin : "";
-    setLink(`${taban}/k/card?${params.toString()}`);
-    setKopyalandi(false);
+  // 10 Temanın Açıklamaları
+  const themeDescriptions: Record<CardTheme, string> = {
+    escaping: "Tıklandıkça ekranda rastgele kaçar.",
+    persuasive: "Kaçmaz, her tıkta yeni ikna metinleri çıkar.",
+    shrinking: "Tıklandıkça küçülür ve en son yok olur.",
+    role_reversal: "Fare üzerine geldikçe Evet ile Hayır takas yapar.",
+    teleporting: "Fare yaklaştığı an anında köşeye ışınlanır.",
+    pin_code: "Hayır demek şifre ister ve şifre asla kabul edilmez!",
+    timer: "10 saniyelik geri sayım bittiğinde Hayır butonu kaybolur.",
+    reverse_psychology: "Hayır butonu aslında 'Evet' cevabı verir.",
+    shattering: "Her tıkta çatlayarak 3. tıkta patlar.",
+    magnet: "Fare Hayır'a yaklaştığında Evet butonu fareye yapışır.",
   };
 
-  const kopyala = async () => {
-    if (!link) return;
-    try {
-      await navigator.clipboard.writeText(link);
-      setKopyalandi(true);
-      setTimeout(() => setKopyalandi(false), 1800);
-    } catch {
-      // panoya erişilemezse sessizce yut, kullanıcı elle seçip kopyalayabilir
-    }
+  // Temalara özel simgeler/emoji'ler
+  const themeIcons: Record<CardTheme, string> = {
+    escaping: "🏃‍♂️",
+    persuasive: "💬",
+    shrinking: "🔍",
+    role_reversal: "🔄",
+    teleporting: "⚡",
+    pin_code: "🔐",
+    timer: "⏳",
+    reverse_psychology: "🧠",
+    shattering: "💥",
+    magnet: "🧲",
   };
-
-  const onizlemeProps = useMemo(
-    () => ({ soru, evetMetni: evet, hayirMetni: hayir, gifUrl: gifUrl || undefined }),
-    [soru, evet, hayir, gifUrl]
-  );
 
   return (
-    <main className="min-h-screen flex flex-col items-center px-4 py-14 sm:py-20 gap-14">
-      <div className="text-center max-w-lg">
-        <h1 className="font-baslik text-3xl sm:text-4xl text-krem">
-          Kaçan Kart
-        </h1>
-        <p className="mt-3 text-krem/60">
-          Kendi sorunu yaz, "Hayır" butonunu kaçırt, arkadaşına gönder.
-        </p>
-      </div>
+    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-4 md:p-10">
+      {!selectedTheme ? (
+        <div className="w-full max-w-6xl bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-10 shadow-2xl space-y-8 backdrop-blur-md">
+          {/* Başlık ve Açıklama */}
+          <div className="text-center space-y-3">
+            <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+              Soru Kartı Teması Seçin
+            </h1>
+            <p className="text-sm md:text-base text-slate-400 max-w-xl mx-auto">
+              Hayır butonunun nasıl davranacağını belirleyen bir oyun modu seçin ve kartınızı oluşturun.
+            </p>
+          </div>
 
-      <div className="w-full max-w-4xl grid md:grid-cols-2 gap-8 items-start">
-        <div className="rounded-[28px] bg-gece2/60 border border-white/10 backdrop-blur-xl p-7 sm:p-8">
-          <div className="flex flex-col gap-5">
-            <label className="flex flex-col gap-2">
-              <span className="text-sm text-krem/70">Soru</span>
-              <textarea
-                value={soru}
-                onChange={(e) => setSoru(e.target.value)}
-                rows={2}
-                maxLength={140}
-                className="resize-none rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-krem placeholder:text-krem/30 outline-none focus:border-mercan/70 transition-colors"
-                placeholder="Örn: Benimle sinemaya gelir misin?"
-              />
-            </label>
-
-            <div className="grid grid-cols-2 gap-4">
-              <label className="flex flex-col gap-2">
-                <span className="text-sm text-krem/70">Evet buton metni</span>
-                <input
-                  value={evet}
-                  onChange={(e) => setEvet(e.target.value)}
-                  maxLength={24}
-                  className="rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-krem placeholder:text-krem/30 outline-none focus:border-mercan/70 transition-colors"
-                />
-              </label>
-              <label className="flex flex-col gap-2">
-                <span className="text-sm text-krem/70">Hayır buton metni</span>
-                <input
-                  value={hayir}
-                  onChange={(e) => setHayir(e.target.value)}
-                  maxLength={24}
-                  className="rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-krem placeholder:text-krem/30 outline-none focus:border-mercan/70 transition-colors"
-                />
-              </label>
-            </div>
-
-            <label className="flex flex-col gap-2">
-              <span className="text-sm text-krem/70">GIF URL (opsiyonel)</span>
-              <input
-                value={gifUrl}
-                onChange={(e) => setGifUrl(e.target.value)}
-                placeholder="https://...gif"
-                className="rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-krem placeholder:text-krem/30 outline-none focus:border-mercan/70 transition-colors"
-              />
-            </label>
-
-            <button
-              type="button"
-              disabled={olusturDisabled}
-              onClick={linkOlustur}
-              className="mt-2 rounded-2xl bg-mercan px-6 py-3.5 font-baslik text-lg text-gece disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-95 transition-transform"
-            >
-              Link oluştur
-            </button>
-
-            {link && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl bg-black/30 border border-white/10 p-4 flex flex-col gap-3"
+          {/* Kare Kutucuklar (Grid Yapısı) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {(Object.keys(THEME_NAMES) as CardTheme[]).map((themeKey) => (
+              <button
+                key={themeKey}
+                onClick={() => setSelectedTheme(themeKey)}
+                className="group relative flex flex-col justify-between p-6 bg-slate-950/80 hover:bg-slate-800/90 border-2 border-slate-800 hover:border-indigo-500 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/10 text-left aspect-square"
               >
-                <p className="text-xs text-krem/50 break-all">{link}</p>
-                <button
-                  type="button"
-                  onClick={kopyala}
-                  className="self-start rounded-lg bg-white/10 border border-white/15 px-4 py-2 text-sm text-krem hover:bg-white/15 transition-colors"
-                >
-                  {kopyalandi ? "Kopyalandı ✓" : "Linki kopyala"}
-                </button>
-              </motion.div>
-            )}
+                {/* Sol Üst Emoji */}
+                <div className="text-3xl md:text-4xl mb-2 group-hover:scale-110 transition-transform">
+                  {themeIcons[themeKey] || "🎯"}
+                </div>
+
+                {/* Başlık ve Açıklama */}
+                <div className="space-y-1.5">
+                  <div className="text-base font-bold text-white group-hover:text-indigo-400 transition-colors">
+                    {THEME_NAMES[themeKey]}
+                  </div>
+                  <div className="text-xs text-slate-400 leading-relaxed">
+                    {themeDescriptions[themeKey]}
+                  </div>
+                </div>
+
+                {/* Sağ Alt Buton / Ok İşareti */}
+                <div className="pt-3 flex items-center justify-between text-xs font-semibold text-indigo-400 opacity-80 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                  <span>Modu Seç</span>
+                  <span>➔</span>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
-
-        <div className="flex justify-center md:sticky md:top-14">
-          <KacanKart {...onizlemeProps} />
-        </div>
-      </div>
+      ) : (
+        <EscapeCard
+          targetUsername="Nurullah"
+          theme={selectedTheme}
+          onBack={() => setSelectedTheme(null)}
+        />
+      )}
     </main>
   );
 }
