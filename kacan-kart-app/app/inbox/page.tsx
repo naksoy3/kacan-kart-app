@@ -1,0 +1,1 @@
+import CardPage from "@/app/k/card/page";
