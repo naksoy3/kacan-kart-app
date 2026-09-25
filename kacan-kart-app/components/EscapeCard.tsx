@@ -145,6 +145,9 @@ export default function EscapeCard({
   const [isSent, setIsSent] = useState(!!initialQuestion);
   const [noButtonPos, setNoButtonPos] = useState<{ top: string; left: string } | null>(null);
 
+  // Link Paylaşımı Durumu
+  const [copied, setCopied] = useState(false);
+
   // Yeni Temalar İçin Özel Durumlar
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinError, setPinError] = useState(false);
@@ -152,6 +155,27 @@ export default function EscapeCard({
   const [shatterStage, setShatterStage] = useState(0); // 0: Normal, 1: Çatlak, 2: Ağır Çatlak, 3: Patladı
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // Link Paylaşım Fonksiyonu
+  const handleShare = async () => {
+    const shareData = {
+      title: "Kaçan Kart!",
+      text: "Sana özel bir kart gönderdim, bakalım yakalayabilecek misin? 🃏✨",
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log("Paylaşım iptal edildi", err);
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   // Geri Sayım Teması İçin Timer
   useEffect(() => {
@@ -441,6 +465,17 @@ export default function EscapeCard({
                   )}
                 </div>
               )}
+            </div>
+
+            {/* ARKADAŞA LİNK AT / PAYLAŞ BUTONU */}
+            <div className="pt-2 flex justify-center">
+              <button
+                onClick={handleShare}
+                type="button"
+                className="px-5 py-2.5 bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg transition-all flex items-center gap-2 text-xs border border-indigo-400/30"
+              >
+                <span>{copied ? "✓ Link Kopyalandı!" : "🔗 Arkadaşına Link At"}</span>
+              </button>
             </div>
 
             <div
