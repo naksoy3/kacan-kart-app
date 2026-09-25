@@ -28,8 +28,7 @@ function CardContent() {
   const urlGif = searchParams.get("gif");
 
   // Form Aşamaları (1: Tema, 2: Detaylar, 3: GIF, 4: Önizleme & Paylaş)
-  const [formStep, setFormStep] = useState<number>(1);
-  const [showCard, setShowCard] = useState<boolean>(!!(urlUser || urlSoru));
+  const [formStep, setFormStep] = useState<number>(urlUser || urlSoru ? 4 : 1);
 
   // Form Verileri
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
@@ -64,11 +63,12 @@ function CardContent() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+    <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-      {!showCard ? (
+      {/* ADIM 1, 2 VE 3 İÇİN KONTROL FORMU */}
+      {formStep < 4 && (
         <div className="relative z-10 w-full max-w-lg bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] text-white shadow-2xl space-y-6 my-8">
           {/* Başlık ve Adım Göstergesi */}
           <div className="text-center space-y-2">
@@ -236,65 +236,49 @@ function CardContent() {
                   onClick={() => setFormStep(4)}
                   className="w-2/3 py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
-                  Tamamla & Paylaş 🚀
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ADIM 4: PAYLAŞIM LİNKİ & ÖNİZLEME */}
-          {formStep === 4 && (
-            <div className="space-y-4 text-center">
-              <label className="block text-slate-300 font-medium text-sm">
-                4. Adım: Kartınız Hazır! 🎉
-              </label>
-
-              <div className="bg-slate-800/70 border border-slate-700 p-3 rounded-xl text-left space-y-1 text-xs">
-                <p className="text-slate-400">🔗 Paylaşım Bağlantınız:</p>
-                <p className="text-indigo-400 truncate font-mono text-[11px]">
-                  {generateShareUrl()}
-                </p>
-              </div>
-
-              <button
-                onClick={handleCopyLink}
-                className={`w-full py-3 font-bold rounded-xl text-sm transition cursor-pointer ${
-                  copied
-                    ? "bg-emerald-600 text-white"
-                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30"
-                }`}
-              >
-                {copied ? "✅ Link Kopyalandı!" : "📋 Paylaşım Linkini Kopyala"}
-              </button>
-
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => setFormStep(3)}
-                  className="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
-                >
-                  ⬅️ Geri
-                </button>
-                <button
-                  onClick={() => setShowCard(true)}
-                  className="w-2/3 py-3 bg-emerald-600 hover:bg-emerald-500 font-bold rounded-xl text-sm transition shadow-lg shadow-emerald-600/30 cursor-pointer"
-                >
-                  Kartı Canlı İzle ✨
+                  Önizle & Paylaş 🚀
                 </button>
               </div>
             </div>
           )}
         </div>
-      ) : (
-        /* --- CANLI KART ÖNİZLEMESİ --- */
-        <KacanKart
-          targetUsername={targetUsername}
-          soru={soru}
-          evetMetni={searchParams.get("e") || "Evet!"}
-          hayirMetni={searchParams.get("h") || "Hayır"}
-          gifUrl={gifUrl}
-          theme={selectedTheme}
-          onBack={() => setShowCard(false)}
-        />
+      )}
+
+      {/* ADIM 4: DOĞRUDAN CANLI ÖNİZLEME VEYA PAYLAŞIM EKRANI */}
+      {formStep === 4 && (
+        <div className="w-full max-w-xl flex flex-col items-center gap-6 my-6 z-10">
+          {/* Üst Paylaşım Barı */}
+          <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
+            <button
+              onClick={() => setFormStep(3)}
+              className="w-full sm:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
+            >
+              ✏️ Düzenlemeye Dön
+            </button>
+            <button
+              onClick={handleCopyLink}
+              className={`w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs transition cursor-pointer shadow-lg ${
+                copied
+                  ? "bg-emerald-600 text-white shadow-emerald-600/30"
+                  : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
+              }`}
+            >
+              {copied ? "✅ Link Kopyalandı!" : "🔗 Bağlantıyı Kopyala & Paylaş"}
+            </button>
+          </div>
+
+          {/* Canlı Kart Bileşeni */}
+          <div className="w-full flex justify-center">
+            <KacanKart
+              targetUsername={targetUsername}
+              soru={soru}
+              evetMetni={searchParams.get("e") || "Evet!"}
+              hayirMetni={searchParams.get("h") || "Hayır"}
+              gifUrl={gifUrl}
+              theme={selectedTheme}
+            />
+          </div>
+        </div>
       )}
     </main>
   );
