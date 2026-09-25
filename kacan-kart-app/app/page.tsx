@@ -4,18 +4,18 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 
-// 10 Popüler GIF Seçeneği
+// Doğrudan çalışan ve isimleriyle tam eşleşen GIF listesi
 const POPULER_GIFLER = [
-  { id: "1", name: "Sevimli Kedi 🐱", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eXgzZGFnYnVsMjh5Mms3cHpzeWdpaXlsZ3J3MnR6eDNsa2o0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif" },
-  { id: "2", name: "Yalvaran Bebek 🥺", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFmcWV0cmtzMnIzdTZ3NDRmbzBhMmh3eG84ZDVrZXJva3U1bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C831xsVq4JHNRqK33G/giphy.gif" },
-  { id: "3", name: "Çiçekli Ayı 🌹", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGtneWVhdXgxeWF3bTVpZGhyenhhZGFyMnpodGplMzk3aWZ4YXVpOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
-  { id: "4", name: "Dans Eden 🎉", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmt4ZmpyNWQyaHF0aXZ5ZmtldWZyNHZrcmR3dGFpM21uZzVvaW1idSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/blSTtZehjAZ8I/giphy.gif" },
-  { id: "5", name: "Kalp Sarılması 💖", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzBmcmsxZjNycXJrbWd4ZHhldDdqZHk4MW10eHNndDRvdjV4OWlqOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gDgte7IeEXyow/giphy.gif" },
-  { id: "6", name: "Şaşıran Köpek 🐶", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3dwMzlmd25icms5amMxbWdhaGVsMW5sNG0waGFuaTF6czVxc3JvcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zo41lhzKt6iZ8xff9/giphy.gif" },
-  { id: "7", name: "Kahve İkramı ☕", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnA2czBvOHRxcHN5b2R4bmR0dnl5ZDFtZ2pxeXBxb3VraGtmdDhrbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/h3466M30mG73a/giphy.gif" },
-  { id: "8", name: "Kafa Sallama 👍", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDVqbm53bjcxdTFoNG4zaXlraWV5eTZ0MnIzeHZubzdtcmFscDRhdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g9582DNuQppxC/giphy.gif" },
-  { id: "9", name: "Kıskanç Kedi 😾", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmZmcGg3bHFwbTllc3FidDgybnk0OGJ3ZmcwcnptdzE0aTBxOThqcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CoDp6NnSmItoY/giphy.gif" },
-  { id: "10", name: "Zafer Dansı 🕺", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZndjNTRsdjI2cnQybndxeWNndmFnMG9tNG1wbDRlczNmNDVpdTVscSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRlT2k2L35Cnn5C/giphy.gif" },
+  { id: "1", name: "Sevimli Kedi 🐱", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3kzeXlybmJ3cGZzcG1mczlyN2M4bHJnYnl0bmt2Z3J1N3Uzb3lyaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif" },
+  { id: "2", name: "Yalvaran Kedi 🥺", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHhhZms2ZjdrNnVpMmdhdTdwMnV0YXFlMHFyZHpvanlyOHB6dmRwZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C831xsVq4JHNRqK33G/giphy.gif" },
+  { id: "3", name: "Çiçek / Ayı 🌹", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZndjNTRsdjI2cnQybndxeWNndmFnMG9tNG1wbDRlczNmNDVpdTVscSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
+  { id: "4", name: "Dans Eden Kedi 🎉", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXZzaGsyand5cWN0dXlsNXNudGNhdGJmcnJicDVtdzRleGszc2FseSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/blSTtZehjAZ8I/giphy.gif" },
+  { id: "5", name: "Kalp Sevgi 💖", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmRwY3Q5bjE4dHV0aWFjZmZ2NWszMWhocnhucWpsNmd5NWtsZDNxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gDgte7IeEXyow/giphy.gif" },
+  { id: "6", name: "Mutlu Ayı 🐻", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmsydWp5bnhpdWZuaHZvZzlyajd1ZXB0NnYza3A1dzRqNGtrNm14OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zo41lhzKt6iZ8xff9/giphy.gif" },
+  { id: "7", name: "Kahve Keyfi ☕", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG45a3RneXZnZTNtd2g2OTNrMHpneHQwbGkzbTlzazhrODlrbGNxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/h3466M30mG73a/giphy.gif" },
+  { id: "8", name: "Evet / Onay 👍", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWRmMG41b212amRyaXZiOTc0azM1cXAxdXByYzI2NzgxeGk3ZGlqdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g9582DNuQppxC/giphy.gif" },
+  { id: "9", name: "Komik Kedi 😾", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDVqbm53bjcxdTFoNG4zaXlraWV5eTZ0MnIzeHZubzdtcmFscDRhdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CoDp6NnSmItoY/giphy.gif" },
+  { id: "10", name: "Zafer Dansı 🕺", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmNudTFjZnphbXB3MGU4OWRkeTBndjZreTNodndocWNwbms2bnhpZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRlT2k2L35Cnn5C/giphy.gif" },
 ];
 
 function CardContent() {
@@ -86,7 +86,11 @@ function CardContent() {
                         : "border-slate-800 bg-slate-800/50 hover:bg-slate-800 text-slate-300"
                     }`}
                   >
-                    <img src={g.url} alt={g.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                    <img
+                      src={g.url}
+                      alt={g.name}
+                      className="w-10 h-10 rounded-lg object-contain bg-slate-950 flex-shrink-0"
+                    />
                     <span className="truncate text-[11px]">{g.name}</span>
                   </button>
                 ))}
