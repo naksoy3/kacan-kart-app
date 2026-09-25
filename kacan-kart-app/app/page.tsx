@@ -67,22 +67,22 @@ function CardContent() {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ADIM 1, 2 VE 3 İÇİN KONTROL FORMU */}
+      {/* ADIM 1, 2 VE 3 İÇİN KONTROL FORMU (Genişletilmiş 1.5x Kutu) */}
       {formStep < 4 && (
-        <div className="relative z-10 w-full max-w-lg bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] text-white shadow-2xl space-y-6 my-8">
+        <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
           {/* Başlık ve Adım Göstergesi */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold">🃏 Kaçan Kart Oluştur</h2>
-            <div className="flex justify-center gap-2 pt-2">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl font-extrabold tracking-tight">🃏 Kaçan Kart Oluştur</h2>
+            <div className="flex justify-center gap-2 pt-1">
               {[1, 2, 3, 4].map((stepNum) => (
                 <div
                   key={stepNum}
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
                     formStep === stepNum
-                      ? "w-8 bg-indigo-500"
+                      ? "w-10 bg-indigo-500"
                       : formStep > stepNum
-                      ? "w-2 bg-indigo-400/50"
-                      : "w-2 bg-slate-700"
+                      ? "w-2.5 bg-indigo-400/50"
+                      : "w-2.5 bg-slate-700"
                   }`}
                 />
               ))}
@@ -91,30 +91,30 @@ function CardContent() {
 
           {/* ADIM 1: TEMA SEÇİMİ (KARE KARTLAR) */}
           {formStep === 1 && (
-            <div className="space-y-4">
-              <label className="block text-slate-300 font-medium text-sm text-center">
+            <div className="space-y-6">
+              <label className="block text-slate-300 font-medium text-base text-center">
                 1. Adım: Kart Temasını Seçin
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {(Object.keys(THEME_NAMES) as CardTheme[]).map((themeKey) => (
                   <button
                     key={themeKey}
                     type="button"
                     onClick={() => setSelectedTheme(themeKey)}
-                    className={`aspect-square rounded-2xl border p-4 flex flex-col items-center justify-center text-center transition cursor-pointer relative overflow-hidden ${
+                    className={`aspect-square rounded-2xl border p-5 flex flex-col items-center justify-center text-center transition cursor-pointer relative overflow-hidden ${
                       selectedTheme === themeKey
-                        ? "border-indigo-500 bg-indigo-500/20 ring-2 ring-indigo-500 font-bold"
+                        ? "border-indigo-500 bg-indigo-500/20 ring-2 ring-indigo-500 font-bold shadow-lg shadow-indigo-500/10"
                         : "border-slate-800 bg-slate-800/40 hover:bg-slate-800 text-slate-300"
                     }`}
                   >
-                    <span className="text-3xl mb-2">🎨</span>
-                    <span className="text-xs font-semibold">{THEME_NAMES[themeKey]}</span>
+                    <span className="text-4xl mb-3">🎨</span>
+                    <span className="text-sm font-semibold">{THEME_NAMES[themeKey]}</span>
                   </button>
                 ))}
               </div>
               <button
                 onClick={() => setFormStep(2)}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-4"
+                className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-base transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-4"
               >
                 Devam Et: Detayları Gir ➡️
               </button>
@@ -123,73 +123,73 @@ function CardContent() {
 
           {/* ADIM 2: MANUEL DETAYLAR */}
           {formStep === 2 && (
-            <div className="space-y-4 text-xs">
-              <label className="block text-slate-300 font-medium text-sm text-center mb-2">
+            <div className="space-y-5 text-sm">
+              <label className="block text-slate-300 font-medium text-base text-center mb-2">
                 2. Adım: Soru ve Detaylar
               </label>
               <div>
-                <label className="block text-slate-400 mb-1">Hedef Kişinin Adı:</label>
+                <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
                 <input
                   type="text"
                   value={targetUsername}
                   onChange={(e) => setTargetUsername(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Sormak İstediğin Soru:</label>
+                <label className="block text-slate-400 mb-1.5 font-medium">Sormak İstediğin Soru:</label>
                 <input
                   type="text"
                   value={soru}
                   onChange={(e) => setSoru(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1">Yer:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">Yer:</label>
                   <input
                     type="text"
                     placeholder="Örn: Kadıköy"
                     value={yer}
                     onChange={(e) => setYer(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1">Tarih:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">Tarih:</label>
                   <input
                     type="text"
                     placeholder="Örn: Cuma"
                     value={tarih}
                     onChange={(e) => setTarih(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1">Zaman:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">Zaman:</label>
                   <input
                     type="text"
                     placeholder="Örn: 20:00"
                     value={zaman}
                     onChange={(e) => setZaman(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-2 py-2 text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-3 pt-3">
                 <button
                   onClick={() => setFormStep(1)}
-                  className="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
+                  className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
                 >
                   ⬅️ Geri
                 </button>
                 <button
                   onClick={() => setFormStep(3)}
-                  className="w-2/3 py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
+                  className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
                   Devam Et: GIF Seç ➡️
                 </button>
@@ -199,17 +199,17 @@ function CardContent() {
 
           {/* ADIM 3: GIF SEÇİMİ */}
           {formStep === 3 && (
-            <div className="space-y-4">
-              <label className="block text-slate-300 font-medium text-sm text-center">
+            <div className="space-y-6">
+              <label className="block text-slate-300 font-medium text-base text-center">
                 3. Adım: GIF Seçin
               </label>
-              <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
                 {POPULER_GIFLER.map((g) => (
                   <button
                     key={g.id}
                     type="button"
                     onClick={() => setGifUrl(g.url)}
-                    className={`p-2 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
+                    className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer ${
                       gifUrl === g.url
                         ? "border-indigo-500 bg-indigo-500/20 font-bold ring-1 ring-indigo-500"
                         : "border-slate-800 bg-slate-800/50 hover:bg-slate-800 text-slate-300"
@@ -218,23 +218,23 @@ function CardContent() {
                     <img
                       src={g.url}
                       alt={g.name}
-                      className="w-10 h-10 rounded-lg object-contain bg-slate-950 flex-shrink-0"
+                      className="w-12 h-12 rounded-xl object-contain bg-slate-950 flex-shrink-0"
                     />
-                    <span className="truncate text-[11px]">{g.name}</span>
+                    <span className="truncate text-xs">{g.name}</span>
                   </button>
                 ))}
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-3 pt-3">
                 <button
                   onClick={() => setFormStep(2)}
-                  className="w-1/3 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
+                  className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
                 >
                   ⬅️ Geri
                 </button>
                 <button
                   onClick={() => setFormStep(4)}
-                  className="w-2/3 py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
+                  className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
                   Önizle & Paylaş 🚀
                 </button>
@@ -244,20 +244,20 @@ function CardContent() {
         </div>
       )}
 
-      {/* ADIM 4: DOĞRUDAN CANLI ÖNİZLEME VEYA PAYLAŞIM EKRANI */}
+      {/* ADIM 4: DOĞRUDAN CANLI ÖNİZLEME VE PAYLAŞIM EKRANI */}
       {formStep === 4 && (
-        <div className="w-full max-w-xl flex flex-col items-center gap-6 my-6 z-10">
+        <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
           {/* Üst Paylaşım Barı */}
-          <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
+          <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
             <button
               onClick={() => setFormStep(3)}
-              className="w-full sm:w-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
             >
               ✏️ Düzenlemeye Dön
             </button>
             <button
               onClick={handleCopyLink}
-              className={`w-full sm:w-auto px-6 py-2.5 font-bold rounded-xl text-xs transition cursor-pointer shadow-lg ${
+              className={`w-full sm:w-auto px-6 py-3 font-bold rounded-xl text-xs transition cursor-pointer shadow-lg ${
                 copied
                   ? "bg-emerald-600 text-white shadow-emerald-600/30"
                   : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
