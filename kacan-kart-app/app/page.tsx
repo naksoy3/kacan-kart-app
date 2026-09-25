@@ -4,21 +4,41 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 
+// 10 Popüler GIF Seçeneği
+const POPULER_GIFLER = [
+  { id: "1", name: "Sevimli Kedi 🐱", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eXgzZGFnYnVsMjh5Mms3cHpzeWdpaXlsZ3J3MnR6eDNsa2o0dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif" },
+  { id: "2", name: "Yalvaran Bebek 🥺", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFmcWV0cmtzMnIzdTZ3NDRmbzBhMmh3eG84ZDVrZXJva3U1bCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C831xsVq4JHNRqK33G/giphy.gif" },
+  { id: "3", name: "Çiçekli Ayı 🌹", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGtneWVhdXgxeWF3bTVpZGhyenhhZGFyMnpodGplMzk3aWZ4YXVpOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
+  { id: "4", name: "Dans Eden 🎉", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmt4ZmpyNWQyaHF0aXZ5ZmtldWZyNHZrcmR3dGFpM21uZzVvaW1idSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/blSTtZehjAZ8I/giphy.gif" },
+  { id: "5", name: "Kalp Sarılması 💖", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzBmcmsxZjNycXJrbWd4ZHhldDdqZHk4MW10eHNndDRvdjV4OWlqOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gDgte7IeEXyow/giphy.gif" },
+  { id: "6", name: "Şaşıran Köpek 🐶", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3dwMzlmd25icms5amMxbWdhaGVsMW5sNG0waGFuaTF6czVxc3JvcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zo41lhzKt6iZ8xff9/giphy.gif" },
+  { id: "7", name: "Kahve İkramı ☕", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdnA2czBvOHRxcHN5b2R4bmR0dnl5ZDFtZ2pxeXBxb3VraGtmdDhrbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/h3466M30mG73a/giphy.gif" },
+  { id: "8", name: "Kafa Sallama 👍", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDVqbm53bjcxdTFoNG4zaXlraWV5eTZ0MnIzeHZubzdtcmFscDRhdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g9582DNuQppxC/giphy.gif" },
+  { id: "9", name: "Kıskanç Kedi 😾", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmZmcGg3bHFwbTllc3FidDgybnk0OGJ3ZmcwcnptdzE0aTBxOThqcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CoDp6NnSmItoY/giphy.gif" },
+  { id: "10", name: "Zafer Dansı 🕺", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZndjNTRsdjI2cnQybndxeWNndmFnMG9tNG1wbDRlczNmNDVpdTVscSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRlT2k2L35Cnn5C/giphy.gif" },
+];
+
 function CardContent() {
   const searchParams = useSearchParams();
 
-  // URL'den parametre gelip gelmediğini kontrol et
+  // URL'den parametre çekme
   const urlUser = searchParams.get("u");
   const urlSoru = searchParams.get("s");
   const urlTheme = searchParams.get("t") as CardTheme | null;
+  const urlGif = searchParams.get("gif");
 
-  // Form Durumları (Hazır link yoksa kullanıcının dolduracağı alanlar)
-  const [step, setStep] = useState<"form" | "card">(urlUser || urlSoru ? "card" : "form");
+  // Form Durumları
+  const [step, setStep] = useState<"form" | "card">(
+    urlUser || urlSoru ? "card" : "form"
+  );
   const [targetUsername, setTargetUsername] = useState(urlUser || "Nurullah");
   const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
   const [evetMetni, setEvetMetni] = useState(searchParams.get("e") || "Evet!");
   const [hayirMetni, setHayirMetni] = useState(searchParams.get("h") || "Hayır");
-  const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
+  const [selectedTheme, setSelectedTheme] = useState<CardTheme>(
+    urlTheme || "escaping"
+  );
+  const [gifUrl, setGifUrl] = useState(urlGif || POPULER_GIFLER[0].url);
 
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
@@ -27,10 +47,10 @@ function CardContent() {
 
       {step === "form" ? (
         /* --- KART OLUŞTURMA FORMU & TEMA SEÇİMİ --- */
-        <div className="relative z-10 w-full max-w-lg bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] text-white shadow-2xl space-y-5">
+        <div className="relative z-10 w-full max-w-lg bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-6 sm:p-8 rounded-[28px] text-white shadow-2xl space-y-5 my-8">
           <h2 className="text-xl font-bold text-center">🃏 Kaçan Kart Oluştur</h2>
 
-          <div className="space-y-3 text-xs">
+          <div className="space-y-4 text-xs">
             <div>
               <label className="block text-slate-400 mb-1">Hedef Kişinin Adı:</label>
               <input
@@ -48,6 +68,36 @@ function CardContent() {
                 value={soru}
                 onChange={(e) => setSoru(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            {/* --- GIF SEÇİM ALANI --- */}
+            <div>
+              <label className="block text-slate-400 mb-1 font-medium">Soru Üstü GIF Seçimi:</label>
+              <div className="grid grid-cols-2 gap-2 mb-2 max-h-56 overflow-y-auto pr-1">
+                {POPULER_GIFLER.map((g) => (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => setGifUrl(g.url)}
+                    className={`p-2 rounded-xl border text-left flex items-center gap-2 transition cursor-pointer ${
+                      gifUrl === g.url
+                        ? "border-indigo-500 bg-indigo-500/20 font-bold ring-1 ring-indigo-500"
+                        : "border-slate-800 bg-slate-800/50 hover:bg-slate-800 text-slate-300"
+                    }`}
+                  >
+                    <img src={g.url} alt={g.name} className="w-9 h-9 rounded-lg object-cover flex-shrink-0" />
+                    <span className="truncate text-[11px]">{g.name}</span>
+                  </button>
+                ))}
+              </div>
+              
+              <input
+                type="url"
+                placeholder="Veya özel GIF bağlantısı (URL) yapıştırın..."
+                value={gifUrl}
+                onChange={(e) => setGifUrl(e.target.value)}
+                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white text-[11px] focus:outline-none focus:border-indigo-500 transition"
               />
             </div>
 
@@ -69,7 +119,7 @@ function CardContent() {
 
           <button
             onClick={() => setStep("card")}
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30"
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
           >
             Kartı Önizle & Önizlemeye Geç ✨
           </button>
@@ -81,6 +131,7 @@ function CardContent() {
           soru={soru}
           evetMetni={evetMetni}
           hayirMetni={hayirMetni}
+          gifUrl={gifUrl}
           theme={selectedTheme}
           onBack={() => setStep("form")}
         />
