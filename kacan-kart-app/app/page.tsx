@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 
-// Gerçek, doğrulanmış Giphy ID'leri (kısa format: media.giphy.com/media/ID/giphy.gif)
+// Gerçek, doğrulanmış Giphy ID'leri
 const KOMIK_GIFLER = [
   { id: "1", url: "https://media.giphy.com/media/cFdHXXm5GhJsc/giphy.gif" },
   { id: "2", url: "https://media.giphy.com/media/5JjLO6t0lNvLq/giphy.gif" },
@@ -87,7 +87,9 @@ function CardContent() {
   const urlTheme = searchParams.get("t") as CardTheme | null;
   const urlGif = searchParams.get("gif");
 
-  const [formStep, setFormStep] = useState<number>(urlUser || urlSoru ? 4 : 1);
+  const isSharedView = Boolean(urlUser || urlSoru);
+
+  const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
   const [targetUsername, setTargetUsername] = useState(urlUser || "Nisa");
   const [fromUsername, setFromUsername] = useState(urlFrom || "Nurullah");
@@ -98,9 +100,7 @@ function CardContent() {
   const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
 
-  // Yüklenemeyen GIF'lerin ID'lerini tutar, listeden otomatik çıkarılırlar
   const [kirikGifIdleri, setKirikGifIdleri] = useState<string[]>([]);
-
   const gosterilecekGifler = KOMIK_GIFLER.filter((g) => !kirikGifIdleri.includes(g.id));
 
   const handleGifError = (id: string) => {
@@ -134,12 +134,12 @@ function CardContent() {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-      {formStep < 4 && (
+      {!isSharedView && formStep < 4 && (
         <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
           <div className="text-center space-y-3">
             <h2 className="text-3xl font-extrabold tracking-tight">🃏 Soru Oluştur</h2>
             <div className="flex justify-center gap-2 pt-1">
-              {[1, 2, 3, 4].map((stepNum) => (
+              {[1, 2, 3].map((stepNum) => (
                 <div
                   key={stepNum}
                   className={`h-2.5 rounded-full transition-all duration-300 ${
@@ -323,27 +323,43 @@ function CardContent() {
         </div>
       )}
 
-      {/* ADIM 4: ÖNİZLEME */}
-      {formStep === 4 && (
+      {/* ADIM 4: ÖNİZLEME VEYA PAYLAŞILAN KİŞİNİN EKRANI */}
+      {(formStep === 4 || isSharedView) && (
         <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
-          <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
-            <button
-              onClick={() => setFormStep(3)}
-              className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
-            >
-              ✏️ Düzenlemeye Dön
-            </button>
-            <button
-              onClick={handleCopyLink}
-              className={`w-full sm:w-auto px-6 py-3 font-bold rounded-xl text-xs transition cursor-pointer shadow-lg ${
-                copied
-                  ? "bg-emerald-600 text-white shadow-emerald-600/30"
-                  : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
-              }`}
-            >
-              {copied ? "✅ Link Kopyalandı!" : "🔗 Bağlantıyı Kopyala & Paylaş"}
-            </button>
-          </div>
+          {/* Kartı oluşturan kişi kendi önizlemesindeyse link kopyalama paneli görünür. */}
+          {!isSharedView && (
+            <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
+              <button
+                onClick={() => setFormStep(3)}
+                className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
+              >
+                ✏️ Düzenlemeye Dön
+              </button>
+              <button
+                onClick={handleCopyLink}
+                className={`w-full sm:w-auto px-6 py-3 font-bold rounded-xl text-xs transition cursor-pointer shadow-lg ${
+                  copied
+                    ? "bg-emerald-600 text-white shadow-emerald-600/30"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
+                }`}
+              >
+                {copied ? "✅ Link Kopyalandı!" : "🔗 Bağlantıyı Kopyala & Paylaş"}
+              </button>
+            </div>
+          )}
+
+          {/* Hedef kişi linke tıkladığında, bu kartı değiştiremez ama anasayfaya dönüp kendi kartını oluşturabilir */}
+          {isSharedView && (
+            <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
+              <span className="text-xs text-slate-300">💌 Bu soru sana özel olarak gönderildi!</span>
+              <a
+                href={window.location.pathname}
+                className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-600/30 text-center cursor-pointer"
+              >
+                ✨ Sen de Kendi Kartını Oluştur
+              </a>
+            </div>
+          )}
 
           <div className="w-full flex flex-col items-center gap-2">
             {fromUsername && targetUsername && (
