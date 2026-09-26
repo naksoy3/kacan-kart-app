@@ -134,7 +134,7 @@ function CardContent() {
       {formStep < 4 && (
         <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-extrabold tracking-tight">🃏 Kaçan Kart Oluştur</h2>
+            <h2 className="text-3xl font-extrabold tracking-tight">🃏 Soru Oluştur</h2>
             <div className="flex justify-center gap-2 pt-1">
               {[1, 2, 3, 4].map((stepNum) => (
                 <div
@@ -263,7 +263,7 @@ function CardContent() {
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                3. Adım: Komik Bir GIF Seçin ({gosterilecekGifler.length} Seçenek)
+                3. Adım: Bir GIF Seçin (İsteğe Bağlı)
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
