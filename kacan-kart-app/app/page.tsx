@@ -1,32 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
-
-// Ekran görüntülerinde kesin olarak çalışan, patlamayan ve yüklenen garanti GIF listesi
-const GARANTI_GIFLER = [
-  { id: "1", url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHp1eXoxbXFqbWpmc3N3ajltYjJjNHlzMWp2aDRnbnF2dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IPxX0076jQQfLy/giphy.gif" },
-  { id: "2", url: "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWZseWNraGN3anY0bW5qczFqaHBndWhkZHl5Zm9sNHNxbXl3eGZtbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif" },
-  { id: "3", url: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53Z3Zwb2d4cnJ5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ohhwkKBcReYyFczX4/giphy.gif" },
-  { id: "4", url: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXQ2MXZrbW52N25vN2cwbDhzMHV2aGR6Y3I2ZXp1M2l5aWp5OHZkMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlRnAWXxn0MhOBK/giphy.gif" },
-  { id: "5", url: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHN3eHhhdWExOWc3NDhwbWV5dnF2NHFkZmU5OG14bzFxbG9qamV3bm90djRreSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oz8xLd9DJq2l2VFtu/giphy.gif" },
-  { id: "6", url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTl3ZXp0OHUycW56aGhmZmVobTFqbmdxMjNmbmVtdnF5bWwzdWZvNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriO0OEd9QIDdllqo/giphy.gif" },
-  { id: "7", url: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXV3ODg2YmR1ZnhwM3p6aXljNGprcWhuaTN1c2prY3g3YXR2cDZoeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRv0ThflsHCqDrG/giphy.gif" },
-  { id: "8", url: "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2R4bXp3aHRwb3N6bXh2aDNubXFsdjM5dnh2bWc5Nnh2dm1sZXp3ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEjI6SIIHBdRxXI40/giphy.gif" },
-  { id: "9", url: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3g1aXlscDV1MXF3a2M2b29oNWc0NTV4OWV1aGhwbzFveTZobXptbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IKu5T5T57T0p1S/giphy.gif" },
-  { id: "10", url: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGZvdTZ1bm52bHNrZDFwcnN6Y3phcmk5bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKsQ8gMsMFCAkJy/giphy.gif" },
-  { id: "11", url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHBuajZ5YnB2NXd4NTRpZjY2aGNyMjh3eTJvZXEzdG1vYW53eDR3MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10WbLg5W0Y0aQM/giphy.gif" },
-  { id: "12", url: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWl1bnlsaW55OHY3am92NnMzazR6dTBtNjN2aW5xdTFqZnkybml3bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKoWnz4vQCIbjQY/giphy.gif" },
-  { id: "13", url: "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWk3amFqZ24wMTR4bnlsZWk4cnV3amJmOWE3Mm9tZXQ0YTR3ZWNlZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
-  { id: "14", url: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXpsbmYzdjV3OGF0NnRtYm16NWhsY2Rocm13YjV0cW1oam53MGV3ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlvtIPzPdt2usKs/giphy.gif" },
-  { id: "15", url: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnZrcW55anZ3ajZpcG5jYmp4MXZ5YThrdDNvazNqM3N5bTF3aW12cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26u4v38A1m9sYyU9a/giphy.gif" },
-  { id: "16", url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExbW51anplMXB5OHZzNWVxdWhqaDNyOXR0OHQzaWhrM3N5bTF3aW12cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7bu3hJkZ9IYaYvKM/giphy.gif" },
-  { id: "17", url: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbzI0OWZrbXZoNnprbHNwYXJ2b3RrcjR4MnJ1anFvOHJ4cmptY2V3cyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5vkW42Z57tYn6/giphy.gif" },
-  { id: "18", url: "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcm52Nm50bXJ0bnNsdjM5dnh2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1QnWsvHcJ7fxJUSmn/giphy.gif" },
-  { id: "19", url: "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExZ2p1bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53Z3Zwb2d4cnJ5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ohs4w0MAmNV3k5arC/giphy.gif" },
-  { id: "20", url: "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3RjMWtzYnhwOGZubm5rdWd5OWw1NWJjZXJ5dGk2bmZ2cGx2OWg3bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YoWOI8zGZq73DMKnjN/giphy.gif" }
-];
 
 function CardContent() {
   const searchParams = useSearchParams();
@@ -43,8 +19,38 @@ function CardContent() {
   const [yer, setYer] = useState(searchParams.get("yer") || "");
   const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
   const [zaman, setZaman] = useState(searchParams.get("zaman") || "");
-  const [gifUrl, setGifUrl] = useState(urlGif || GARANTI_GIFLER[0].url);
+  const [gifUrl, setGifUrl] = useState<string>(urlGif || "");
   const [copied, setCopied] = useState(false);
+
+  // Giphy API'den dinamik ve garantili GIF çekme state'leri
+  const [gifler, setGifler] = useState<{ id: string; url: string }[]>([]);
+  const [gifYukleniyor, setGifYukleniyor] = useState(true);
+  const [gifHata, setGifHata] = useState(false);
+
+  useEffect(() => {
+    const gifCek = async () => {
+      try {
+        setGifYukleniyor(true);
+        const res = await fetch(
+          "https://api.giphy.com/v1/gifs/search?q=funny&api_key=dc6zaTOxFJmzC&limit=24&rating=pg-13"
+        );
+        const data = await res.json();
+        const liste = (data.data || []).map((g: any) => ({
+          id: g.id,
+          url: g.images.fixed_height.url, // her zaman geçerli, giphy'nin garantili boyutu
+        }));
+        setGifler(liste);
+        if (liste.length > 0 && !urlGif) {
+          setGifUrl(liste[0].url);
+        }
+      } catch (e) {
+        setGifHata(true);
+      } finally {
+        setGifYukleniyor(false);
+      }
+    };
+    gifCek();
+  }, [urlGif]);
 
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
@@ -200,15 +206,25 @@ function CardContent() {
             </div>
           )}
 
-          {/* ADIM 3: ÇALIŞAN GARANTİ GIFLER */}
+          {/* ADIM 3: API'DEN GELEN GIFLER */}
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                3. Adım: Sorunsuz Çalışan GIF Seçin ({GARANTI_GIFLER.length} Seçenek)
+                3. Adım: Sorunsuz Çalışan GIF Seçin
               </label>
 
+              {gifYukleniyor && (
+                <p className="text-slate-400 text-center text-sm py-8 animate-pulse">GIF'ler yükleniyor...</p>
+              )}
+
+              {gifHata && (
+                <p className="text-red-400 text-center text-sm py-4">
+                  GIF'ler yüklenemedi, lütfen sayfayı yenileyin.
+                </p>
+              )}
+
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
-                {GARANTI_GIFLER.map((g) => (
+                {gifler.map((g) => (
                   <button
                     key={g.id}
                     type="button"
@@ -222,6 +238,7 @@ function CardContent() {
                     <img
                       src={g.url}
                       alt=""
+                      loading="lazy"
                       className="w-full h-full rounded-xl object-contain bg-slate-950 pointer-events-none"
                     />
                   </button>
