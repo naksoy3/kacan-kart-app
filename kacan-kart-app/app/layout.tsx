@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kaçan Kart | Kaçan Butonlu Mesaj Kartı",
-  description: "Arkadaşına eğlenceli, kaçan butonlu bir soru kartı gönder.",
+  title: "Cardasks ile soru gönder",
+  description: "Cardasks platformu üzerinden kolayca soru gönderin ve yönetin.",
 };
 
 export default function RootLayout({
