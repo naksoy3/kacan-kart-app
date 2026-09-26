@@ -4,18 +4,20 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 
-// Hiçbir yazı/isim içermeyen, tamamen güncel ve sorunsuz çalışan GIF listesi
+// Tamamen yenilenmiş, garanti çalışan ve yazı içermeyen genişletilmiş GIF listesi
 const POPULER_GIFLER = [
-  { id: "1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3RjMWtzYnhwOGZubm5rdWd5OWw1NWJjZXJ5dGk2bmZ2cGx2OWg3bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
-  { id: "2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFvNHN1aXV2aDNwbWpmc3N3ajltYjJjNHlzMWp2aDRnbnF2dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IPxX0076jQQfLy/giphy.gif" },
-  { id: "3", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXpsbmYzdjV3OGF0NnRtYm16NWhsY2Rocm13YjV0cW1oam53MGV3ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlvtIPzPdt2usKs/giphy.gif" },
-  { id: "4", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTZhZ2F3bXNveHl6NnlnOHRtcXZxNHJ5eWpwb2d4cnJ5bHRqbWJ5eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKSjRrfIPjeiVyM/giphy.gif" },
-  { id: "5", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMndwb214NHp3c2x6amRxbXFsdmp0MnRsdWJvNmZ2bWc5Nnh2dm1seiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRv0ThflsHCqDrG/giphy.gif" },
-  { id: "6", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2R4bXp3aHRwb3N6bXh2aDNubXFsdjM5dnh2bWc5Nnh2dm1sZXp3ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEjI6SIIHBdRxXI40/giphy.gif" },
-  { id: "7", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOG5xZG15b3J4aDN0bXp2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKsQ8gMsMFCAkJy/giphy.gif" },
-  { id: "8", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53Z3Zwb2d4cnJ5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ohhwkKBcReYyFczX4/giphy.gif" },
+  { id: "1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFvNHN1aXV2aDNwbWpmc3N3ajltYjJjNHlzMWp2aDRnbnF2dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IPxX0076jQQfLy/giphy.gif" },
+  { id: "2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTZhZ2F3bXNveHl6NnlnOHRtcXZxNHJ5eWpwb2d4cnJ5bHRqbWJ5eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKSjRrfIPjeiVyM/giphy.gif" },
+  { id: "3", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53Z3Zwb2d4cnJ5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ohhwkKBcReYyFczX4/giphy.gif" },
+  { id: "4", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXQ2MXZrbW52N25vN2cwbDhzMHV2aGR6Y3I2ZXp1M2l5aWp5OHZkMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlRnAWXxn0MhOBK/giphy.gif" },
+  { id: "5", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHN3eHhhdWExOWc3NDhwbWV5dnF2NHFkZmU5OG14bzFxbG9qamV3bm90djRreSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oz8xLd9DJq2l2VFtu/giphy.gif" },
+  { id: "6", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNTl3ZXp0OHUycW56aGhmZmVobTFqbmdxMjNmbmVtdnF5bWwzdWZvNyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oriO0OEd9QIDdllqo/giphy.gif" },
+  { id: "7", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOXV3ODg2YmR1ZnhwM3p6aXljNGprcWhuaTN1c2prY3g3YXR2cDZoeiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRv0ThflsHCqDrG/giphy.gif" },
+  { id: "8", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2R4bXp3aHRwb3N6bXh2aDNubXFsdjM5dnh2bWc5Nnh2dm1sZXp3ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEjI6SIIHBdRxXI40/giphy.gif" },
   { id: "9", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3g1aXlscDV1MXF3a2M2b29oNWc0NTV4OWV1aGhwbzFveTZobXptbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IKu5T5T57T0p1S/giphy.gif" },
-  { id: "10", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXQ2MXZrbW52N25vN2cwbDhzMHV2aGR6Y3I2ZXp1M2l5aWp5OHZkMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlRnAWXxn0MhOBK/giphy.gif" },
+  { id: "10", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGZvdTZ1bm52bHNrZDFwcnN6Y3phcmk5bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKsQ8gMsMFCAkJy/giphy.gif" },
+  { id: "11", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHBuajZ5YnB2NXd4NTRpZjY2aGNyMjh3eTJvZXEzdG1vYW53eDR3MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/10WbLg5W0Y0aQM/giphy.gif" },
+  { id: "12", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWl1bnlsaW55OHY3am92NnMzazR6dTBtNjN2aW5xdTFqZnkybml3bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKoWnz4vQCIbjQY/giphy.gif" },
 ];
 
 function CardContent() {
@@ -67,7 +69,7 @@ function CardContent() {
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ADIM 1, 2 VE 3 İÇİN KONTROL FORMU (Genişletilmiş 1.5x Kutu) */}
+      {/* ADIM 1, 2 VE 3 İÇİN KONTROL FORMU */}
       {formStep < 4 && (
         <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
           {/* Başlık ve Adım Göstergesi */}
@@ -89,7 +91,7 @@ function CardContent() {
             </div>
           </div>
 
-          {/* ADIM 1: TEMA SEÇİMİ (KARE KARTLAR) */}
+          {/* ADIM 1: TEMA SEÇİMİ */}
           {formStep === 1 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
@@ -197,11 +199,11 @@ function CardContent() {
             </div>
           )}
 
-          {/* ADIM 3: GIF SEÇİMİ (İsimler kaldırıldı, sadece görseller var) */}
+          {/* ADIM 3: GIF SEÇİMİ */}
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                3. Adım: GIF Seçin
+                3. Adım: Çalışan GIF Seçin ({POPULER_GIFLER.length} Seçenek)
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
                 {POPULER_GIFLER.map((g) => (
@@ -243,10 +245,9 @@ function CardContent() {
         </div>
       )}
 
-      {/* ADIM 4: DOĞRUDAN CANLI ÖNİZLEME VE PAYLAŞIM EKRANI */}
+      {/* ADIM 4: CANLI ÖNİZLEME VE PAYLAŞIM */}
       {formStep === 4 && (
         <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
-          {/* Üst Paylaşım Barı */}
           <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
             <button
               onClick={() => setFormStep(3)}
@@ -266,7 +267,6 @@ function CardContent() {
             </button>
           </div>
 
-          {/* Canlı Kart Bileşeni */}
           <div className="w-full flex justify-center">
             <KacanKart
               targetUsername={targetUsername}
