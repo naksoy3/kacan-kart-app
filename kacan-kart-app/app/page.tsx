@@ -4,18 +4,18 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 
-// Doğrudan çalışan güvenilir GIF listesi
+// Hiçbir yazı/isim içermeyen, tamamen güncel ve sorunsuz çalışan GIF listesi
 const POPULER_GIFLER = [
-  { id: "1", name: "Sevimli Kedi 🐱", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3kzeXlybmJ3cGZzcG1mczlyN2M4bHJnYnl0bmt2Z3J1N3Uzb3lyaiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lq0h93752f6J9tijrh/giphy.gif" },
-  { id: "2", name: "Yalvaran Kedi 🥺", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHhhZms2ZjdrNnVpMmdhdTdwMnV0YXFlMHFyZHpvanlyOHB6dmRwZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/C831xsVq4JHNRqK33G/giphy.gif" },
-  { id: "3", name: "Çiçek / Ayı 🌹", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExZndjNTRsdjI2cnQybndxeWNndmFnMG9tNG1wbDRlczNmNDVpdTVscSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
-  { id: "4", name: "Dans Eden Kedi 🎉", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMXZzaGsyand5cWN0dXlsNXNudGNhdGJmcnJicDVtdzRleGszc2FseSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/blSTtZehjAZ8I/giphy.gif" },
-  { id: "5", name: "Kalp Sevgi 💖", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmRwY3Q5bjE4dHV0aWFjZmZ2NWszMWhocnhucWpsNmd5NWtsZDNxbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gDgte7IeEXyow/giphy.gif" },
-  { id: "6", name: "Mutlu Ayı 🐻", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExZmsydWp5bnhpdWZuaHZvZzlyajd1ZXB0NnYza3A1dzRqNGtrNm14OSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4Zo41lhzKt6iZ8xff9/giphy.gif" },
-  { id: "7", name: "Kahve Keyfi ☕", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExaG45a3RneXZnZTNtd2g2OTNrMHpneHQwbGkzbTlzazhrODlrbGNxOSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/h3466M30mG73a/giphy.gif" },
-  { id: "8", name: "Evet / Onay 👍", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdWRmMG41b212amRyaXZiOTc0azM1cXAxdXByYzI2NzgxeGk3ZGlqdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/g9582DNuQppxC/giphy.gif" },
-  { id: "9", name: "Komik Kedi 😾", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExbDVqbm53bjcxdTFoNG4zaXlraWV5eTZ0MnIzeHZubzdtcmFscDRhdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/CoDp6NnSmItoY/giphy.gif" },
-  { id: "10", name: "Zafer Dansı 🕺", url: "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNmNudTFjZnphbXB3MGU4OWRkeTBndjZreTNodndocWNwbms2bnhpZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3vRlT2k2L35Cnn5C/giphy.gif" },
+  { id: "1", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN3RjMWtzYnhwOGZubm5rdWd5OWw1NWJjZXJ5dGk2bmZ2cGx2OWg3bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" },
+  { id: "2", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2F3OXFvNHN1aXV2aDNwbWpmc3N3ajltYjJjNHlzMWp2aDRnbnF2dyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IPxX0076jQQfLy/giphy.gif" },
+  { id: "3", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXpsbmYzdjV3OGF0NnRtYm16NWhsY2Rocm13YjV0cW1oam53MGV3ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlvtIPzPdt2usKs/giphy.gif" },
+  { id: "4", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbTZhZ2F3bXNveHl6NnlnOHRtcXZxNHJ5eWpwb2d4cnJ5bHRqbWJ5eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKSjRrfIPjeiVyM/giphy.gif" },
+  { id: "5", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMndwb214NHp3c2x6amRxbXFsdmp0MnRsdWJvNmZ2bWc5Nnh2dm1seiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26BRv0ThflsHCqDrG/giphy.gif" },
+  { id: "6", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExd2R4bXp3aHRwb3N6bXh2aDNubXFsdjM5dnh2bWc5Nnh2dm1sZXp3ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oEjI6SIIHBdRxXI40/giphy.gif" },
+  { id: "7", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOG5xZG15b3J4aDN0bXp2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53ZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKsQ8gMsMFCAkJy/giphy.gif" },
+  { id: "8", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN2bWc5Nnh2dm1sZXp3cmh2bWN2cW1oam53Z3Zwb2d4cnJ5YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ohhwkKBcReYyFczX4/giphy.gif" },
+  { id: "9", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExY3g1aXlscDV1MXF3a2M2b29oNWc0NTV4OWV1aGhwbzFveTZobXptbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3og0IKu5T5T57T0p1S/giphy.gif" },
+  { id: "10", url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZXQ2MXZrbW52N25vN2cwbDhzMHV2aGR6Y3I2ZXp1M2l5aWp5OHZkMiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlRnAWXxn0MhOBK/giphy.gif" },
 ];
 
 function CardContent() {
@@ -197,30 +197,29 @@ function CardContent() {
             </div>
           )}
 
-          {/* ADIM 3: GIF SEÇİMİ */}
+          {/* ADIM 3: GIF SEÇİMİ (İsimler kaldırıldı, sadece görseller var) */}
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
                 3. Adım: GIF Seçin
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
                 {POPULER_GIFLER.map((g) => (
                   <button
                     key={g.id}
                     type="button"
                     onClick={() => setGifUrl(g.url)}
-                    className={`p-3 rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer ${
+                    className={`p-3 rounded-2xl border flex items-center justify-center transition cursor-pointer aspect-square ${
                       gifUrl === g.url
-                        ? "border-indigo-500 bg-indigo-500/20 font-bold ring-1 ring-indigo-500"
-                        : "border-slate-800 bg-slate-800/50 hover:bg-slate-800 text-slate-300"
+                        ? "border-indigo-500 bg-indigo-500/20 ring-2 ring-indigo-500 shadow-lg shadow-indigo-500/20"
+                        : "border-slate-800 bg-slate-800/50 hover:bg-slate-800"
                     }`}
                   >
                     <img
                       src={g.url}
-                      alt={g.name}
-                      className="w-12 h-12 rounded-xl object-contain bg-slate-950 flex-shrink-0"
+                      alt=""
+                      className="w-full h-full rounded-xl object-contain bg-slate-950 pointer-events-none"
                     />
-                    <span className="truncate text-xs">{g.name}</span>
                   </button>
                 ))}
               </div>
