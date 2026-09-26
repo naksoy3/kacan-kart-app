@@ -38,6 +38,7 @@ export type KacanKartProps = {
   gifUrl?: string;
   theme?: CardTheme;
   onBack?: () => void;
+  onAccept?: () => void | Promise<void>;
 };
 
 const PERSUASIVE_STEPS = [
@@ -98,6 +99,7 @@ export default function KacanKart({
   gifUrl,
   theme = "escaping",
   onBack,
+  onAccept,
 }: KacanKartProps) {
   const playzoneRef = useRef<HTMLDivElement>(null);
   const hayirRef = useRef<HTMLButtonElement>(null);
@@ -177,7 +179,12 @@ export default function KacanKart({
 
     kutlamaSesiCal();
     setBasarili(true);
-  }, []);
+
+    // Dışarıdan gelen onAccept fonksiyonunu çalıştır (Supabase durum güncellemesi için)
+    if (onAccept) {
+      onAccept();
+    }
+  }, [onAccept]);
 
   const handleNoAction = useCallback(
     (type: "click" | "hover") => {
@@ -298,7 +305,7 @@ export default function KacanKart({
             </div>
             <div>
               <h3 className="text-xs font-bold text-white">
-                @{targetUsername}'a Özel Kart
+                @{targetUsername}&apos;a Özel Kart
               </h3>
               <p className="text-[10px] text-slate-400">{THEME_NAMES[theme]}</p>
             </div>

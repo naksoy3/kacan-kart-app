@@ -1,8 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
+import AuthModal from "@/components/AuthModal";
+import { supabase } from "@/utils/supabase";
 
 // Gerçek, doğrulanmış Giphy ID'leri
 const KOMIK_GIFLER = [
@@ -81,13 +83,14 @@ const KOMIK_GIFLER = [
 function CardContent() {
   const searchParams = useSearchParams();
 
+  const urlCardId = searchParams.get("id");
   const urlUser = searchParams.get("u");
   const urlFrom = searchParams.get("f");
   const urlSoru = searchParams.get("s");
   const urlTheme = searchParams.get("t") as CardTheme | null;
   const urlGif = searchParams.get("gif");
 
-  const isSharedView = Boolean(urlUser || urlSoru);
+  const isSharedView = Boolean(urlCardId || urlUser || urlSoru);
 
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
@@ -99,6 +102,52 @@ function CardContent() {
   const [zaman, setZaman] = useState(searchParams.get("zaman") || "");
   const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
+  const [cardId, setCardId] = useState<string | null>(urlCardId);
+  const [cardStatus, setCardStatus] = useState<string>("pending");
+
+  // Auth States
+  const [user, setUser] = useState<any>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Eğer paylaşılan linkte cardId varsa, veritabanından kart bilgilerini ve durumunu çek
+  useEffect(() => {
+    async function fetchCard() {
+      if (urlCardId) {
+        const { data, error } = await supabase
+          .from("cards")
+          .select("*")
+          .eq("id", urlCardId)
+          .single();
+
+        if (data && !error) {
+          setTargetUsername(data.target_username);
+          setFromUsername(data.from_username);
+          setSoru(data.soru);
+          setSelectedTheme(data.theme as CardTheme);
+          setGifUrl(data.gif_url);
+          if (data.yer) setYer(data.yer);
+          if (data.tarih) setTarih(data.tarih);
+          if (data.zaman) setZaman(data.zaman);
+          setCardStatus(data.status);
+        }
+      }
+    }
+    fetchCard();
+  }, [urlCardId]);
 
   const [kirikGifIdleri, setKirikGifIdleri] = useState<string[]>([]);
   const gosterilecekGifler = KOMIK_GIFLER.filter((g) => !kirikGifIdleri.includes(g.id));
@@ -107,9 +156,48 @@ function CardContent() {
     setKirikGifIdleri((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
+  const handleProceedToPreview = async () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    // Kartı Supabase veritabanına kaydet
+    const { data, error } = await supabase
+      .from("cards")
+      .insert([
+        {
+          user_id: user.id,
+          from_username: fromUsername,
+          target_username: targetUsername,
+          soru,
+          theme: selectedTheme,
+          gif_url: gifUrl,
+          yer,
+          tarih,
+          zaman,
+          status: "pending",
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      alert("Kart kaydedilirken bir hata oluştu: " + error.message);
+      return;
+    }
+
+    if (data) {
+      setCardId(data.id);
+    }
+
+    setFormStep(4);
+  };
+
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
     const params = new URLSearchParams();
+    if (cardId) params.set("id", cardId);
     if (targetUsername) params.set("u", targetUsername);
     if (fromUsername) params.set("f", fromUsername);
     if (soru) params.set("s", soru);
@@ -129,10 +217,42 @@ function CardContent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleAcceptResponse = async () => {
+    if (urlCardId) {
+      await supabase
+        .from("cards")
+        .update({ status: "accepted" })
+        .eq("id", urlCardId);
+      setCardStatus("accepted");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+
+      {/* SAĞ ÜST KÖŞE GİRİŞ / KULLANICI ALANI */}
+      <div className="absolute top-5 right-5 z-20 flex items-center gap-3">
+        {user ? (
+          <div className="flex items-center gap-3 bg-slate-900/80 border border-slate-800 backdrop-blur-md px-4 py-2 rounded-2xl text-white text-xs shadow-lg">
+            <span className="text-slate-300 font-medium">{user.email}</span>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 font-bold rounded-xl transition cursor-pointer"
+            >
+              Çıkış
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-indigo-600/30 cursor-pointer"
+          >
+            Giriş Yap / Kayıt Ol
+          </button>
+        )}
+      </div>
 
       {!isSharedView && formStep < 4 && (
         <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
@@ -312,7 +432,7 @@ function CardContent() {
                   ⬅️ Geri
                 </button>
                 <button
-                  onClick={() => setFormStep(4)}
+                  onClick={handleProceedToPreview}
                   className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
                   Önizle & Paylaş 🚀
@@ -326,7 +446,6 @@ function CardContent() {
       {/* ADIM 4: ÖNİZLEME VEYA PAYLAŞILAN KİŞİNİN EKRANI */}
       {(formStep === 4 || isSharedView) && (
         <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
-          {/* Kartı oluşturan kişi kendi önizlemesindeyse link kopyalama paneli görünür. */}
           {!isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
               <button
@@ -348,7 +467,6 @@ function CardContent() {
             </div>
           )}
 
-          {/* Hedef kişi linke tıkladığında, bu kartı değiştiremez ama anasayfaya dönüp kendi kartını oluşturabilir */}
           {isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
               <span className="text-xs text-slate-300">💌 Bu soru sana özel olarak gönderildi!</span>
@@ -358,6 +476,12 @@ function CardContent() {
               >
                 ✨ Sen de Kendi Kartını Oluştur
               </a>
+            </div>
+          )}
+
+          {cardStatus === "accepted" && (
+            <div className="w-full bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl text-emerald-400 text-center text-sm font-bold shadow-xl">
+              🎉 Harika! Bu karta zaten &quot;Evet&quot; denildi ve gönderene bildirildi!
             </div>
           )}
 
@@ -374,10 +498,20 @@ function CardContent() {
               hayirMetni={searchParams.get("h") || "Hayır"}
               gifUrl={gifUrl}
               theme={selectedTheme}
+              onAccept={handleAcceptResponse}
             />
           </div>
         </div>
       )}
+
+      {/* Auth Modal Bileşeni */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={() => {
+          setFormStep(4);
+        }}
+      />
     </main>
   );
 }
