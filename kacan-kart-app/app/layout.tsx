@@ -17,6 +17,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Cardasks ile soru gönder",
   description: "Cardasks platformu üzerinden kolayca soru gönderin ve yönetin.",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({
