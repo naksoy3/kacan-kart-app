@@ -82,13 +82,15 @@ function CardContent() {
   const searchParams = useSearchParams();
 
   const urlUser = searchParams.get("u");
+  const urlFrom = searchParams.get("f");
   const urlSoru = searchParams.get("s");
   const urlTheme = searchParams.get("t") as CardTheme | null;
   const urlGif = searchParams.get("gif");
 
   const [formStep, setFormStep] = useState<number>(urlUser || urlSoru ? 4 : 1);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
-  const [targetUsername, setTargetUsername] = useState(urlUser || "Nurullah");
+  const [targetUsername, setTargetUsername] = useState(urlUser || "Nisa");
+  const [fromUsername, setFromUsername] = useState(urlFrom || "Nurullah");
   const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
   const [yer, setYer] = useState(searchParams.get("yer") || "");
   const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
@@ -109,6 +111,7 @@ function CardContent() {
     if (typeof window === "undefined") return "";
     const params = new URLSearchParams();
     if (targetUsername) params.set("u", targetUsername);
+    if (fromUsername) params.set("f", fromUsername);
     if (soru) params.set("s", soru);
     if (selectedTheme) params.set("t", selectedTheme);
     if (gifUrl) params.set("gif", gifUrl);
@@ -189,14 +192,26 @@ function CardContent() {
               <label className="block text-slate-300 font-medium text-base text-center mb-2">
                 2. Adım: Soru ve Detaylar
               </label>
-              <div>
-                <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
-                <input
-                  type="text"
-                  value={targetUsername}
-                  onChange={(e) => setTargetUsername(e.target.value)}
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
-                />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-400 mb-1.5 font-medium">Gönderen Kişinin Adı:</label>
+                  <input
+                    type="text"
+                    value={fromUsername}
+                    onChange={(e) => setFromUsername(e.target.value)}
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
+                  <input
+                    type="text"
+                    value={targetUsername}
+                    onChange={(e) => setTargetUsername(e.target.value)}
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
+                  />
+                </div>
               </div>
 
               <div>
@@ -263,7 +278,7 @@ function CardContent() {
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                3. Adım: Bir GIF Seçin (İsteğe Bağlı)
+                3. Adım: Bir GIF Seçin
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
@@ -330,7 +345,12 @@ function CardContent() {
             </button>
           </div>
 
-          <div className="w-full flex justify-center">
+          <div className="w-full flex flex-col items-center gap-2">
+            {fromUsername && targetUsername && (
+              <p className="text-indigo-400 font-bold text-sm tracking-wide">
+                ✨ {fromUsername}, {targetUsername}&apos;ye soruyor:
+              </p>
+            )}
             <KacanKart
               targetUsername={targetUsername}
               soru={soru}
