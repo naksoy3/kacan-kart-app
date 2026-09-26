@@ -1,8 +1,42 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
+
+// Gerçek, doğrulanmış Giphy ID'leri (kısa format: media.giphy.com/media/ID/giphy.gif)
+const KOMIK_GIFLER = [
+  { id: "1", url: "https://media.giphy.com/media/cFdHXXm5GhJsc/giphy.gif" },
+  { id: "2", url: "https://media.giphy.com/media/5JjLO6t0lNvLq/giphy.gif" },
+  { id: "3", url: "https://media.giphy.com/media/ZmdIZ8K4fKEEM/giphy.gif" },
+  { id: "4", url: "https://media.giphy.com/media/lKXEBR8m1jWso/giphy.gif" },
+  { id: "5", url: "https://media.giphy.com/media/PjplWH49v1FS0/giphy.gif" },
+  { id: "6", url: "https://media.giphy.com/media/SyVyFtBTTVb5m/giphy.gif" },
+  { id: "7", url: "https://media.giphy.com/media/LWqQ5glpSMjny/giphy.gif" },
+  { id: "8", url: "https://media.giphy.com/media/l396Dat26yQOdfWgw/giphy.gif" },
+  { id: "9", url: "https://media.giphy.com/media/zetsDd1oSNd96/giphy.gif" },
+  { id: "10", url: "https://media.giphy.com/media/F6PFPjc3K0CPe/giphy.gif" },
+  { id: "11", url: "https://media.giphy.com/media/L0GJP0ZxdnVbW/giphy.gif" },
+  { id: "12", url: "https://media.giphy.com/media/26ufbLWPFHkhwXcpW/giphy.gif" },
+  { id: "13", url: "https://media.giphy.com/media/r3jTnU6iEwpbO/giphy.gif" },
+  { id: "14", url: "https://media.giphy.com/media/6Xbr4pVmJW4wM/giphy.gif" },
+  { id: "15", url: "https://media.giphy.com/media/FPmzkXGFVhp2U/giphy.gif" },
+  { id: "16", url: "https://media.giphy.com/media/p3yU7Rno2PvvW/giphy.gif" },
+  { id: "17", url: "https://media.giphy.com/media/vbBmb51klyyB2/giphy.gif" },
+  { id: "18", url: "https://media.giphy.com/media/ZAfpXz6fGrlYY/giphy.gif" },
+  { id: "19", url: "https://media.giphy.com/media/3oGRFvVyUdGBZeQiAw/giphy.gif" },
+  { id: "20", url: "https://media.giphy.com/media/NJbeypFZCHj2g/giphy.gif" },
+  { id: "21", url: "https://media.giphy.com/media/WpNO2ZXjhJ85y/giphy.gif" },
+  { id: "22", url: "https://media.giphy.com/media/xaw15bdmMEkgg/giphy.gif" },
+  { id: "23", url: "https://media.giphy.com/media/tLwQSHQo6hjTa/giphy.gif" },
+  { id: "24", url: "https://media.giphy.com/media/3dcoLqDDjd9pC/giphy.gif" },
+  { id: "25", url: "https://media.giphy.com/media/QFfs8ubyDkluo/giphy.gif" },
+  { id: "26", url: "https://media.giphy.com/media/10hYVVSPrSpZS0/giphy.gif" },
+  { id: "27", url: "https://media.giphy.com/media/EYJz9cfMa7WAU/giphy.gif" },
+  { id: "28", url: "https://media.giphy.com/media/Q21vzIHyTtmaQ/giphy.gif" },
+  { id: "29", url: "https://media.giphy.com/media/pzmUOeqhzJTck/giphy.gif" },
+  { id: "30", url: "https://media.giphy.com/media/G6kt1Gb4Luxy0/giphy.gif" },
+];
 
 function CardContent() {
   const searchParams = useSearchParams();
@@ -19,38 +53,17 @@ function CardContent() {
   const [yer, setYer] = useState(searchParams.get("yer") || "");
   const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
   const [zaman, setZaman] = useState(searchParams.get("zaman") || "");
-  const [gifUrl, setGifUrl] = useState<string>(urlGif || "");
+  const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
 
-  // Giphy API'den dinamik ve garantili GIF çekme state'leri
-  const [gifler, setGifler] = useState<{ id: string; url: string }[]>([]);
-  const [gifYukleniyor, setGifYukleniyor] = useState(true);
-  const [gifHata, setGifHata] = useState(false);
+  // Yüklenemeyen GIF'lerin ID'lerini tutar, listeden otomatik çıkarılırlar
+  const [kirikGifIdleri, setKirikGifIdleri] = useState<string[]>([]);
 
-  useEffect(() => {
-    const gifCek = async () => {
-      try {
-        setGifYukleniyor(true);
-        const res = await fetch(
-          "https://api.giphy.com/v1/gifs/search?q=funny&api_key=dc6zaTOxFJmzC&limit=24&rating=pg-13"
-        );
-        const data = await res.json();
-        const liste = (data.data || []).map((g: any) => ({
-          id: g.id,
-          url: g.images.fixed_height.url, // her zaman geçerli, giphy'nin garantili boyutu
-        }));
-        setGifler(liste);
-        if (liste.length > 0 && !urlGif) {
-          setGifUrl(liste[0].url);
-        }
-      } catch (e) {
-        setGifHata(true);
-      } finally {
-        setGifYukleniyor(false);
-      }
-    };
-    gifCek();
-  }, [urlGif]);
+  const gosterilecekGifler = KOMIK_GIFLER.filter((g) => !kirikGifIdleri.includes(g.id));
+
+  const handleGifError = (id: string) => {
+    setKirikGifIdleri((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  };
 
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
@@ -206,25 +219,15 @@ function CardContent() {
             </div>
           )}
 
-          {/* ADIM 3: API'DEN GELEN GIFLER */}
+          {/* ADIM 3: KOMİK GIFLER */}
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                3. Adım: Sorunsuz Çalışan GIF Seçin
+                3. Adım: Komik Bir GIF Seçin ({gosterilecekGifler.length} Seçenek)
               </label>
 
-              {gifYukleniyor && (
-                <p className="text-slate-400 text-center text-sm py-8 animate-pulse">GIF'ler yükleniyor...</p>
-              )}
-
-              {gifHata && (
-                <p className="text-red-400 text-center text-sm py-4">
-                  GIF'ler yüklenemedi, lütfen sayfayı yenileyin.
-                </p>
-              )}
-
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
-                {gifler.map((g) => (
+                {gosterilecekGifler.map((g) => (
                   <button
                     key={g.id}
                     type="button"
@@ -239,6 +242,7 @@ function CardContent() {
                       src={g.url}
                       alt=""
                       loading="lazy"
+                      onError={() => handleGifError(g.id)}
                       className="w-full h-full rounded-xl object-contain bg-slate-950 pointer-events-none"
                     />
                   </button>
