@@ -197,10 +197,7 @@ export default function KacanKart({
   onBack,
   onAccept,
 }: KacanKartProps) {
-  // Referansı bütün ana karta veriyoruz ki sınırları kartın geneline göre hesaplasın
-  const cardRef = useRef<HTMLDivElement>(null);
-  const hayirRef = useRef<HTMLButtonElement>(null);
-
+  const playzoneRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [kacisSayisi, setKacisSayisi] = useState(0);
   const [basarili, setBasarili] = useState(false);
@@ -298,33 +295,18 @@ export default function KacanKart({
   }, [onAccept]);
 
   const handleNoAction = useCallback(
-    (type: "click" | "hover", event?: React.MouseEvent<HTMLButtonElement>) => {
+    (type: "click" | "hover") => {
       if (theme === "escaping" || theme === "teleporting") {
-        const card = cardRef.current;
-        const btn = hayirRef.current;
-        if (!card || !btn) return;
+        const zone = playzoneRef.current;
+        if (!zone) return;
 
-        const cardRect = card.getBoundingClientRect();
-        const btnRect = btn.getBoundingClientRect();
+        const zoneRect = zone.getBoundingClientRect();
+        // Butonun güvenli sınırlar içinde kalması için piksel sınırları
+        const maxX = zoneRect.width - 110;
+        const maxY = zoneRect.height - 55;
 
-        const padding = 18;
-        const minX = padding;
-        const maxX = Math.max(padding, cardRect.width - btnRect.width - padding);
-        const minY = 90;
-        const maxY = Math.max(minY + 8, cardRect.height - btnRect.height - padding);
-
-        let yeniX = minX + Math.random() * (maxX - minX);
-        let yeniY = minY + Math.random() * (maxY - minY);
-
-        if (event) {
-          const pointerX = event.clientX - cardRect.left;
-          const pointerY = event.clientY - cardRect.top;
-          const aimAwayX = pointerX < cardRect.width / 2 ? 1 : -1;
-          const aimAwayY = pointerY < cardRect.height / 2 ? 1 : -1;
-
-          yeniX = Math.min(maxX, Math.max(minX, pointerX + aimAwayX * (btnRect.width + 40)));
-          yeniY = Math.min(maxY, Math.max(minY, pointerY + aimAwayY * (btnRect.height + 30)));
-        }
+        const yeniX = Math.floor(Math.random() * Math.max(50, maxX - 20)) + 10;
+        const yeniY = Math.floor(Math.random() * Math.max(30, maxY - 15)) + 5;
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -362,16 +344,16 @@ export default function KacanKart({
       ? 1 + shatterStage * 0.08
       : 1;
 
-  // Hayır butonu her kaçışta %5 küçülecek
+  // Hayır butonu her kaçışta %5 küçülecek ama asla kaybolmayacak (minimum 0.35)
   const hayirOlcek =
     theme === "escaping" || theme === "teleporting"
-      ? Math.max(0.15, 1 - kacisSayisi * 0.05)
-      : theme === "persuasive" || theme === "magnet"
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
+      : theme === "persuasive" || theme === "magnet"
+      ? Math.max(0.40, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
-      ? Math.max(0.15, 1 - kacisSayisi * 0.03)
+      ? Math.max(0.35, 1 - kacisSayisi * 0.04)
       : theme === "shattering"
-      ? Math.max(0.08, 1 - shatterStage * 0.065) 
+      ? Math.max(0.25, 1 - shatterStage * 0.06) 
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
@@ -437,11 +419,7 @@ export default function KacanKart({
         )}
       </AnimatePresence>
 
-      {/* Ana Kart - Tüm sınır referansı burasıdır */}
-      <div 
-        ref={cardRef}
-        className="relative z-10 w-full max-w-md rounded-[28px] bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl px-7 py-8 sm:px-10 sm:py-10 text-slate-100 overflow-hidden"
-      >
+      <div className="relative z-10 w-full max-w-md rounded-[28px] bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl px-7 py-8 sm:px-10 sm:py-10 text-slate-100 overflow-hidden">
         <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs shadow-md">
@@ -593,14 +571,15 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Buton Alanı */}
+              {/* Güvenli ve Garantili Kaçış Alanı (Asla taşma yapmaz, butonu gizlemez) */}
               <div
-                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 ${
-                  evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
+                ref={playzoneRef}
+                className={`relative mt-8 h-32 w-full flex items-center justify-between px-4 overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
+                  evetOlcek > 1.8 ? "flex-col h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
                 {theme === "reverse_psychology" ? (
-                  <div className="grid grid-cols-2 gap-2 w-full max-h-48 overflow-y-auto pr-1">
+                  <div className="grid grid-cols-2 gap-2 w-full max-h-32 overflow-y-auto pr-1">
                     {RENKLI_EVET_BUTONLARI.map((btn, idx) => (
                       <motion.button
                         key={idx}
@@ -608,7 +587,7 @@ export default function KacanKart({
                         onClick={patlat}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className={`rounded-xl px-4 py-2.5 font-bold text-xs text-white shadow-md cursor-pointer ${btn.renk}`}
+                        className={`rounded-xl px-3 py-2 font-bold text-xs text-white shadow-md cursor-pointer ${btn.renk}`}
                       >
                         {btn.metin}
                       </motion.button>
@@ -621,7 +600,7 @@ export default function KacanKart({
                       onClick={patlat}
                       animate={{ 
                         scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? 115 : 0,
+                        x: theme === "magnet" && isMagnetActive ? 95 : 0,
                         zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
                       transition={{
@@ -629,69 +608,44 @@ export default function KacanKart({
                         stiffness: 400,
                         damping: 18,
                       }}
-                      className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 cursor-pointer"
+                      className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-6 py-3 font-bold text-sm sm:text-base text-slate-950 shadow-lg shadow-emerald-500/20 cursor-pointer z-10"
                     >
                       {evetMetni}
                     </motion.button>
 
-                    {/* Kaçan Hayır Butonu (absolute ile kartın içinde rastgele konumlanır) */}
-                    {hayirOlcek > 0.08 && (
+                    {/* Hayır Butonu: Sınırlar içinde güvenle kaçar, küçülür ama asla kaybolmaz */}
+                    {hayirOlcek > 0.1 && (
                       <motion.button
-                        ref={hayirRef}
                         type="button"
-                        onMouseEnter={(event) => handleNoAction("hover", event)}
-                        onMouseMove={(event) => handleNoAction("hover", event)}
+                        onMouseEnter={() => handleNoAction("hover")}
+                        onMouseMove={() => handleNoAction("hover")}
                         onClick={() => handleNoAction("click")}
                         style={{
                           position: theme === "escaping" || theme === "teleporting" ? "absolute" : "relative",
-                          left: theme === "escaping" || theme === "teleporting" ? `${pos.x}px` : undefined,
-                          top: theme === "escaping" || theme === "teleporting" ? `${pos.y}px` : undefined,
-                          clipPath:
-                            theme === "shattering" && shatterStage > 0
-                              ? "polygon(0% 0%, 100% 5%, 95% 100%, 5% 95%, 50% 40%)"
-                              : "none",
                         }}
-                        className={`rounded-2xl px-6 py-3.5 font-semibold text-base whitespace-nowrap shadow-md cursor-pointer transition-colors ${
-                          theme === "shattering"
-                            ? shatterStage > 0
-                              ? "bg-rose-900/40 text-rose-200 border-2 border-dashed border-rose-400/80 shadow-[0_0_15px_rgba(244,63,94,0.4)] backdrop-blur-sm"
-                              : "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300"
-                            : "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300"
+                        className={`rounded-2xl px-5 py-3 font-semibold text-sm sm:text-base whitespace-nowrap shadow-md cursor-pointer transition-colors z-20 ${
+                          theme === "shattering" && shatterStage > 0
+                            ? "bg-rose-900/40 text-rose-200 border-2 border-dashed border-rose-400/80 shadow-[0_0_15px_rgba(244,63,94,0.4)] backdrop-blur-sm"
+                            : "bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300"
                         }`}
                         animate={{
                           scale: hayirOlcek,
                           x:
-                            theme === "shattering" && shatterStage > 0
-                              ? (shatterStage % 2 === 0 ? 2 : -2)
+                            theme === "escaping" || theme === "teleporting"
+                              ? pos.x
                               : 0,
-                          y: 0,
-                          rotate:
-                            theme === "shattering"
-                              ? shatterStage * 6 - (shatterStage % 2) * 12
+                          y:
+                            theme === "escaping" || theme === "teleporting"
+                              ? pos.y
                               : 0,
                         }}
                         transition={{
                           type: "spring",
-                          stiffness: 350,
+                          stiffness: 450,
                           damping: 15,
                         }}
                       >
-                        {theme === "shattering" && shatterStage > 0 && (
-                          <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl opacity-80">
-                            <div className="absolute top-0 left-1/3 w-0.5 h-full bg-white/60 rotate-12" />
-                            <div className="absolute top-1/4 left-0 w-full h-0.5 bg-white/50 -rotate-6" />
-                            {shatterStage > 4 && (
-                              <>
-                                <div className="absolute top-0 right-1/4 w-0.5 h-full bg-cyan-200/70 -rotate-45" />
-                                <div className="absolute bottom-0 left-1/4 w-full h-0.5 bg-cyan-200/60 rotate-12" />
-                              </>
-                            )}
-                            {shatterStage > 8 && (
-                              <div className="absolute inset-0 bg-radial from-transparent via-rose-500/20 to-rose-900/50" />
-                            )}
-                          </div>
-                        )}
-                        <span className="relative z-10">{gosterilenHayirMetni}</span>
+                        <span>{gosterilenHayirMetni}</span>
                       </motion.button>
                     )}
                   </>
