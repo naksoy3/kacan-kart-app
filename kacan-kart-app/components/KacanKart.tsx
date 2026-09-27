@@ -56,7 +56,16 @@ const PERSUASIVE_STEPS = [
   "Sana kurabiye alırım? 🍪",
   "Bunu yapamazsın! 🙈",
   "Kırdın beni... 💥",
-  "Tamam peki... ama yine de Evet de? ✨",
+  "Hâlâ hayır mı diyorsun? 😿",
+  "Kalbimi kırıyorsun amanın! 💘",
+  "Bak valla küserim 😤",
+  "İnat etme artık lütfen ✨",
+  "Şaka yapıyorsun herhalde? 🙃",
+  "Bence bir kez daha düşün 🌟",
+  "Aslında evet demek istiyorsun 😉",
+  "Hadi ama bu kadar olamaz! 🚁",
+  "Pes ediyorum... Şaka şaka, EVET de! 🎉",
+  "Tamam peki... ama yine de Evet de? 💖",
 ];
 
 const KONFETI_RENKLERI = ["#FF5D8F", "#FFD166", "#8B5CF6", "#10B981"];
@@ -205,9 +214,7 @@ export default function KacanKart({
         const zoneRect = zone.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
 
-        // Butonun tamamen kaybolmasını önlemek için min/max sınırları belirliyoruz
-        // Böylece butonun en azından bir kısmı her zaman alanda görünür kalır
-        const minVisibleOffset = 15; // En az 15 pikseli dışarıda/görünür kalacak
+        const minVisibleOffset = 15;
         const minX = -btnRect.width + minVisibleOffset;
         const maxX = zoneRect.width - minVisibleOffset;
         const minY = -btnRect.height + minVisibleOffset;
@@ -245,18 +252,20 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Kaçan/Teleporting temalarında her kaçışta evet butonunu %5 (0.05) büyütme
+  // Ölçeklendirmeler: Her tıklamada evet %5 büyür, hayır %5 küçülür (Tema 1, 2, 5 için)
   const evetOlcek =
-    theme === "escaping" || theme === "teleporting"
+    theme === "escaping" || theme === "teleporting" || theme === "persuasive"
       ? 1 + kacisSayisi * 0.05
-      : theme === "persuasive"
-      ? Math.min(1 + kacisSayisi * 0.15, 2.2)
       : theme === "shrinking"
       ? Math.min(1 + kacisSayisi * 0.25, 2.5)
       : 1;
 
   const hayirOlcek =
-    theme === "shrinking" ? Math.max(0, 1 - kacisSayisi * 0.2) : 1;
+    theme === "persuasive"
+      ? Math.max(0.35, 1 - kacisSayisi * 0.05)
+      : theme === "shrinking"
+      ? Math.max(0, 1 - kacisSayisi * 0.2)
+      : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
@@ -460,11 +469,11 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Etkileşim Alanı */}
+              {/* Etkileşim Alanı (Çakışmayı önlemek için gerekiyorsa dikey konumlandırma desteği) */}
               <div
                 ref={playzoneRef}
                 className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-4 overflow-hidden ${
-                  isSwapped ? "flex-row-reverse" : "flex-row"
+                  evetOlcek > 1.6 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
                 {/* EVET BUTONU */}
