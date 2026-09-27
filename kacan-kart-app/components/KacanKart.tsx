@@ -301,12 +301,12 @@ export default function KacanKart({
         if (!zone) return;
 
         const zoneRect = zone.getBoundingClientRect();
-        // Butonun güvenli sınırlar içinde kalması için piksel sınırları
+        // Butonun kesinlikle dışarı taşmaması için konteyner sınırları
         const maxX = zoneRect.width - 110;
         const maxY = zoneRect.height - 55;
 
-        const yeniX = Math.floor(Math.random() * Math.max(50, maxX - 20)) + 10;
-        const yeniY = Math.floor(Math.random() * Math.max(30, maxY - 15)) + 5;
+        const yeniX = Math.floor(Math.random() * Math.max(40, maxX - 20)) + 10;
+        const yeniY = Math.floor(Math.random() * Math.max(25, maxY - 15)) + 5;
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -332,29 +332,9 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Evet butonu her kaçışta %8 büyüyecek
-  const evetOlcek =
-    theme === "escaping" || theme === "teleporting"
-      ? 1 + kacisSayisi * 0.08
-      : theme === "persuasive" || theme === "magnet"
-      ? 1 + kacisSayisi * 0.08
-      : theme === "shrinking"
-      ? 1 + kacisSayisi * 0.07
-      : theme === "shattering"
-      ? 1 + shatterStage * 0.08
-      : 1;
-
-  // Hayır butonu her kaçışta %5 küçülecek ama asla kaybolmayacak (minimum 0.35)
-  const hayirOlcek =
-    theme === "escaping" || theme === "teleporting"
-      ? Math.max(0.35, 1 - kacisSayisi * 0.05)
-      : theme === "persuasive" || theme === "magnet"
-      ? Math.max(0.40, 1 - kacisSayisi * 0.05)
-      : theme === "shrinking"
-      ? Math.max(0.35, 1 - kacisSayisi * 0.04)
-      : theme === "shattering"
-      ? Math.max(0.25, 1 - shatterStage * 0.06) 
-      : 1;
+  // İstediğin oranlar: Evet her kaçışta %8 büyür, Hayır her kaçışta %5 küçülür (minimum 0.35 ile tamamen kaybolmaz)
+  const evetOlcek = 1 + kacisSayisi * 0.08;
+  const hayirOlcek = Math.max(0.35, 1 - kacisSayisi * 0.05);
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
@@ -571,7 +551,7 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Güvenli ve Garantili Kaçış Alanı (Asla taşma yapmaz, butonu gizlemez) */}
+              {/* Sınırları Koruyan Güvenli Alan */}
               <div
                 ref={playzoneRef}
                 className={`relative mt-8 h-32 w-full flex items-center justify-between px-4 overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
@@ -613,7 +593,7 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
-                    {/* Hayır Butonu: Sınırlar içinde güvenle kaçar, küçülür ama asla kaybolmaz */}
+                    {/* Hayır Butonu: Sınırlar içinde güvenle kaçar, her kaçışta %5 küçülür */}
                     {hayirOlcek > 0.1 && (
                       <motion.button
                         type="button"
