@@ -92,7 +92,9 @@ function CardContent() {
 
   const isSharedView = Boolean(urlCardId || urlUser || urlSoru);
 
-  const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
+  const urlStep = Number(searchParams.get("step"));
+  const initialStep = !isSharedView && urlStep >= 1 && urlStep <= 4 ? urlStep : 1;
+  const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : initialStep);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
   
   const [targetUsername, setTargetUsername] = useState(urlUser || "");
@@ -111,6 +113,37 @@ function CardContent() {
   // Auth States
   const [user, setUser] = useState<any>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const goToStep = (step: number) => {
+    if (isSharedView) return;
+
+    const params = new URLSearchParams(window.location.search);
+    if (step === 1) {
+      params.delete("step");
+    } else {
+      params.set("step", String(step));
+    }
+
+    const query = params.toString();
+    window.history.pushState(
+      { step },
+      "",
+      `${window.location.pathname}${query ? `?${query}` : ""}`
+    );
+    setFormStep(step);
+  };
+
+  useEffect(() => {
+    if (isSharedView) return;
+
+    const handlePopState = () => {
+      const step = Number(new URLSearchParams(window.location.search).get("step"));
+      setFormStep(step >= 1 && step <= 4 ? step : 1);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isSharedView]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -192,7 +225,7 @@ function CardContent() {
       }
     }
 
-    setFormStep(4);
+    goToStep(4);
   };
 
   // URL'ye mekan ve saat parametrelerini de güvenli şekilde ekledik
@@ -314,7 +347,7 @@ function CardContent() {
                 ))}
               </div>
               <button
-                onClick={() => setFormStep(2)}
+                onClick={() => goToStep(2)}
                 className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-base transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-4"
               >
                 Devam Et: Detayları Gir ➡️
@@ -398,13 +431,13 @@ function CardContent() {
 
               <div className="flex gap-3 pt-3">
                 <button
-                  onClick={() => setFormStep(1)}
+                  onClick={() => goToStep(1)}
                   className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
                 >
                   ⬅️ Geri
                 </button>
                 <button
-                  onClick={() => setFormStep(3)}
+                  onClick={() => goToStep(3)}
                   className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
                   Devam Et: GIF Seç ➡️
@@ -445,7 +478,7 @@ function CardContent() {
 
               <div className="flex gap-3 pt-3">
                 <button
-                  onClick={() => setFormStep(2)}
+                  onClick={() => goToStep(2)}
                   className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
                 >
                   ⬅️ Geri
@@ -468,7 +501,7 @@ function CardContent() {
           {!isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
               <button
-                onClick={() => setFormStep(3)}
+                onClick={() => goToStep(3)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
               >
                 ✏️ Düzenlemeye Dön
@@ -534,7 +567,7 @@ function CardContent() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         onSuccess={() => {
-          setFormStep(4);
+          goToStep(4);
         }}
       />
     </main>
