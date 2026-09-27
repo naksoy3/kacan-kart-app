@@ -315,8 +315,8 @@ export default function KacanKart({
         const zoneRect = zone.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
         
-        // Container sınırları içinde kalacak şekilde minimum/maksimum yerel koordinatları hesapla
-        const padding = 8;
+        // Sınırların kesinlikle dışına çıkmaması için hesaplama
+        const padding = 10;
         const maxX = zoneRect.width - btnRect.width - padding;
         const maxY = zoneRect.height - btnRect.height - padding;
 
@@ -325,7 +325,6 @@ export default function KacanKart({
 
         if (maxX <= minX || maxY <= minY) return;
 
-        // Rastgele yeni bir yerel (relative) konum üret
         const yeniX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
         const yeniY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
@@ -353,7 +352,7 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Her kaçışta Evet butonu %8 oranında büyür (1 + kacisSayisi * 0.08)
+  // Her kaçışta Evet butonu %8 büyür
   const evetOlcek =
     theme === "escaping" || theme === "teleporting"
       ? 1 + kacisSayisi * 0.08
@@ -365,7 +364,7 @@ export default function KacanKart({
       ? 1 + shatterStage * 0.08
       : 1;
 
-  // Her kaçışta Hayır butonu %5 oranında küçülür (Math.max(0.1, 1 - kacisSayisi * 0.05))
+  // Her kaçışta Hayır butonu %5 küçülür
   const hayirOlcek =
     theme === "escaping" || theme === "teleporting"
       ? Math.max(0.1, 1 - kacisSayisi * 0.05)
@@ -593,9 +592,10 @@ export default function KacanKart({
                 </button>
               </div>
 
+              {/* Tema Sınırları İçinde Kalacak Güvenli Alan */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden rounded-2xl bg-white/[0.02] border border-white/5 ${
                   evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
