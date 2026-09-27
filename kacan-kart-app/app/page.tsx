@@ -159,9 +159,6 @@ function CardContent() {
   };
 
   const handleProceedToPreview = async () => {
-    // Giriş kontrolü şimdilik devre dışı bırakıldı (Doğrudan geçiş yapılıyor)
-
-    // Kartı Supabase veritabanına kaydet (Kullanıcı giriş yapmışsa user_id eklenir, yapmamışsa null geçilebilir veya tablo yapısına göre kaydedilir)
     const { data, error } = await supabase
       .from("cards")
       .insert([
@@ -317,7 +314,7 @@ function CardContent() {
                   <label className="block text-slate-400 mb-1.5 font-medium">Gönderen Kişinin Adı:</label>
                   <input
                     type="text"
-                    placeholder="Örn: Nurullah"
+                    placeholder="Örn: Adın"
                     value={fromUsername}
                     onChange={(e) => setFromUsername(e.target.value)}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
@@ -327,7 +324,7 @@ function CardContent() {
                   <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
                   <input
                     type="text"
-                    placeholder="Örn: Nisa"
+                    placeholder="Örn: Onun Adı"
                     value={targetUsername}
                     onChange={(e) => setTargetUsername(e.target.value)}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
@@ -339,6 +336,7 @@ function CardContent() {
                 <label className="block text-slate-400 mb-1.5 font-medium">Sormak İstediğin Soru:</label>
                 <input
                   type="text"
+                  placeholder="Örn: Benimle yemeğe çıkar mısın?"
                   value={soru}
                   onChange={(e) => setSoru(e.target.value)}
                   className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
