@@ -264,12 +264,14 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Ölçeklendirmeler
+  // Ölçeklendirmeler: Tema 9 için evet butonu her tıklamada %5 büyür
   const evetOlcek =
     theme === "escaping" || theme === "teleporting" || theme === "persuasive"
       ? 1 + kacisSayisi * 0.05
       : theme === "shrinking"
       ? 1 + kacisSayisi * 0.04
+      : theme === "shattering"
+      ? 1 + shatterStage * 0.05
       : 1;
 
   const hayirOlcek =
@@ -288,23 +290,8 @@ export default function KacanKart({
       ];
     }
     if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
-    if (theme === "shattering") {
-      const mesajlar = [
-        "Hayır ❌",
-        "Çatlıyor... ⚡",
-        "Parçalanıyor 💥",
-        "Dağılıyor... 🧩",
-        "Ufalanıyor 🌪️",
-        "Son parça! ⚠️",
-        "Yok oluyor... 💨",
-        "Neredeyse bitti! 🪄",
-        "Son bir tık! 🔥",
-        "Elveda Hayır! 👋",
-      ];
-      return mesajlar[Math.min(shatterStage, mesajlar.length - 1)];
-    }
-    return hayirMetni;
-  }, [theme, kacisSayisi, shatterStage, hayirMetni]);
+    return hayirMetni; // Tema 9 için sabit olarak kullanıcının gönderdiği hayır metni kalır
+  }, [theme, kacisSayisi, hayirMetni]);
 
   const parcaciklar = useMemo(() => {
     const emojiler = ["🎉", "✨", "💫", "🎊", "💖"];
@@ -523,14 +510,11 @@ export default function KacanKart({
                   </div>
                 ) : (
                   <>
-                    {/* EVET BUTONU (Tema 10 Mıknatıs Desteği: Hayır'ın tam üstüne kayar) */}
+                    {/* EVET BUTONU */}
                     <motion.button
                       type="button"
                       onClick={patlat}
-                      animate={{
-                        scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? 120 : 0,
-                      }}
+                      animate={{ scale: evetOlcek }}
                       transition={{
                         type: "spring",
                         stiffness: 300,
@@ -541,7 +525,7 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
-                    {/* HAYIR BUTONU (Sabit, mıknatıs tetikleyici) */}
+                    {/* HAYIR BUTONU (Parçalanma Efektli) */}
                     {hayirOlcek > 0 &&
                       !(theme === "timer" && timeLeft === 0) &&
                       !(theme === "shattering" && shatterStage >= 10) &&
@@ -564,12 +548,12 @@ export default function KacanKart({
                           onClick={() => handleNoAction("click")}
                           className={`rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
                             theme === "shattering"
-                              ? "border-dashed filter blur-[0.5px]"
+                              ? "border-dashed filter contrast-125"
                               : ""
                           }`}
                           animate={{
                             scale: hayirOlcek,
-                            rotate: theme === "shattering" ? shatterStage * 5 : 0,
+                            rotate: theme === "shattering" ? shatterStage * 6 : 0,
                           }}
                           transition={{
                             type: "spring",
