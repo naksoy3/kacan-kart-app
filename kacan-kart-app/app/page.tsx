@@ -95,7 +95,7 @@ function CardContent() {
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
   
-  // Varsayılan isimler silindi, tamamen boş başlatıldı:
+  // Varsayılan isimler tamamen kaldırıldı, sayfa yenilendiğinde boş gelecek:
   const [targetUsername, setTargetUsername] = useState(urlUser || "");
   const [fromUsername, setFromUsername] = useState(urlFrom || "");
   
@@ -137,8 +137,8 @@ function CardContent() {
           .single();
 
         if (data && !error) {
-          setTargetUsername(data.target_username);
-          setFromUsername(data.from_username);
+          setTargetUsername(data.target_username || "");
+          setFromUsername(data.from_username || "");
           setSoru(data.soru);
           setSelectedTheme(data.theme as CardTheme);
           setGifUrl(data.gif_url);
