@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 
-// 1. Temalar ve Tip Tanımları (Toplam 12 Tema)
 export type CardTheme =
   | "escaping"
   | "persuasive"
@@ -139,7 +138,7 @@ const YANLIS_CEVAP_MESAJLARI = [
 
 const SCRATCH_MESSAGES = [
   "🌟 Harika enerjinle etrafındaki herkese ilham oluyorsun!",
-  "🚀 Bugün karşna çıkan tüm engelleri aşacak güçtesin, kendine inan!",
+  "🚀 Bugün karşına çıkan tüm engelleri aşacak güçtesin, kendine inan!",
   "🍀 Hayat senin gibi pozitif insanlarla çok daha güzel ve anlamlı.",
   "☕ Güzel bir kahve ve tatlı bir gülümseme bütün gününe iyi gelecek!",
   "✨ Etrafa saçtığın bu güzel neşe hiçbir zaman eksilmesin!",
@@ -180,7 +179,7 @@ function kutlamaSesiCal() {
 
     setTimeout(() => ctx.close(), 1000);
   } catch {
-    // Tarayıcı sesi engellerse sessizce geç
+    // Ses engellenirse sessizce geç
   }
 }
 
@@ -198,7 +197,8 @@ export default function KacanKart({
   onBack,
   onAccept,
 }: KacanKartProps) {
-  const playzoneRef = useRef<HTMLDivElement>(null);
+  // Referansı bütün ana karta veriyoruz ki sınırları kartın geneline göre hesaplasın
+  const cardRef = useRef<HTMLDivElement>(null);
   const hayirRef = useRef<HTMLButtonElement>(null);
 
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -207,17 +207,13 @@ export default function KacanKart({
   const [gifHata, setGifHata] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Özel Tema Durumları
   const [isSwapped, setIsSwapped] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinError, setPinError] = useState(false);
   const [timeLeft, setTimeLeft] = useState(10);
   const [shatterStage, setShatterStage] = useState(0);
-
-  // Tema 10 (Magnet) Durumu
   const [isMagnetActive, setIsMagnetActive] = useState(false);
 
-  // Tema 11 (Zor Bilmece) Durumları
   const [secilenBilmece, setSecilenBilmece] = useState<{ soruMetni: string; ipucu: string } | null>(null);
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
@@ -229,11 +225,9 @@ export default function KacanKart({
     }
   }, [theme]);
 
-  // Tema 12 (Sürpriz Sözler) Durumları
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [scratchClicks, setScratchClicks] = useState(0);
 
-  // Tema 7 (Timer) Sayacı
   useEffect(() => {
     if (theme === "timer" && !basarili && timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
@@ -241,7 +235,6 @@ export default function KacanKart({
     }
   }, [theme, basarili, timeLeft]);
 
-  // Dinamik Link Paylaşım Fonksiyonu
   const handleShare = async () => {
     const baseUrl = window.location.origin + window.location.pathname;
     const params = new URLSearchParams({
@@ -259,7 +252,6 @@ export default function KacanKart({
     if (saat) params.set("saat", saat);
 
     const shareUrl = `${baseUrl}?${params.toString()}`;
-
     const shareData = {
       title: `${targetUsername} sana bir kart gönderdi! 🃏`,
       text: `"${soru}" - Bakalım ne cevap vereceksin? 😉`,
@@ -270,7 +262,7 @@ export default function KacanKart({
       try {
         await navigator.share(shareData);
       } catch {
-        // Kullanıcı paylaşımı iptal etti
+        // İptal edildi
       }
     } else {
       await navigator.clipboard.writeText(shareUrl);
@@ -308,20 +300,21 @@ export default function KacanKart({
   const handleNoAction = useCallback(
     (type: "click" | "hover") => {
       if (theme === "escaping" || theme === "teleporting") {
-        const zone = playzoneRef.current;
+        const card = cardRef.current;
         const btn = hayirRef.current;
-        if (!zone || !btn) return;
+        if (!card || !btn) return;
 
-        const zoneRect = zone.getBoundingClientRect();
+        const cardRect = card.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
-        
-        // Sınırların kesinlikle dışına çıkmaması için hesaplama
-        const padding = 10;
-        const maxX = zoneRect.width - btnRect.width - padding;
-        const maxY = zoneRect.height - btnRect.height - padding;
+
+        // Kartın sınırları içerisinde kalacak şekilde rastgele koordinatlar üretelim
+        const padding = 24;
+        const maxX = cardRect.width - btnRect.width - padding;
+        const maxY = cardRect.height - btnRect.height - padding;
 
         const minX = padding;
-        const minY = padding;
+        // Sadece üst kısımdaki yazılara ve resme çarpmaması için minimum Y değerini biraz aşağıda tutuyoruz
+        const minY = 220; 
 
         if (maxX <= minX || maxY <= minY) return;
 
@@ -352,7 +345,7 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Her kaçışta Evet butonu %8 büyür
+  // Evet butonu her kaçışta %8 büyüyecek
   const evetOlcek =
     theme === "escaping" || theme === "teleporting"
       ? 1 + kacisSayisi * 0.08
@@ -364,10 +357,10 @@ export default function KacanKart({
       ? 1 + shatterStage * 0.08
       : 1;
 
-  // Her kaçışta Hayır butonu %5 küçülür
+  // Hayır butonu her kaçışta %5 küçülecek
   const hayirOlcek =
     theme === "escaping" || theme === "teleporting"
-      ? Math.max(0.1, 1 - kacisSayisi * 0.05)
+      ? Math.max(0.15, 1 - kacisSayisi * 0.05)
       : theme === "persuasive" || theme === "magnet"
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
@@ -439,7 +432,11 @@ export default function KacanKart({
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 w-full max-w-md rounded-[28px] bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl px-7 py-8 sm:px-10 sm:py-10 text-slate-100">
+      {/* Ana Kart - Tüm sınır referansı burasıdır */}
+      <div 
+        ref={cardRef}
+        className="relative z-10 w-full max-w-md rounded-[28px] bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl px-7 py-8 sm:px-10 sm:py-10 text-slate-100 overflow-hidden"
+      >
         <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs shadow-md">
@@ -463,7 +460,6 @@ export default function KacanKart({
           )}
         </div>
 
-        {/* Ek Bilgiler (Mekan, Tarih, Saat) */}
         {(mekan || tarih || saat) && (
           <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-xl text-xs space-y-1 text-slate-300">
             {mekan && <p>📍 <strong>Mekan:</strong> {mekan}</p>}
@@ -592,10 +588,9 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Tema Sınırları İçinde Kalacak Güvenli Alan */}
+              {/* Buton Alanı */}
               <div
-                ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden rounded-2xl bg-white/[0.02] border border-white/5 ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 ${
                   evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
@@ -634,6 +629,7 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
+                    {/* Kaçan Hayır Butonu (absolute ile kartın içinde rastgele konumlanır) */}
                     {hayirOlcek > 0.08 && (
                       <motion.button
                         ref={hayirRef}
@@ -642,12 +638,13 @@ export default function KacanKart({
                         onMouseMove={() => handleNoAction("hover")}
                         onClick={() => handleNoAction("click")}
                         style={{
+                          position: theme === "escaping" || theme === "teleporting" ? "absolute" : "relative",
                           clipPath:
                             theme === "shattering" && shatterStage > 0
                               ? "polygon(0% 0%, 100% 5%, 95% 100%, 5% 95%, 50% 40%)"
                               : "none",
                         }}
-                        className={`relative rounded-2xl px-6 py-3.5 font-semibold text-base whitespace-nowrap shadow-md cursor-pointer transition-colors ${
+                        className={`rounded-2xl px-6 py-3.5 font-semibold text-base whitespace-nowrap shadow-md cursor-pointer transition-colors ${
                           theme === "shattering"
                             ? shatterStage > 0
                               ? "bg-rose-900/40 text-rose-200 border-2 border-dashed border-rose-400/80 shadow-[0_0_15px_rgba(244,63,94,0.4)] backdrop-blur-sm"
