@@ -35,12 +35,16 @@ export const THEME_NAMES: Record<CardTheme, string> = {
 };
 
 export type KacanKartProps = {
-  targetUsername?: string;
+  targetUsername?: string; // Hedef Kişi (Alıcı)
+  sender?: string;         // Gönderen Kişi
   soru?: string;
   evetMetni?: string;
   hayirMetni?: string;
   gifUrl?: string;
   theme?: CardTheme;
+  mekan?: string;
+  tarih?: string;
+  saat?: string;
   onBack?: () => void;
   onAccept?: () => void | Promise<void>;
 };
@@ -181,12 +185,16 @@ function kutlamaSesiCal() {
 }
 
 export default function KacanKart({
-  targetUsername = "Nurullah",
+  targetUsername = "Hedef Kişi",
+  sender = "Gönderen",
   soru = "Benimle yemeğe çıkar mısın?",
   evetMetni = "Evet!",
   hayirMetni = "Hayır",
   gifUrl,
   theme = "escaping",
+  mekan,
+  tarih,
+  saat,
   onBack,
   onAccept,
 }: KacanKartProps) {
@@ -233,11 +241,12 @@ export default function KacanKart({
     }
   }, [theme, basarili, timeLeft]);
 
-  // Dinamik Link Paylaşım Fonksiyonu
+  // Dinamik Link Paylaşım Fonksiyonu (Tüm parametreler URL'e eklenir)
   const handleShare = async () => {
     const baseUrl = window.location.origin + window.location.pathname;
     const params = new URLSearchParams({
       u: targetUsername,
+      sender: sender,
       s: soru,
       e: evetMetni,
       h: hayirMetni,
@@ -245,11 +254,14 @@ export default function KacanKart({
     });
 
     if (gifUrl) params.set("gif", gifUrl);
+    if (mekan) params.set("mekan", mekan);
+    if (tarih) params.set("tarih", tarih);
+    if (saat) params.set("saat", saat);
 
     const shareUrl = `${baseUrl}?${params.toString()}`;
 
     const shareData = {
-      title: `${targetUsername} sana bir kart gönderdi! 🃏`,
+      title: `${sender} sana bir kart gönderdi! 🃏`,
       text: `"${soru}" - Bakalım ne cevap vereceksin? 😉`,
       url: shareUrl,
     };
@@ -327,11 +339,10 @@ export default function KacanKart({
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => Math.min(prev + 1, 15));
       } else if (theme === "magnet") {
-        // Hayıra tıklanmaya çalışıldığında Evet butonu hızla Hayır'ın üstüne kadar fırlar ve geri döner
         setIsMagnetActive(true);
         setTimeout(() => {
           setIsMagnetActive(false);
-        }, 750); // 0.75 saniye sonra eski yerine geri gider
+        }, 750);
       }
     },
     [theme, patlat]
@@ -422,11 +433,11 @@ export default function KacanKart({
         <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs shadow-md">
-              {targetUsername.charAt(0).toUpperCase()}
+              {sender.charAt(0).toUpperCase()}
             </div>
             <div>
               <h3 className="text-xs font-bold text-white">
-                @{targetUsername}&apos;a Özel Kart
+                @{sender} → {targetUsername}&apos;a Özel Kart
               </h3>
               <p className="text-[10px] text-slate-400">{THEME_NAMES[theme]}</p>
             </div>
@@ -460,6 +471,27 @@ export default function KacanKart({
                     onError={() => setGifHata(true)}
                     className="max-h-40 w-auto rounded-2xl object-cover border border-white/10 shadow-lg"
                   />
+                </div>
+              )}
+
+              {/* YER, ZAMAN VE TARİH BİLGİLERİ GÖSTERİM ALANI (Eğer girildiyse kartta net görünür) */}
+              {(tarih || saat || mekan) && (
+                <div className="mb-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+                  {tarih && (
+                    <span className="bg-white/10 border border-white/10 px-3 py-1 rounded-full text-indigo-300 font-medium flex items-center gap-1">
+                      📅 {tarih}
+                    </span>
+                  )}
+                  {saat && (
+                    <span className="bg-white/10 border border-white/10 px-3 py-1 rounded-full text-purple-300 font-medium flex items-center gap-1">
+                      ⏰ {saat}
+                    </span>
+                  )}
+                  {mekan && (
+                    <span className="bg-white/10 border border-white/10 px-3 py-1 rounded-full text-pink-300 font-medium flex items-center gap-1">
+                      📍 {mekan}
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -564,7 +596,6 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* BUTONLAR ALANI: Tema 10 Mıknatıs Efekti (Hayır'a tıklayınca Evet üstüne fırlar ve geri gider) */}
               <div
                 ref={playzoneRef}
                 className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
@@ -593,7 +624,7 @@ export default function KacanKart({
                       onClick={patlat}
                       animate={{ 
                         scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? 115 : 0, // Hayır butonunun üzerine kadar fırlar
+                        x: theme === "magnet" && isMagnetActive ? 115 : 0,
                         zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
                       transition={{
