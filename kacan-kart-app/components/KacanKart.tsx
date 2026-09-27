@@ -327,8 +327,11 @@ export default function KacanKart({
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => Math.min(prev + 1, 15));
       } else if (theme === "magnet") {
-        // Hayıra tıklanmaya çalışıldığında mıknatıs aktifleşir ve Evet butonu Hayır'ın üstüne kayar
+        // Hayıra tıklanmaya çalışıldığında Evet butonu hızla Hayır'ın üstüne kadar fırlar ve geri döner
         setIsMagnetActive(true);
+        setTimeout(() => {
+          setIsMagnetActive(false);
+        }, 750); // 0.75 saniye sonra eski yerine geri gider
       }
     },
     [theme, patlat]
@@ -561,7 +564,7 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* BUTONLAR ALANI: Tema 10 için aralarındaki mesafe artırıldı ve mıknatıs efekti eklendi */}
+              {/* BUTONLAR ALANI: Tema 10 Mıknatıs Efekti (Hayır'a tıklayınca Evet üstüne fırlar ve geri gider) */}
               <div
                 ref={playzoneRef}
                 className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
@@ -590,12 +593,12 @@ export default function KacanKart({
                       onClick={patlat}
                       animate={{ 
                         scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? 95 : 0, // Hayır butonunun üzerine kayar
+                        x: theme === "magnet" && isMagnetActive ? 115 : 0, // Hayır butonunun üzerine kadar fırlar
                         zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
                       transition={{
                         type: "spring",
-                        stiffness: 280,
+                        stiffness: 400,
                         damping: 18,
                       }}
                       className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 cursor-pointer"
@@ -607,12 +610,7 @@ export default function KacanKart({
                       <motion.button
                         ref={hayirRef}
                         type="button"
-                        onMouseEnter={() => {
-                          if (theme === "magnet") setIsMagnetActive(true);
-                        }}
-                        onTouchStart={() => {
-                          if (theme === "magnet") setIsMagnetActive(true);
-                        }}
+                        onMouseEnter={() => handleNoAction("hover")}
                         onClick={() => handleNoAction("click")}
                         style={{
                           clipPath:
