@@ -222,6 +222,17 @@ export default function KacanKart({
     }
   }, [theme]);
 
+  useEffect(() => {
+    if ((theme === "escaping" || theme === "teleporting") && playzoneRef.current) {
+      const zoneRect = playzoneRef.current.getBoundingClientRect();
+      const sideX = Math.min(zoneRect.width - 120, Math.max(90, zoneRect.width * 0.58));
+      const sideY = Math.min(zoneRect.height - 40, Math.max(12, zoneRect.height * 0.38));
+      setPos({ x: sideX, y: sideY });
+    } else {
+      setPos({ x: 0, y: 0 });
+    }
+  }, [theme]);
+
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [scratchClicks, setScratchClicks] = useState(0);
 
@@ -559,7 +570,7 @@ export default function KacanKart({
                 ref={playzoneRef}
                 className={`relative mt-8 h-32 w-full overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
                   evetOlcek > 1.8 ? "flex-col h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
-                }`}
+                } ${theme === "escaping" || theme === "teleporting" ? "justify-center" : "justify-between"}`}
               >
                 {theme === "reverse_psychology" ? (
                   <div className="grid grid-cols-2 gap-2 w-full max-h-32 overflow-y-auto pr-1">
@@ -581,16 +592,6 @@ export default function KacanKart({
                     <motion.button
                       type="button"
                       onClick={patlat}
-                      style={
-                        theme === "escaping" || theme === "teleporting"
-                          ? {
-                              position: "absolute",
-                              left: "50%",
-                              top: "50%",
-                              transform: "translate(-50%, -50%)",
-                            }
-                          : undefined
-                      }
                       animate={{ 
                         scale: evetOlcek,
                         x: theme === "magnet" && isMagnetActive ? 95 : 0,
