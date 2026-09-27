@@ -246,8 +246,11 @@ function CardContent() {
   // URL'ye mekan ve saat parametrelerini de güvenli şekilde ekledik
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
+    if (cardId) {
+      return `${window.location.origin}/k/card/${encodeURIComponent(cardId)}`;
+    }
+
     const params = new URLSearchParams();
-    if (cardId) params.set("id", cardId);
     if (targetUsername) params.set("u", targetUsername);
     if (fromUsername) params.set("f", fromUsername);
     if (soru) params.set("s", soru);
