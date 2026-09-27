@@ -279,27 +279,27 @@ export default function EscapeCard({
 
   const handleNoInteraction = (type: "click" | "hover", event?: React.MouseEvent<HTMLButtonElement>) => {
     if ((theme === "escaping" || theme === "teleporting") && (type === "click" || type === "hover")) {
-      const card = cardRef.current;
-      if (!card) return;
+      const answerBox = cardRef.current;
+      if (!answerBox) return;
 
-      const cardRect = card.getBoundingClientRect();
+      const boxRect = answerBox.getBoundingClientRect();
       const btnWidth = 120;
       const btnHeight = 54;
       const padding = 18;
 
       const minX = padding;
-      const maxX = Math.max(minX, cardRect.width - btnWidth - padding);
+      const maxX = Math.max(minX, boxRect.width - btnWidth - padding);
       const minY = 90;
-      const maxY = Math.max(minY + 10, cardRect.height - btnHeight - padding);
+      const maxY = Math.max(minY + 10, boxRect.height - btnHeight - padding);
 
       let nextLeft = minX + Math.random() * (maxX - minX);
       let nextTop = minY + Math.random() * (maxY - minY);
 
       if (event) {
-        const pointerX = event.clientX - cardRect.left;
-        const pointerY = event.clientY - cardRect.top;
-        const directionX = pointerX < cardRect.width / 2 ? 1 : -1;
-        const directionY = pointerY < cardRect.height / 2 ? 1 : -1;
+        const pointerX = event.clientX - boxRect.left;
+        const pointerY = event.clientY - boxRect.top;
+        const directionX = pointerX < boxRect.width / 2 ? 1 : -1;
+        const directionY = pointerY < boxRect.height / 2 ? 1 : -1;
 
         nextLeft = Math.min(maxX, Math.max(minX, pointerX + directionX * (btnWidth + 20)));
         nextTop = Math.min(maxY, Math.max(minY, pointerY + directionY * (btnHeight + 18)));

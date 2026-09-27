@@ -301,12 +301,15 @@ export default function KacanKart({
         if (!zone) return;
 
         const zoneRect = zone.getBoundingClientRect();
-        // Butonun kesinlikle dışarı taşmaması için konteyner sınırları
-        const maxX = zoneRect.width - 110;
-        const maxY = zoneRect.height - 55;
+        const padding = 12;
+        const btnWidth = 110;
+        const btnHeight = 52;
 
-        const yeniX = Math.floor(Math.random() * Math.max(40, maxX - 20)) + 10;
-        const yeniY = Math.floor(Math.random() * Math.max(25, maxY - 15)) + 5;
+        const maxX = Math.max(padding, zoneRect.width - btnWidth - padding);
+        const maxY = Math.max(padding, zoneRect.height - btnHeight - padding);
+
+        const yeniX = padding + Math.random() * (maxX - padding);
+        const yeniY = padding + Math.random() * (maxY - padding);
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -554,7 +557,7 @@ export default function KacanKart({
               {/* Sınırları Koruyan Güvenli Alan */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 h-32 w-full flex items-center justify-between px-4 overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
+                className={`relative mt-8 h-32 w-full overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
                   evetOlcek > 1.8 ? "flex-col h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
@@ -578,6 +581,16 @@ export default function KacanKart({
                     <motion.button
                       type="button"
                       onClick={patlat}
+                      style={
+                        theme === "escaping" || theme === "teleporting"
+                          ? {
+                              position: "absolute",
+                              left: "50%",
+                              top: "50%",
+                              transform: "translate(-50%, -50%)",
+                            }
+                          : undefined
+                      }
                       animate={{ 
                         scale: evetOlcek,
                         x: theme === "magnet" && isMagnetActive ? 95 : 0,
@@ -602,6 +615,8 @@ export default function KacanKart({
                         onClick={() => handleNoAction("click")}
                         style={{
                           position: theme === "escaping" || theme === "teleporting" ? "absolute" : "relative",
+                          left: theme === "escaping" || theme === "teleporting" ? `${pos.x}px` : undefined,
+                          top: theme === "escaping" || theme === "teleporting" ? `${pos.y}px` : undefined,
                         }}
                         className={`rounded-2xl px-5 py-3 font-semibold text-sm sm:text-base whitespace-nowrap shadow-md cursor-pointer transition-colors z-20 ${
                           theme === "shattering" && shatterStage > 0
@@ -610,14 +625,8 @@ export default function KacanKart({
                         }`}
                         animate={{
                           scale: hayirOlcek,
-                          x:
-                            theme === "escaping" || theme === "teleporting"
-                              ? pos.x
-                              : 0,
-                          y:
-                            theme === "escaping" || theme === "teleporting"
-                              ? pos.y
-                              : 0,
+                          x: 0,
+                          y: 0,
                         }}
                         transition={{
                           type: "spring",
