@@ -243,7 +243,6 @@ export default function KacanKart({
   }, [theme]);
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [scratchClicks, setScratchClicks] = useState(0);
 
   useEffect(() => {
     if (theme === "timer" && !basarili && timeLeft > 0) {
@@ -346,7 +345,6 @@ export default function KacanKart({
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => Math.min(prev + 1, 15));
       } else if (theme === "scratchpad" && type === "click") {
-        setScratchClicks((prev) => prev + 1);
         setCurrentMessageIndex((prev) => (prev + 1) % SCRATCH_MESSAGES.length);
       } else if (theme === "magnet") {
         setIsMagnetActive(true);
@@ -540,14 +538,11 @@ export default function KacanKart({
                 <motion.div 
                   animate={{ scale: [1, 1.02, 1] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="mt-5 bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-purple-500/20 border-2 border-amber-400 p-5 rounded-2xl text-center cursor-pointer select-none shadow-[0_0_25px_rgba(251,191,36,0.35)] hover:shadow-[0_0_35px_rgba(236,72,153,0.5)] hover:border-pink-400 transition-all relative overflow-hidden group"
+                  className="mt-5 bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-purple-500/20 border-2 border-amber-400 p-5 rounded-2xl text-center select-none shadow-[0_0_25px_rgba(251,191,36,0.35)] hover:shadow-[0_0_35px_rgba(236,72,153,0.5)] hover:border-pink-400 transition-all relative overflow-hidden group"
                 >
-                  <div className="absolute top-1.5 right-2.5 bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md uppercase tracking-wider animate-pulse">
-                    Sürpriz #{scratchClicks + 1} / 15 ✨
-                  </div>
                   <span className="text-3xl block mb-1 group-hover:scale-125 transition-transform duration-300">🎁💥</span>
                   <p className="text-xs font-extrabold text-amber-200 uppercase tracking-wider drop-shadow">
-                    Hayır&apos;a her bastığında yeni bir söz açılır!
+                    💌 {sender ? `${sender} diyor ki: Evet de!` : "Göndericinden bir mesaj var: Evet de!"}
                   </p>
                   <motion.p 
                     key={currentMessageIndex}
@@ -557,9 +552,6 @@ export default function KacanKart({
                   >
                     {SCRATCH_MESSAGES[currentMessageIndex]}
                   </motion.p>
-                  <p className="text-[10px] text-pink-300 mt-2 font-medium italic">
-                    (Yeni söz için Hayır butonuna tıkla.)
-                  </p>
                 </motion.div>
               )}
 
