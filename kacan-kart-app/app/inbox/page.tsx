@@ -32,6 +32,7 @@ function InboxContent() {
         mekan={mekan}
         tarih={tarih}
         saat={saat}
+        showShareButton={false}
       />
     </main>
   );

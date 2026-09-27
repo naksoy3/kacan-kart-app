@@ -556,6 +556,7 @@ function CardContent() {
               mekan={yer || searchParams.get("mekan") || searchParams.get("yer") || ""}
               tarih={tarih || searchParams.get("tarih") || ""}
               saat={zaman || searchParams.get("saat") || searchParams.get("zaman") || ""}
+              showShareButton={!isSharedView}
               onAccept={handleAcceptResponse}
             />
           </div>

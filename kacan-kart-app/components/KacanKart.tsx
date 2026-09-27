@@ -46,6 +46,7 @@ export type KacanKartProps = {
   theme?: CardTheme;
   onBack?: () => void;
   onAccept?: () => void | Promise<void>;
+  showShareButton?: boolean;
 };
 
 const PERSUASIVE_STEPS = [
@@ -196,6 +197,7 @@ export default function KacanKart({
   theme = "escaping",
   onBack,
   onAccept,
+  showShareButton = true,
 }: KacanKartProps) {
   const playzoneRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -553,17 +555,19 @@ export default function KacanKart({
                 </p>
               )}
 
-              <div className="mt-4 flex justify-center">
-                <button
-                  onClick={handleShare}
-                  type="button"
-                  className="px-4 py-2 bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg transition-all flex items-center gap-1.5 text-xs border border-indigo-400/30 cursor-pointer"
-                >
-                  <span>
-                    {copied ? "✓ Link Kopyalandı!" : "🔗 Arkadaşına Link At"}
-                  </span>
-                </button>
-              </div>
+              {showShareButton && (
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={handleShare}
+                    type="button"
+                    className="px-4 py-2 bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg transition-all flex items-center gap-1.5 text-xs border border-indigo-400/30 cursor-pointer"
+                  >
+                    <span>
+                      {copied ? "✓ Link Kopyalandı!" : "🔗 Arkadaşına Link At"}
+                    </span>
+                  </button>
+                </div>
+              )}
 
               {/* Sınırları Koruyan Güvenli Alan */}
               <div
