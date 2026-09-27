@@ -68,6 +68,19 @@ const PERSUASIVE_STEPS = [
   "Tamam peki... ama yine de Evet de? 💖",
 ];
 
+const RENKLI_EVET_BUTONLARI = [
+  { metin: "Evet! 💖", renk: "bg-pink-500 hover:bg-pink-400 shadow-pink-500/30" },
+  { metin: "Kesinlikle Evet! ✨", renk: "bg-purple-500 hover:bg-purple-400 shadow-purple-500/30" },
+  { metin: "Tabii ki! 🥰", renk: "bg-indigo-500 hover:bg-indigo-400 shadow-indigo-500/30" },
+  { metin: "Mükemmel Fikir! 🚀", renk: "bg-blue-500 hover:bg-blue-400 shadow-blue-500/30" },
+  { metin: "Kaçırılmaz! 🌟", renk: "bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/30" },
+  { metin: "Tabii ki de Evet! 🎈", renk: "bg-amber-500 hover:bg-amber-400 shadow-amber-500/30" },
+  { metin: "Zaten bekliyordum! 🍕", renk: "bg-rose-500 hover:bg-rose-400 shadow-rose-500/30" },
+  { metin: "Hemen şimdi! ✈️", renk: "bg-cyan-500 hover:bg-cyan-400 shadow-cyan-500/30" },
+  { metin: "Bileti kaptım! 🎫", renk: "bg-violet-500 hover:bg-violet-400 shadow-violet-500/30" },
+  { metin: "Sonuna kadar Evet! 👑", renk: "bg-fuchsia-500 hover:bg-fuchsia-400 shadow-fuchsia-500/30" },
+];
+
 const KONFETI_RENKLERI = ["#FF5D8F", "#FFD166", "#8B5CF6", "#10B981"];
 
 function kutlamaSesiCal() {
@@ -252,19 +265,19 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Ölçeklendirmeler: Tema 3 (shrinking) için yavaşlatılmış oranlar ve artırılmış tıklama imkanı
+  // Ölçeklendirmeler: Tema 3 için yavaşlatılmış oranlar
   const evetOlcek =
     theme === "escaping" || theme === "teleporting" || theme === "persuasive"
       ? 1 + kacisSayisi * 0.05
       : theme === "shrinking"
-      ? 1 + kacisSayisi * 0.04 // Yavaş yavaş büyür, tıklama sayısı artar
+      ? 1 + kacisSayisi * 0.04
       : 1;
 
   const hayirOlcek =
     theme === "persuasive"
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
-      ? Math.max(0.15, 1 - kacisSayisi * 0.03) // Çok yavaş küçülür, tıklama sayısı artar
+      ? Math.max(0.15, 1 - kacisSayisi * 0.03)
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
@@ -476,68 +489,88 @@ export default function KacanKart({
                   evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                {/* EVET BUTONU */}
-                <motion.button
-                  type="button"
-                  onClick={patlat}
-                  animate={{ scale: evetOlcek }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 16,
-                  }}
-                  className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
-                >
-                  {evetMetni}
-                </motion.button>
-
-                {/* HAYIR BUTONU */}
-                {hayirOlcek > 0 &&
-                  !(theme === "timer" && timeLeft === 0) &&
-                  !(theme === "shattering" && shatterStage >= 3) &&
-                  !(theme === "riddle" && !riddleSolved) && (
+                {/* TEMA 8: 10 Farklı Renkli Komik Evet Butonu */}
+                {theme === "reverse_psychology" ? (
+                  <div className="grid grid-cols-2 gap-2 w-full max-h-48 overflow-y-auto pr-1">
+                    {RENKLI_EVET_BUTONLARI.map((btn, idx) => (
+                      <motion.button
+                        key={idx}
+                        type="button"
+                        onClick={patlat}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`rounded-xl px-4 py-2.5 font-bold text-xs text-white shadow-md cursor-pointer ${btn.renk}`}
+                      >
+                        {btn.metin}
+                      </motion.button>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    {/* EVET BUTONU */}
                     <motion.button
-                      ref={hayirRef}
                       type="button"
-                      onMouseEnter={() => handleNoAction("hover")}
-                      onClick={() => handleNoAction("click")}
-                      onTouchStart={(e) => {
-                        e.preventDefault();
-                        handleNoAction("click");
-                      }}
-                      className={
-                        (theme === "escaping" || theme === "teleporting") && pos
-                          ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer z-20"
-                          : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
-                              theme === "shattering" && shatterStage === 1
-                                ? "border-dashed opacity-80"
-                                : theme === "shattering" && shatterStage === 2
-                                ? "line-through opacity-50 scale-90"
-                                : ""
-                            }`
-                      }
-                      animate={{
-                        x:
-                          (theme === "escaping" || theme === "teleporting") &&
-                          pos
-                            ? pos.x
-                            : 0,
-                        y:
-                          (theme === "escaping" || theme === "teleporting") &&
-                          pos
-                            ? pos.y
-                            : 0,
-                        scale: hayirOlcek,
-                      }}
+                      onClick={patlat}
+                      animate={{ scale: evetOlcek }}
                       transition={{
                         type: "spring",
-                        stiffness: 320,
-                        damping: 18,
+                        stiffness: 260,
+                        damping: 16,
                       }}
+                      className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
                     >
-                      {gosterilenHayirMetni}
+                      {evetMetni}
                     </motion.button>
-                  )}
+
+                    {/* HAYIR BUTONU */}
+                    {hayirOlcek > 0 &&
+                      !(theme === "timer" && timeLeft === 0) &&
+                      !(theme === "shattering" && shatterStage >= 3) &&
+                      !(theme === "riddle" && !riddleSolved) && (
+                        <motion.button
+                          ref={hayirRef}
+                          type="button"
+                          onMouseEnter={() => handleNoAction("hover")}
+                          onClick={() => handleNoAction("click")}
+                          onTouchStart={(e) => {
+                            e.preventDefault();
+                            handleNoAction("click");
+                          }}
+                          className={
+                            (theme === "escaping" || theme === "teleporting") && pos
+                              ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer z-20"
+                              : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
+                                  theme === "shattering" && shatterStage === 1
+                                    ? "border-dashed opacity-80"
+                                    : theme === "shattering" && shatterStage === 2
+                                    ? "line-through opacity-50 scale-90"
+                                    : ""
+                                }`
+                          }
+                          animate={{
+                            x:
+                              (theme === "escaping" || theme === "teleporting") &&
+                              pos
+                                ? pos.x
+                                : 0,
+                            y:
+                              (theme === "escaping" || theme === "teleporting") &&
+                              pos
+                                ? pos.y
+                                : 0,
+                            scale: hayirOlcek,
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 320,
+                            damping: 18,
+                          }}
+                        >
+                          {gosterilenHayirMetni}
+                        </motion.button>
+                      )}
+                  </>
+                )}
               </div>
 
               {/* Tema 6: Şifre Modalı */}
