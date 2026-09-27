@@ -138,14 +138,21 @@ const YANLIS_CEVAP_MESAJLARI = [
 ];
 
 const SCRATCH_MESSAGES = [
-  "🌟 Harika enerjinle etrafındaki herkese ilham oluyorsun!",
-  "🚀 Bugün karşına çıkan tüm engelleri aşacak güçtesin, kendine inan!",
-  "🍀 Hayat senin gibi pozitif insanlarla çok daha güzel ve anlamlı.",
-  "☕ Güzel bir kahve ve tatlı bir gülümseme bütün gününe iyi gelecek!",
-  "✨ Etrafa saçtığın bu güzel neşe hiçbir zaman eksilmesin!",
-  "🎨 Bugün kendi hikayenin en güzel sayfasını yazmaya ne dersin?",
-  "🏆 Kararlılığın ve azminle başaramayacağın hiçbir şey yok!",
-  "🎈 Küçük şeylerden mutlu olabildiğin için kalbin hep çok özel.",
+  "💖 Hayır deme, birlikte çok güzel vakit geçirebiliriz!",
+  "✨ Bence kalbinin sesini dinleyip Evet demelisin!",
+  "🌟 Bu teklif, güzel bir anıya dönüşebilir!",
+  "🥰 Seninle buluşmak beni gerçekten mutlu eder!",
+  "🎉 Evet dersen bugün çok daha güzel olacak!",
+  "🍀 Bir şans ver, pişman olmayacağına eminim!",
+  "☕ Bir kahve eşliğinde sohbet etmeye ne dersin?",
+  "🚀 Hayır yerine küçük ve güzel bir Evet seç!",
+  "💫 Seninle paylaşacak çok güzel şeylerim var!",
+  "🌈 Bu buluşma yüzünü mutlaka gülümsetecek!",
+  "🎁 En güzel sürpriz, Evet demen olabilir!",
+  "💌 Seni görmek için sabırsızlanıyorum!",
+  "🌸 Birlikte geçireceğimiz zaman çok özel olacak!",
+  "🏆 Bu kez kalbini dinle ve Evet de!",
+  "🎈 Hadi, güzel bir maceraya birlikte başlayalım!",
 ];
 
 const KONFETI_RENKLERI = ["#FF5D8F", "#FFD166", "#8B5CF6", "#10B981"];
@@ -338,6 +345,9 @@ export default function KacanKart({
         patlat();
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => Math.min(prev + 1, 15));
+      } else if (theme === "scratchpad" && type === "click") {
+        setScratchClicks((prev) => prev + 1);
+        setCurrentMessageIndex((prev) => (prev + 1) % SCRATCH_MESSAGES.length);
       } else if (theme === "magnet") {
         setIsMagnetActive(true);
         setTimeout(() => {
@@ -528,20 +538,16 @@ export default function KacanKart({
 
               {theme === "scratchpad" && (
                 <motion.div 
-                  onClick={() => {
-                    setScratchClicks((prev) => prev + 1);
-                    setCurrentMessageIndex((prev) => (prev + 1) % SCRATCH_MESSAGES.length);
-                  }}
                   animate={{ scale: [1, 1.02, 1] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                   className="mt-5 bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-purple-500/20 border-2 border-amber-400 p-5 rounded-2xl text-center cursor-pointer select-none shadow-[0_0_25px_rgba(251,191,36,0.35)] hover:shadow-[0_0_35px_rgba(236,72,153,0.5)] hover:border-pink-400 transition-all relative overflow-hidden group"
                 >
                   <div className="absolute top-1.5 right-2.5 bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md uppercase tracking-wider animate-pulse">
-                    Sürpriz #{scratchClicks + 1} / 8 ✨
+                    Sürpriz #{scratchClicks + 1} / 15 ✨
                   </div>
                   <span className="text-3xl block mb-1 group-hover:scale-125 transition-transform duration-300">🎁💥</span>
                   <p className="text-xs font-extrabold text-amber-200 uppercase tracking-wider drop-shadow">
-                    Günün Sürpriz Sözünü Açmak İçin Dokun!
+                    Hayır&apos;a her bastığında yeni bir söz açılır!
                   </p>
                   <motion.p 
                     key={currentMessageIndex}
@@ -552,7 +558,7 @@ export default function KacanKart({
                     {SCRATCH_MESSAGES[currentMessageIndex]}
                   </motion.p>
                   <p className="text-[10px] text-pink-300 mt-2 font-medium italic">
-                    (Her tıklamada yeni ve motive edici harika bir söz keşfet!)
+                    (Yeni söz için Hayır butonuna tıkla.)
                   </p>
                 </motion.div>
               )}
