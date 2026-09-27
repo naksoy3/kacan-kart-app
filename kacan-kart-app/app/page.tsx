@@ -94,8 +94,11 @@ function CardContent() {
 
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
-  const [targetUsername, setTargetUsername] = useState(urlUser || "Nisa");
-  const [fromUsername, setFromUsername] = useState(urlFrom || "Nurullah");
+  
+  // Varsayılan isimler silindi, tamamen boş başlatıldı:
+  const [targetUsername, setTargetUsername] = useState(urlUser || "");
+  const [fromUsername, setFromUsername] = useState(urlFrom || "");
+  
   const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
   const [yer, setYer] = useState(searchParams.get("yer") || "");
   const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
@@ -318,6 +321,7 @@ function CardContent() {
                   <label className="block text-slate-400 mb-1.5 font-medium">Gönderen Kişinin Adı:</label>
                   <input
                     type="text"
+                    placeholder="Örn: Nurullah"
                     value={fromUsername}
                     onChange={(e) => setFromUsername(e.target.value)}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
@@ -327,6 +331,7 @@ function CardContent() {
                   <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
                   <input
                     type="text"
+                    placeholder="Örn: Nisa"
                     value={targetUsername}
                     onChange={(e) => setTargetUsername(e.target.value)}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
