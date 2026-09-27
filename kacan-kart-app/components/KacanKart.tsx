@@ -352,6 +352,8 @@ export default function KacanKart({
   const evetOlcek = 1 + kacisSayisi * 0.08;
   const hayirOlcek = Math.max(0.35, 1 - kacisSayisi * 0.05);
   const sureDoldu = theme === "timer" && timeLeft === 0;
+  const shatterEvetOlcek = theme === "shattering" ? 1 + shatterStage * 0.08 : evetOlcek;
+  const shatterHayirOlcek = Math.max(0.12, 1 - shatterStage * 0.09);
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
@@ -603,7 +605,7 @@ export default function KacanKart({
                       type="button"
                       onClick={patlat}
                       animate={{ 
-                        scale: sureDoldu ? evetOlcek * 1.18 : evetOlcek,
+                        scale: sureDoldu ? shatterEvetOlcek * 1.18 : shatterEvetOlcek,
                         x: theme === "magnet" && isMagnetActive ? 95 : 0,
                         zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
@@ -617,8 +619,34 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
+                    {theme === "shattering" && shatterStage > 0 && shatterStage < 10 && (
+                      <AnimatePresence>
+                        {Array.from({ length: 6 }).map((_, index) => (
+                          <motion.span
+                            key={`${shatterStage}-${index}`}
+                            initial={{ scale: 0, opacity: 0 }}
+                            animate={{
+                              x: (index % 2 === 0 ? -1 : 1) * (18 + shatterStage * 3),
+                              y: (index % 3 - 1) * (18 + shatterStage * 2),
+                              rotate: index * 75 + shatterStage * 25,
+                              scale: [0, 1, 0.6],
+                              opacity: [0, 1, 0],
+                            }}
+                            transition={{ duration: 0.55, ease: "easeOut" }}
+                            className="pointer-events-none absolute z-30 text-rose-200 drop-shadow-[0_0_6px_rgba(251,113,133,0.9)]"
+                            style={{
+                              left: `${38 + (index % 3) * 12}%`,
+                              top: `${36 + Math.floor(index / 3) * 22}%`,
+                            }}
+                          >
+                            {index % 2 === 0 ? "◆" : "◇"}
+                          </motion.span>
+                        ))}
+                      </AnimatePresence>
+                    )}
+
                     {/* Hayır Butonu: Sınırlar içinde güvenle kaçar, her kaçışta %5 küçülür */}
-                    {hayirOlcek > 0.1 && !sureDoldu && (
+                    {hayirOlcek > 0.1 && !sureDoldu && !(theme === "shattering" && shatterStage >= 10) && (
                       <motion.button
                         type="button"
                         onMouseEnter={() => handleNoAction("hover")}
@@ -637,7 +665,9 @@ export default function KacanKart({
                             : "bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300"
                         }`}
                         animate={{
-                          scale: hayirOlcek,
+                          scale: theme === "shattering" ? shatterHayirOlcek : hayirOlcek,
+                          rotate: theme === "shattering" ? shatterStage * (shatterStage % 2 === 0 ? 2 : -2) : 0,
+                          opacity: theme === "shattering" ? Math.max(0.35, 1 - shatterStage * 0.06) : 1,
                           x: 0,
                           y: 0,
                         }}
