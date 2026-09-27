@@ -574,7 +574,7 @@ export default function KacanKart({
                 ref={playzoneRef}
                 className={`relative mt-8 h-32 w-full overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
                   evetOlcek > 1.8 ? "flex-col h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
-                } ${theme === "escaping" || theme === "teleporting" ? "flex items-center justify-center gap-3" : "justify-between"}`}
+                } flex items-center justify-center gap-3`}
               >
                 {theme === "reverse_psychology" ? (
                   <div className="grid grid-cols-2 gap-2 w-full max-h-32 overflow-y-auto pr-1">
