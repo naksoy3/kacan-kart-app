@@ -6,7 +6,6 @@ import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/utils/supabase";
 
-// Gerçek, doğrulanmış Giphy ID'leri
 const KOMIK_GIFLER = [
   { id: "1", url: "https://media.giphy.com/media/cFdHXXm5GhJsc/giphy.gif" },
   { id: "2", url: "https://media.giphy.com/media/5JjLO6t0lNvLq/giphy.gif" },
@@ -18,96 +17,30 @@ const KOMIK_GIFLER = [
   { id: "8", url: "https://media.giphy.com/media/l396Dat26yQOdfWgw/giphy.gif" },
   { id: "9", url: "https://media.giphy.com/media/zetsDd1oSNd96/giphy.gif" },
   { id: "10", url: "https://media.giphy.com/media/F6PFPjc3K0CPe/giphy.gif" },
-  { id: "11", url: "https://media.giphy.com/media/L0GJP0ZxdnVbW/giphy.gif" },
-  { id: "12", url: "https://media.giphy.com/media/26ufbLWPFHkhwXcpW/giphy.gif" },
-  { id: "13", url: "https://media.giphy.com/media/r3jTnU6iEwpbO/giphy.gif" },
-  { id: "14", url: "https://media.giphy.com/media/6Xbr4pVmJW4wM/giphy.gif" },
-  { id: "15", url: "https://media.giphy.com/media/FPmzkXGFVhp2U/giphy.gif" },
-  { id: "16", url: "https://media.giphy.com/media/p3yU7Rno2PvvW/giphy.gif" },
-  { id: "17", url: "https://media.giphy.com/media/vbBmb51klyyB2/giphy.gif" },
-  { id: "18", url: "https://media.giphy.com/media/ZAfpXz6fGrlYY/giphy.gif" },
-  { id: "19", url: "https://media.giphy.com/media/3oGRFvVyUdGBZeQiAw/giphy.gif" },
-  { id: "20", url: "https://media.giphy.com/media/NJbeypFZCHj2g/giphy.gif" },
-  { id: "21", url: "https://media.giphy.com/media/WpNO2ZXjhJ85y/giphy.gif" },
-  { id: "22", url: "https://media.giphy.com/media/xaw15bdmMEkgg/giphy.gif" },
-  { id: "23", url: "https://media.giphy.com/media/tLwQSHQo6hjTa/giphy.gif" },
-  { id: "24", url: "https://media.giphy.com/media/3dcoLqDDjd9pC/giphy.gif" },
-  { id: "25", url: "https://media.giphy.com/media/QFfs8ubyDkluo/giphy.gif" },
-  { id: "26", url: "https://media.giphy.com/media/10hYVVSPrSpZS0/giphy.gif" },
-  { id: "27", url: "https://media.giphy.com/media/EYJz9cfMa7WAU/giphy.gif" },
-  { id: "28", url: "https://media.giphy.com/media/Q21vzIHyTtmaQ/giphy.gif" },
-  { id: "29", url: "https://media.giphy.com/media/pzmUOeqhzJTck/giphy.gif" },
-  { id: "30", url: "https://media.giphy.com/media/G6kt1Gb4Luxy0/giphy.gif" },
-  { id: "31", url: "https://media.giphy.com/media/13wjHxAz6B6E9i/giphy.gif" },
-  { id: "32", url: "https://media.giphy.com/media/ANbbM3IzH9Tna/giphy.gif" },
-  { id: "33", url: "https://media.giphy.com/media/EQ5I7NF4BDYA/giphy.gif" },
-  { id: "34", url: "https://media.giphy.com/media/L7gHewOS8GOWY/giphy.gif" },
-  { id: "35", url: "https://media.giphy.com/media/nO16UrmQh7khW/giphy.gif" },
-  { id: "36", url: "https://media.giphy.com/media/eGuk6gQM3Q29W/giphy.gif" },
-  { id: "37", url: "https://media.giphy.com/media/8dpPMMlxmDEJO/giphy.gif" },
-  { id: "38", url: "https://media.giphy.com/media/5ox090BjCB8ME/giphy.gif" },
-  { id: "39", url: "https://media.giphy.com/media/Hzm8c1eMSq3CM/giphy.gif" },
-  { id: "40", url: "https://media.giphy.com/media/2APlzZshLu3LO/giphy.gif" },
-  { id: "41", url: "https://media.giphy.com/media/dgygjvNe7jckw/giphy.gif" },
-  { id: "42", url: "https://media.giphy.com/media/5g0mypSSPupO0/giphy.gif" },
-  { id: "43", url: "https://media.giphy.com/media/10JmxORlA6dEFW/giphy.gif" },
-  { id: "44", url: "https://media.giphy.com/media/FjfMN9MwuqvJe/giphy.gif" },
-  { id: "45", url: "https://media.giphy.com/media/l0ExpaDR2IOTB2dAQ/giphy.gif" },
-  { id: "46", url: "https://media.giphy.com/media/GGJcBeeYN4q2I/giphy.gif" },
-  { id: "47", url: "https://media.giphy.com/media/Fml0fgAxVx1eM/giphy.gif" },
-  { id: "48", url: "https://media.giphy.com/media/1ofR3QioNy264/giphy.gif" },
-  { id: "49", url: "https://media.giphy.com/media/KyWQ96Lu2QCRi/giphy.gif" },
-  { id: "50", url: "https://media.giphy.com/media/ToMjGpKniGqRNLGBrhu/giphy.gif" },
-  { id: "51", url: "https://media.giphy.com/media/tcGxgQGmE2d2w/giphy.gif" },
-  { id: "52", url: "https://media.giphy.com/media/MIkhb8isTV2uc/giphy.gif" },
-  { id: "53", url: "https://media.giphy.com/media/AmK9GILSa4zsI/giphy.gif" },
-  { id: "54", url: "https://media.giphy.com/media/SeHUUxzIsCga4/giphy.gif" },
-  { id: "55", url: "https://media.giphy.com/media/118O4ZJYDByaoE/giphy.gif" },
-  { id: "56", url: "https://media.giphy.com/media/29jhb6s7LjWUg/giphy.gif" },
-  { id: "57", url: "https://media.giphy.com/media/EvWx1BeeRyyJi/giphy.gif" },
-  { id: "58", url: "https://media.giphy.com/media/13uDde6AxxDW5G/giphy.gif" },
-  { id: "59", url: "https://media.giphy.com/media/vxbSchlbqBIis/giphy.gif" },
-  { id: "60", url: "https://media.giphy.com/media/oaWZcKvDo8JBS/giphy.gif" },
-  { id: "61", url: "https://media.giphy.com/media/kmzID1Fn7MSOY/giphy.gif" },
-  { id: "62", url: "https://media.giphy.com/media/qEpDaeeyIiNMI/giphy.gif" },
-  { id: "63", url: "https://media.giphy.com/media/143AbsYXyOK2ME/giphy.gif" },
-  { id: "64", url: "https://media.giphy.com/media/qygzgFH2BXmhi/giphy.gif" },
-  { id: "65", url: "https://media.giphy.com/media/DliKKjgkxmQo0/giphy.gif" },
-  { id: "66", url: "https://media.giphy.com/media/D7Qzw12q9s8Tu/giphy.gif" },
-  { id: "67", url: "https://media.giphy.com/media/jAe22Ec5iICCk/giphy.gif" },
-  { id: "68", url: "https://media.giphy.com/media/iOS6z7r6ZhZOE/giphy.gif" },
-  { id: "69", url: "https://media.giphy.com/media/ciqSxn4GaWlHO/giphy.gif" },
-  { id: "70", url: "https://media.giphy.com/media/f4E0TH9flrfuE/giphy.gif" },
 ];
 
 function CardContent() {
   const searchParams = useSearchParams();
-
   const urlCardId = searchParams.get("id");
-  const urlUser = searchParams.get("u");
-  const urlFrom = searchParams.get("f");
-  const urlSoru = searchParams.get("s");
-  const urlTheme = searchParams.get("t") as CardTheme | null;
-  const urlGif = searchParams.get("gif");
 
-  const isSharedView = Boolean(urlCardId || urlUser || urlSoru);
+  // Eğer URL'de sadece ?id=... varsa bu net bir şekilde hedef kişinin açtığı paylaşımlı sayfadır.
+  const isSharedView = Boolean(urlCardId);
 
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
-  const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
+  const [selectedTheme, setSelectedTheme] = useState<CardTheme>("escaping");
   
-  const [targetUsername, setTargetUsername] = useState(urlUser || "");
-  const [fromUsername, setFromUsername] = useState(urlFrom || "");
+  const [targetUsername, setTargetUsername] = useState("");
+  const [fromUsername, setFromUsername] = useState("");
   
-  const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
-  const [yer, setYer] = useState(searchParams.get("yer") || "");
-  const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
-  const [zaman, setZaman] = useState(searchParams.get("zaman") || "");
-  const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
+  const [soru, setSoru] = useState("Benimle yemeğe çıkar mısın?");
+  const [yer, setYer] = useState("");
+  const [tarih, setTarih] = useState("");
+  const [zaman, setZaman] = useState("");
+  const [gifUrl, setGifUrl] = useState(KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
   const [cardId, setCardId] = useState<string | null>(urlCardId);
   const [cardStatus, setCardStatus] = useState<string>("pending");
 
-  // Auth States
   const [user, setUser] = useState<any>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
@@ -125,7 +58,7 @@ function CardContent() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Eğer paylaşılan linkte cardId varsa, veritabanından kart bilgilerini ve durumunu çek
+  // Paylaşılan linkteki ID ile kart bilgilerini veritabanından çekiyoruz
   useEffect(() => {
     async function fetchCard() {
       if (urlCardId) {
@@ -150,13 +83,6 @@ function CardContent() {
     }
     fetchCard();
   }, [urlCardId]);
-
-  const [kirikGifIdleri, setKirikGifIdleri] = useState<string[]>([]);
-  const gosterilecekGifler = KOMIK_GIFLER.filter((g) => !kirikGifIdleri.includes(g.id));
-
-  const handleGifError = (id: string) => {
-    setKirikGifIdleri((prev) => (prev.includes(id) ? prev : [...prev, id]));
-  };
 
   const handleProceedToPreview = async () => {
     const { data, error } = await supabase
@@ -190,20 +116,11 @@ function CardContent() {
     setFormStep(4);
   };
 
+  // Paylaşım linki artık sadece güvenli ve temiz bir şekilde ?id=... içerecek
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
-    const params = new URLSearchParams();
-    if (cardId) params.set("id", cardId);
-    if (targetUsername) params.set("u", targetUsername);
-    if (fromUsername) params.set("f", fromUsername);
-    if (soru) params.set("s", soru);
-    if (selectedTheme) params.set("t", selectedTheme);
-    if (gifUrl) params.set("gif", gifUrl);
-    if (yer) params.set("yer", yer);
-    if (tarih) params.set("tarih", tarih);
-    if (zaman) params.set("zaman", zaman);
-
-    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    if (!cardId) return window.location.origin;
+    return `${window.location.origin}/?id=${cardId}`;
   };
 
   const handleCopyLink = () => {
@@ -401,7 +318,7 @@ function CardContent() {
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
-                {gosterilecekGifler.map((g) => (
+                {KOMIK_GIFLER.map((g) => (
                   <button
                     key={g.id}
                     type="button"
@@ -416,7 +333,6 @@ function CardContent() {
                       src={g.url}
                       alt=""
                       loading="lazy"
-                      onError={() => handleGifError(g.id)}
                       className="w-full h-full rounded-xl object-contain bg-slate-950 pointer-events-none"
                     />
                   </button>
@@ -445,7 +361,7 @@ function CardContent() {
       {/* ADIM 4: ÖNİZLEME VEYA PAYLAŞILAN KİŞİNİN EKRANI */}
       {(formStep === 4 || isSharedView) && (
         <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
-          {/* YALNIZCA KARTI OLUŞTURAN KİŞİ İÇİN: Düzenle ve Linki Kopyala butonları */}
+          {/* YALNIZCA KARTI OLUŞTURAN KİŞİ İÇİN (isSharedView false iken): Bağlantıyı Kopyala butonu */}
           {!isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
               <button
@@ -467,12 +383,12 @@ function CardContent() {
             </div>
           )}
 
-          {/* YALNIZCA KARTI ALAN (HEDEF) KİŞİ İÇİN: Sadece "Sen de Kendi Kartını Oluştur" butonu */}
+          {/* YALNIZCA KARTI ALAN HEDEF KİŞİ İÇİN (isSharedView true iken): Sadece "Sen de Kendi Kartını Oluştur" */}
           {isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
               <span className="text-xs text-slate-300">💌 Bu soru sana özel olarak gönderildi!</span>
               <a
-                href={window.location.pathname}
+                href={window.location.origin}
                 className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-600/30 text-center cursor-pointer"
               >
                 ✨ Sen de Kendi Kartını Oluştur
@@ -495,8 +411,8 @@ function CardContent() {
             <KacanKart
               targetUsername={targetUsername}
               soru={soru}
-              evetMetni={searchParams.get("e") || "Evet!"}
-              hayirMetni={searchParams.get("h") || "Hayır"}
+              evetMetni="Evet!"
+              hayirMetni="Hayır"
               gifUrl={gifUrl}
               theme={selectedTheme}
               onAccept={handleAcceptResponse}
