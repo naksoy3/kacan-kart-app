@@ -539,7 +539,7 @@ function CardContent() {
 
           <div className="w-full flex flex-col items-center gap-2">
             {fromUsername && targetUsername && (
-              <p className="text-indigo-400 font-bold text-sm tracking-wide">
+              <p className="text-indigo-300 font-bold text-base sm:text-lg tracking-wide text-center">
                 ✨ {fromUsername}, {targetUsername}&apos;ye soruyor:
               </p>
             )}

@@ -21,19 +21,26 @@ function InboxContent() {
 
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <KacanKart
-        targetUsername={targetUsername}
-        sender={sender}
-        soru={soru}
-        evetMetni={evetMetni}
-        hayirMetni={hayirMetni}
-        gifUrl={gifUrl}
-        theme={theme}
-        mekan={mekan}
-        tarih={tarih}
-        saat={saat}
-        showShareButton={false}
-      />
+      <div className="flex w-full max-w-md flex-col items-center gap-4">
+        {sender && targetUsername && (
+          <p className="text-center text-base font-bold tracking-wide text-indigo-300 sm:text-lg">
+            ✨ {sender}, {targetUsername}&apos;ye soruyor:
+          </p>
+        )}
+        <KacanKart
+          targetUsername={targetUsername}
+          sender={sender}
+          soru={soru}
+          evetMetni={evetMetni}
+          hayirMetni={hayirMetni}
+          gifUrl={gifUrl}
+          theme={theme}
+          mekan={mekan}
+          tarih={tarih}
+          saat={saat}
+          showShareButton={false}
+        />
+      </div>
     </main>
   );
 }
