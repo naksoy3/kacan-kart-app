@@ -259,10 +259,6 @@ export default function KacanKart({
           }
           return prev + 1;
         });
-      } else if (theme === "magnet" && type === "click") {
-        // Hayır'a tıklanırsa tıklama sayısını artırabilir veya şaka yapabiliriz
-      } else if (theme === "riddle" && type === "click") {
-        // Bulmaca çözülmeden hayır denemez
       }
     },
     [theme, patlat]
@@ -527,25 +523,25 @@ export default function KacanKart({
                   </div>
                 ) : (
                   <>
-                    {/* EVET BUTONU (Tema 10 Mıknatıs Desteği ile) */}
+                    {/* EVET BUTONU (Tema 10 Mıknatıs Desteği: Hayır'ın tam üstüne kayar) */}
                     <motion.button
                       type="button"
                       onClick={patlat}
                       animate={{
                         scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? 90 : 0,
+                        x: theme === "magnet" && isMagnetActive ? 120 : 0,
                       }}
                       transition={{
                         type: "spring",
-                        stiffness: 280,
-                        damping: 18,
+                        stiffness: 300,
+                        damping: 20,
                       }}
                       className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
                     >
                       {evetMetni}
                     </motion.button>
 
-                    {/* HAYIR BUTONU */}
+                    {/* HAYIR BUTONU (Sabit, mıknatıs tetikleyici) */}
                     {hayirOlcek > 0 &&
                       !(theme === "timer" && timeLeft === 0) &&
                       !(theme === "shattering" && shatterStage >= 10) &&
@@ -554,17 +550,18 @@ export default function KacanKart({
                           ref={hayirRef}
                           type="button"
                           onMouseEnter={() => {
-                            handleNoAction("hover");
                             if (theme === "magnet") setIsMagnetActive(true);
                           }}
                           onMouseLeave={() => {
                             if (theme === "magnet") setIsMagnetActive(false);
                           }}
-                          onClick={() => handleNoAction("click")}
-                          onTouchStart={(e) => {
-                            e.preventDefault();
-                            handleNoAction("click");
+                          onTouchStart={() => {
+                            if (theme === "magnet") setIsMagnetActive(true);
                           }}
+                          onTouchEnd={() => {
+                            if (theme === "magnet") setIsMagnetActive(false);
+                          }}
+                          onClick={() => handleNoAction("click")}
                           className={`rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
                             theme === "shattering"
                               ? "border-dashed filter blur-[0.5px]"
