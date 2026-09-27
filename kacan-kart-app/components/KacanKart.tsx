@@ -240,8 +240,11 @@ export default function KacanKart({
     [theme, patlat]
   );
 
+  // Kaçan/Teleporting temalarında her kaçışta evet butonunu %5 (0.05) büyütme mantığı eklendi
   const evetOlcek =
-    theme === "persuasive"
+    theme === "escaping" || theme === "teleporting"
+      ? 1 + kacisSayisi * 0.05
+      : theme === "persuasive"
       ? Math.min(1 + kacisSayisi * 0.15, 2.2)
       : theme === "shrinking"
       ? Math.min(1 + kacisSayisi * 0.25, 2.5)
