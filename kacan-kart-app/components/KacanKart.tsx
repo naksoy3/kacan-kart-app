@@ -68,6 +68,36 @@ const PERSUASIVE_STEPS = [
   "Tamam peki... ama yine de Evet de? 💖",
 ];
 
+const RENKLI_EVET_BUTONLARI = [
+  { metin: "Evet! 💖", renk: "bg-pink-500 hover:bg-pink-400 shadow-pink-500/30" },
+  { metin: "Kesinlikle Evet! ✨", renk: "bg-purple-500 hover:bg-purple-400 shadow-purple-500/30" },
+  { metin: "Tabii ki! 🥰", renk: "bg-indigo-500 hover:bg-indigo-400 shadow-indigo-500/30" },
+  { metin: "Mükemmel Fikir! 🚀", renk: "bg-blue-500 hover:bg-blue-400 shadow-blue-500/30" },
+  { metin: "Kaçırılmaz! 🌟", renk: "bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/30" },
+  { metin: "Tabii ki de Evet! 🎈", renk: "bg-amber-500 hover:bg-amber-400 shadow-amber-500/30" },
+  { metin: "Zaten bekliyordum! 🍕", renk: "bg-rose-500 hover:bg-rose-400 shadow-rose-500/30" },
+  { metin: "Hemen şimdi! ✈️", renk: "bg-cyan-500 hover:bg-cyan-400 shadow-cyan-500/30" },
+  { metin: "Bileti kaptım! 🎫", renk: "bg-violet-500 hover:bg-violet-400 shadow-violet-500/30" },
+  { metin: "Sonuna kadar Evet! 👑", renk: "bg-fuchsia-500 hover:bg-fuchsia-400 shadow-fuchsia-500/30" },
+];
+
+const SURPRIZ_SOZLER = [
+  "✨ Hayat seninle birlikte çok daha renkli ve keyifli!",
+  "💫 Karşına çıkan en güzel sürprizlerin hiç bitmemesi dileğiyle...",
+  "🌟 Güçlü adımların ve harika enerjinle her zaman parlıyorsun!",
+  "💖 Güzel anlar biriktirmek için harika bir gün!",
+  "🚀 Yeni maceralara ve güzel günlere her zaman hazır ol!",
+  "🍀 Şansın ve neşen hep seninle olsun!",
+  "🎉 Hayatın boyunca yüzünden o tatlı gülümseme hiç eksilmesin!",
+  "🌈 Her yeni gün, yepyeni ve güzel bir başlangıçtır!",
+];
+
+const BILMECELER = [
+  { soru: "🧠 Bilmece: Gündüzleri uyur, geceleri uçmaz ama dünyayı dolaşır, o nedir?", cevap: "harita" },
+  { soru: "🧩 Bilmece: Sağ eline aldığını sol eline veremezsin, o nedir?", cevap: "dirsek" },
+  { soru: "🔍 Bilmece: Den نزin ortasında ne vardır?", cevap: "n harfi" },
+];
+
 const KONFETI_RENKLERI = ["#FF5D8F", "#FFD166", "#8B5CF6", "#10B981"];
 
 function kutlamaSesiCal() {
@@ -130,11 +160,17 @@ export default function KacanKart({
   const [timeLeft, setTimeLeft] = useState(10);
   const [shatterStage, setShatterStage] = useState(0);
 
-  // Yeni Tema Durumları (11 ve 12)
-  const [riddleSolved, setRiddleSolved] = useState(false);
+  // Tema 10 (Magnet) Durumu
+  const [isMagnetActive, setIsMagnetActive] = useState(false);
+
+  // Tema 11 (Riddle) Durumları
+  const [bilmeceIndex] = useState(0);
   const [riddleAnswer, setRiddleAnswer] = useState("");
-  const [riddleError, setRiddleError] = useState(false);
-  const [scratchProgress, setScratchProgress] = useState(0);
+  const [riddleMessage, setRiddleMessage] = useState<string | null>(null);
+
+  // Tema 12 (Scratchpad / Sürpriz Sözler) Durumu
+  const [surprizIndex, setSurprizIndex] = useState(0);
+  const [surprizTiklama, setSurprizTiklama] = useState(0);
 
   // Tema 7 (Timer) Sayacı
   useEffect(() => {
@@ -237,40 +273,40 @@ export default function KacanKart({
         patlat();
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => {
-          if (prev >= 2) {
+          if (prev >= 9) {
             patlat();
-            return 3;
+            return 10;
           }
           return prev + 1;
         });
       } else if (theme === "magnet" && type === "hover") {
         patlat();
-      } else if (theme === "riddle" && type === "click") {
-        // Bulmaca çözülmeden hayır denemez
       }
     },
     [theme, patlat]
   );
 
-  // Ölçeklendirmeler: Her tıklamada evet %5 büyür, hayır %5 küçülür (Tema 1, 2, 5 için)
+  // Tema 3 (Shrinking) ve Tema 1, 2, 5 için optimize edilmiş yavaşlatılmış oranlar
   const evetOlcek =
-    theme === "escaping" || theme === "teleporting" || theme === "persuasive"
-      ? 1 + kacisSayisi * 0.05
+    theme === "escaping" || theme === "teleporting"
+      ? 1 + kacisSayisi * 0.025 // Daha yavaş büyüme
+      : theme === "persuasive"
+      ? 1 + kacisSayisi * 0.04
       : theme === "shrinking"
-      ? Math.min(1 + kacisSayisi * 0.25, 2.5)
+      ? Math.min(1 + kacisSayisi * 0.08, 2.2) // Yavaşlatılmış küçülme/büyüme
       : 1;
 
   const hayirOlcek =
     theme === "persuasive"
-      ? Math.max(0.35, 1 - kacisSayisi * 0.05)
+      ? Math.max(0.4, 1 - kacisSayisi * 0.03) // Yavaşça küçülen hayır
       : theme === "shrinking"
-      ? Math.max(0, 1 - kacisSayisi * 0.2)
+      ? Math.max(0.1, 1 - kacisSayisi * 0.05) // Çok yavaş küçülen hayır
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
       return PERSUASIVE_STEPS[
-        Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1)
+        Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1]
       ];
     }
     if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
@@ -389,63 +425,54 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* Tema 11: Bulmaca Alanı */}
-              {theme === "riddle" && !riddleSolved && (
+              {/* Tema 11: Bilmece Alanı */}
+              {theme === "riddle" && (
                 <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-3.5 rounded-2xl text-center">
-                  <p className="text-xs text-indigo-200 font-medium">
-                    🧩 Bulmaca: En tatlı meyve nedir? (İpucu: Kelime &quot;M&quot; ile başlar)
+                  <p className="text-xs text-indigo-200 font-medium mb-1">
+                    {BILMECELER[bilmeceIndex].soru}
                   </p>
-                  <div className="mt-2.5 flex gap-2 justify-center">
+                  <p className="text-[10px] text-indigo-300 mb-2 italic">
+                    💡 Doğru cevabı bilirsen Hayır diyebilirsin! (Tabii bulabilirsen 😉)
+                  </p>
+                  <div className="flex gap-2 justify-center">
                     <input
                       type="text"
                       value={riddleAnswer}
                       onChange={(e) => setRiddleAnswer(e.target.value)}
-                      placeholder="Cevabınız..."
+                      placeholder="Cevabın..."
                       className="bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none w-36"
                     />
                     <button
                       onClick={() => {
-                        if (riddleAnswer.trim().toLowerCase() === "muz") {
-                          setRiddleSolved(true);
-                          setRiddleError(false);
-                        } else {
-                          setRiddleError(true);
-                        }
+                        setRiddleMessage("Cevap yanlış! Pes et ve Evet de! 😜");
                       }}
                       className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer"
                     >
                       Kontrol Et
                     </button>
                   </div>
-                  {riddleError && (
-                    <p className="text-[10px] text-rose-400 mt-1.5">
-                      Yanlış cevap! İpucuna dikkat et 😉
+                  {riddleMessage && (
+                    <p className="text-[11px] text-rose-400 font-semibold mt-2 animate-bounce">
+                      {riddleMessage}
                     </p>
                   )}
                 </div>
               )}
 
-              {/* Tema 12: Kazı Kazan Alanı */}
-              {theme === "scratchpad" && scratchProgress < 3 && (
+              {/* Tema 12: Sürpriz Sözler Alanı */}
+              {theme === "scratchpad" && (
                 <div 
-                  onClick={() => setScratchProgress((p) => p + 1)}
-                  className="mt-4 bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-purple-500/30 p-4 rounded-2xl text-center cursor-pointer select-none active:scale-95 transition-transform"
+                  onClick={() => {
+                    setSurprizTiklama((p) => p + 1);
+                    setSurprizIndex((prev) => (prev + 1) % SURPRIZ_SOZLER.length);
+                  }}
+                  className="mt-4 bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-purple-500/30 p-4 rounded-2xl text-center cursor-pointer select-none active:scale-95 transition-transform shadow-lg"
                 >
-                  <p className="text-xs font-bold text-purple-200">
-                    🎁 Sürprizi açmak için tıkla ({3 - scratchProgress} adım kaldı)
+                  <p className="text-xs font-extrabold text-purple-200 mb-1">
+                    🎁 Sürprizi Keşfetmek İçin Tıkla! ({surprizTiklama})
                   </p>
-                  <p className="text-[10px] text-purple-300 mt-1">
-                    {scratchProgress === 0 && "Kazımak için dokun..."}
-                    {scratchProgress === 1 && "Az kaldı, biraz daha..."}
-                    {scratchProgress === 2 && "Neredeyse açıldı!"}
-                  </p>
-                </div>
-              )}
-
-              {theme === "scratchpad" && scratchProgress >= 3 && (
-                <div className="mt-4 bg-emerald-950/40 border border-emerald-500/30 p-3.5 rounded-2xl text-center">
-                  <p className="text-xs font-bold text-emerald-300">
-                    ✨ Sürpriz Mesaj: Seninle her an çok özel! Şimdi &quot;Evet&quot; de ve kutlayalım ❤️
+                  <p className="text-xs text-pink-300 font-medium">
+                    {SURPRIZ_SOZLER[surprizIndex]}
                   </p>
                 </div>
               )}
@@ -469,75 +496,103 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Etkileşim Alanı (Çakışmayı önlemek için gerekiyorsa dikey konumlandırma desteği) */}
+              {/* Etkileşim Alanı */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-4 overflow-hidden ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-6 overflow-hidden ${
                   evetOlcek > 1.6 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                {/* EVET BUTONU */}
-                <motion.button
-                  type="button"
-                  onClick={patlat}
-                  animate={{ scale: evetOlcek }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 16,
-                  }}
-                  className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
-                >
-                  {evetMetni}
-                </motion.button>
-
-                {/* HAYIR BUTONU */}
-                {hayirOlcek > 0 &&
-                  !(theme === "timer" && timeLeft === 0) &&
-                  !(theme === "shattering" && shatterStage >= 3) &&
-                  !(theme === "riddle" && !riddleSolved) && (
+                {/* TEMA 8: 10 Farklı Renkli Komik Evet Butonu */}
+                {theme === "reverse_psychology" ? (
+                  <div className="grid grid-cols-2 gap-2 w-full max-h-48 overflow-y-auto pr-1">
+                    {RENKLI_EVET_BUTONLARI.map((btn, idx) => (
+                      <motion.button
+                        key={idx}
+                        type="button"
+                        onClick={patlat}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`rounded-xl px-4 py-2.5 font-bold text-xs text-white shadow-md cursor-pointer ${btn.renk}`}
+                      >
+                        {btn.metin}
+                      </motion.button>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    {/* EVET BUTONU (Tema 10 Mıknatıs Desteği ile) */}
                     <motion.button
-                      ref={hayirRef}
                       type="button"
-                      onMouseEnter={() => handleNoAction("hover")}
-                      onClick={() => handleNoAction("click")}
-                      onTouchStart={(e) => {
-                        e.preventDefault();
-                        handleNoAction("click");
-                      }}
-                      className={
-                        (theme === "escaping" || theme === "teleporting") && pos
-                          ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer z-20"
-                          : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
-                              theme === "shattering" && shatterStage === 1
-                                ? "border-dashed opacity-80"
-                                : theme === "shattering" && shatterStage === 2
-                                ? "line-through opacity-50 scale-90"
-                                : ""
-                            }`
-                      }
+                      onClick={patlat}
                       animate={{
-                        x:
-                          (theme === "escaping" || theme === "teleporting") &&
-                          pos
-                            ? pos.x
-                            : 0,
-                        y:
-                          (theme === "escaping" || theme === "teleporting") &&
-                          pos
-                            ? pos.y
-                            : 0,
-                        scale: hayirOlcek,
+                        scale: evetOlcek,
+                        x: theme === "magnet" && isMagnetActive ? 50 : 0,
                       }}
                       transition={{
                         type: "spring",
-                        stiffness: 320,
-                        damping: 18,
+                        stiffness: 260,
+                        damping: 16,
                       }}
+                      className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
                     >
-                      {gosterilenHayirMetni}
+                      {evetMetni}
                     </motion.button>
-                  )}
+
+                    {/* HAYIR BUTONU */}
+                    {hayirOlcek > 0 &&
+                      !(theme === "timer" && timeLeft === 0) &&
+                      !(theme === "shattering" && shatterStage >= 10) && (
+                        <motion.button
+                          ref={hayirRef}
+                          type="button"
+                          onMouseEnter={() => {
+                            handleNoAction("hover");
+                            if (theme === "magnet") setIsMagnetActive(true);
+                          }}
+                          onMouseLeave={() => {
+                            if (theme === "magnet") setIsMagnetActive(false);
+                          }}
+                          onClick={() => handleNoAction("click")}
+                          onTouchStart={(e) => {
+                            e.preventDefault();
+                            handleNoAction("click");
+                          }}
+                          className={
+                            (theme === "escaping" || theme === "teleporting") && pos
+                              ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer z-20"
+                              : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
+                                  theme === "shattering"
+                                    ? `opacity-${Math.max(10, 100 - shatterStage * 10)} scale-${Math.max(50, 100 - shatterStage * 5)} border-dashed`
+                                    : ""
+                                }`
+                          }
+                          animate={{
+                            x:
+                              (theme === "escaping" || theme === "teleporting") &&
+                              pos
+                                ? pos.x
+                                : 0,
+                            y:
+                              (theme === "escaping" || theme === "teleporting") &&
+                              pos
+                                ? pos.y
+                                : 0,
+                            scale: hayirOlcek,
+                          }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 320,
+                            damping: 18,
+                          }}
+                        >
+                          {theme === "shattering"
+                            ? `Parçalanıyor... (${shatterStage}/10)`
+                            : gosterilenHayirMetni}
+                        </motion.button>
+                      )}
+                  </>
+                )}
               </div>
 
               {/* Tema 6: Şifre Modalı */}
