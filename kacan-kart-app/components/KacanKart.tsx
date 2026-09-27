@@ -253,7 +253,7 @@ export default function KacanKart({
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
       return PERSUASIVE_STEPS[
-        Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1]
+        Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1)
       ];
     }
     if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
@@ -376,7 +376,7 @@ export default function KacanKart({
               {theme === "riddle" && !riddleSolved && (
                 <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-3.5 rounded-2xl text-center">
                   <p className="text-xs text-indigo-200 font-medium">
-                    🧩 Bulmaca: En tatlı meyve nedir? (İpucu: Kelime "M" ile başlar)
+                    🧩 Bulmaca: En tatlı meyve nedir? (İpucu: Kelime &quot;M&quot; ile başlar)
                   </p>
                   <div className="mt-2.5 flex gap-2 justify-center">
                     <input
@@ -428,7 +428,7 @@ export default function KacanKart({
               {theme === "scratchpad" && scratchProgress >= 3 && (
                 <div className="mt-4 bg-emerald-950/40 border border-emerald-500/30 p-3.5 rounded-2xl text-center">
                   <p className="text-xs font-bold text-emerald-300">
-                    ✨ Sürpriz Mesaj: Seninle her an çok özel! Şimdi "Evet" de ve kutlayalım ❤️
+                    ✨ Sürpriz Mesaj: Seninle her an çok özel! Şimdi &quot;Evet&quot; de ve kutlayalım ❤️
                   </p>
                 </div>
               )}
