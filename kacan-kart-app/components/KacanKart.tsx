@@ -351,6 +351,7 @@ export default function KacanKart({
   // İstediğin oranlar: Evet her kaçışta %8 büyür, Hayır her kaçışta %5 küçülür (minimum 0.35 ile tamamen kaybolmaz)
   const evetOlcek = 1 + kacisSayisi * 0.08;
   const hayirOlcek = Math.max(0.35, 1 - kacisSayisi * 0.05);
+  const sureDoldu = theme === "timer" && timeLeft === 0;
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
@@ -477,6 +478,11 @@ export default function KacanKart({
                   <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 py-1 px-3 rounded-full inline-block">
                     ⏳ Kalan Süre: {timeLeft}s
                   </span>
+                  {sureDoldu && (
+                    <p className="mt-3 text-sm font-bold text-rose-300">
+                      Hayır demek için süren doldu, Evet demek zorundasın!
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -597,7 +603,7 @@ export default function KacanKart({
                       type="button"
                       onClick={patlat}
                       animate={{ 
-                        scale: evetOlcek,
+                        scale: sureDoldu ? evetOlcek * 1.18 : evetOlcek,
                         x: theme === "magnet" && isMagnetActive ? 95 : 0,
                         zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
@@ -612,7 +618,7 @@ export default function KacanKart({
                     </motion.button>
 
                     {/* Hayır Butonu: Sınırlar içinde güvenle kaçar, her kaçışta %5 küçülür */}
-                    {hayirOlcek > 0.1 && (
+                    {hayirOlcek > 0.1 && !sureDoldu && (
                       <motion.button
                         type="button"
                         onMouseEnter={() => handleNoAction("hover")}
