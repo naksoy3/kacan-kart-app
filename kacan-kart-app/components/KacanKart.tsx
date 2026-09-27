@@ -307,7 +307,8 @@ export default function KacanKart({
 
   const handleNoAction = useCallback(
     (type: "click" | "hover") => {
-      if (theme === "escaping" || theme === "teleporting") {
+      // Tema 1 (escaping) veya Tema 5 (teleporting) için hover veya click tetiklendiğinde kaçsın
+      if ((theme === "escaping" || theme === "teleporting") && (type === "hover" || type === "click")) {
         const zone = playzoneRef.current;
         const btn = hayirRef.current;
         if (!zone || !btn) return;
@@ -474,7 +475,7 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* YER, ZAMAN VE TARİH BİLGİLERİ GÖSTERİM ALANI (Eğer girildiyse kartta net görünür) */}
+              {/* YER, ZAMAN VE TARİH BİLGİLERİ GÖSTERİM ALANI */}
               {(tarih || saat || mekan) && (
                 <div className="mb-4 flex flex-wrap items-center justify-center gap-2 text-xs">
                   {tarih && (
@@ -644,6 +645,14 @@ export default function KacanKart({
                         onMouseEnter={() => handleNoAction("hover")}
                         onClick={() => handleNoAction("click")}
                         style={{
+                          ...(theme === "escaping" && pos
+                            ? {
+                                position: "absolute",
+                                top: pos.y,
+                                left: pos.x,
+                                transition: "all 0.12s ease-out",
+                              }
+                            : {}),
                           clipPath:
                             theme === "shattering" && shatterStage > 0
                               ? "polygon(0% 0%, 100% 5%, 95% 100%, 5% 95%, 50% 40%)"
