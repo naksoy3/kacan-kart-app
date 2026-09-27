@@ -250,9 +250,9 @@ export default function KacanKart({
         patlat();
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => {
-          if (prev >= 2) {
+          if (prev >= 9) {
             patlat();
-            return 3;
+            return 10;
           }
           return prev + 1;
         });
@@ -278,6 +278,8 @@ export default function KacanKart({
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
       ? Math.max(0.15, 1 - kacisSayisi * 0.03)
+      : theme === "shattering"
+      ? Math.max(0.1, 1 - shatterStage * 0.09)
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
@@ -287,8 +289,23 @@ export default function KacanKart({
       ];
     }
     if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
+    if (theme === "shattering") {
+      const mesajlar = [
+        "Hayır ❌",
+        "Çatlıyor... ⚡",
+        "Parçalanıyor 💥",
+        "Dağılıyor... 🧩",
+        "Ufalanıyor 🌪️",
+        "Son parça! ⚠️",
+        "Yok oluyor... 💨",
+        "Neredeyse bitti! 🪄",
+        "Son bir tık! 🔥",
+        "Elveda Hayır! 👋",
+      ];
+      return mesajlar[Math.min(shatterStage, mesajlar.length - 1)];
+    }
     return hayirMetni;
-  }, [theme, kacisSayisi, hayirMetni]);
+  }, [theme, kacisSayisi, shatterStage, hayirMetni]);
 
   const parcaciklar = useMemo(() => {
     const emojiler = ["🎉", "✨", "💫", "🎊", "💖"];
@@ -525,7 +542,7 @@ export default function KacanKart({
                     {/* HAYIR BUTONU */}
                     {hayirOlcek > 0 &&
                       !(theme === "timer" && timeLeft === 0) &&
-                      !(theme === "shattering" && shatterStage >= 3) &&
+                      !(theme === "shattering" && shatterStage >= 10) &&
                       !(theme === "riddle" && !riddleSolved) && (
                         <motion.button
                           ref={hayirRef}
@@ -536,29 +553,14 @@ export default function KacanKart({
                             e.preventDefault();
                             handleNoAction("click");
                           }}
-                          className={
-                            (theme === "escaping" || theme === "teleporting") && pos
-                              ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer z-20"
-                              : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
-                                  theme === "shattering" && shatterStage === 1
-                                    ? "border-dashed opacity-80"
-                                    : theme === "shattering" && shatterStage === 2
-                                    ? "line-through opacity-50 scale-90"
-                                    : ""
-                                }`
-                          }
+                          className={`rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
+                            theme === "shattering"
+                              ? "border-dashed filter blur-[0.5px]"
+                              : ""
+                          }`}
                           animate={{
-                            x:
-                              (theme === "escaping" || theme === "teleporting") &&
-                              pos
-                                ? pos.x
-                                : 0,
-                            y:
-                              (theme === "escaping" || theme === "teleporting") &&
-                              pos
-                                ? pos.y
-                                : 0,
                             scale: hayirOlcek,
+                            rotate: theme === "shattering" ? shatterStage * 5 : 0,
                           }}
                           transition={{
                             type: "spring",
