@@ -201,7 +201,7 @@ export default function KacanKart({
   const playzoneRef = useRef<HTMLDivElement>(null);
   const hayirRef = useRef<HTMLButtonElement>(null);
 
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [kacisSayisi, setKacisSayisi] = useState(0);
   const [basarili, setBasarili] = useState(false);
   const [gifHata, setGifHata] = useState(false);
@@ -314,24 +314,20 @@ export default function KacanKart({
 
         const zoneRect = zone.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
-        const padding = 12;
+        
+        // Container sınırları içinde kalacak şekilde minimum/maksimum yerel koordinatları hesapla
+        const padding = 8;
+        const maxX = zoneRect.width - btnRect.width - padding;
+        const maxY = zoneRect.height - btnRect.height - padding;
 
-        const maxX = Math.max(padding, zoneRect.width - btnRect.width - padding);
-        const maxY = Math.max(padding, zoneRect.height - btnRect.height - padding);
+        const minX = padding;
+        const minY = padding;
 
-        const currentX = btnRect.left - zoneRect.left;
-        const currentY = btnRect.top - zoneRect.top;
+        if (maxX <= minX || maxY <= minY) return;
 
-        let yeniX = padding + Math.random() * (maxX - padding);
-        let yeniY = padding + Math.random() * (maxY - padding);
-
-        if (Math.abs(yeniX - currentX) < btnRect.width * 0.4) {
-          yeniX = Math.min(maxX, Math.max(padding, currentX + (Math.random() > 0.5 ? 36 : -36)));
-        }
-
-        if (Math.abs(yeniY - currentY) < btnRect.height * 0.4) {
-          yeniY = Math.min(maxY, Math.max(padding, currentY + (Math.random() > 0.5 ? 28 : -28)));
-        }
+        // Rastgele yeni bir yerel (relative) konum üret
+        const yeniX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+        const yeniY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -357,9 +353,10 @@ export default function KacanKart({
     [theme, patlat]
   );
 
+  // Her kaçışta Evet butonu %8 oranında büyür (1 + kacisSayisi * 0.08)
   const evetOlcek =
     theme === "escaping" || theme === "teleporting"
-      ? 1 + kacisSayisi * 0.12
+      ? 1 + kacisSayisi * 0.08
       : theme === "persuasive" || theme === "magnet"
       ? 1 + kacisSayisi * 0.08
       : theme === "shrinking"
@@ -368,8 +365,11 @@ export default function KacanKart({
       ? 1 + shatterStage * 0.08
       : 1;
 
+  // Her kaçışta Hayır butonu %5 oranında küçülür (Math.max(0.1, 1 - kacisSayisi * 0.05))
   const hayirOlcek =
-    theme === "persuasive" || theme === "magnet"
+    theme === "escaping" || theme === "teleporting"
+      ? Math.max(0.1, 1 - kacisSayisi * 0.05)
+      : theme === "persuasive" || theme === "magnet"
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
       ? Math.max(0.15, 1 - kacisSayisi * 0.03)
@@ -658,13 +658,13 @@ export default function KacanKart({
                           scale: hayirOlcek,
                           x:
                             theme === "escaping" || theme === "teleporting"
-                              ? pos?.x ?? 0
+                              ? pos.x
                               : theme === "shattering" && shatterStage > 0
                               ? (shatterStage % 2 === 0 ? 2 : -2)
                               : 0,
                           y:
                             theme === "escaping" || theme === "teleporting"
-                              ? pos?.y ?? 0
+                              ? pos.y
                               : 0,
                           rotate:
                             theme === "shattering"
