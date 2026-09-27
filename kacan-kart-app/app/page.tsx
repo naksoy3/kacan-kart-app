@@ -95,7 +95,6 @@ function CardContent() {
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : 1);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
   
-  // Varsayılan isimler tamamen kaldırıldı, sayfa yenilendiğinde boş gelecek:
   const [targetUsername, setTargetUsername] = useState(urlUser || "");
   const [fromUsername, setFromUsername] = useState(urlFrom || "");
   
@@ -160,17 +159,14 @@ function CardContent() {
   };
 
   const handleProceedToPreview = async () => {
-    if (!user) {
-      setIsAuthModalOpen(true);
-      return;
-    }
+    // Giriş kontrolü şimdilik devre dışı bırakıldı (Doğrudan geçiş yapılıyor)
 
-    // Kartı Supabase veritabanına kaydet
+    // Kartı Supabase veritabanına kaydet (Kullanıcı giriş yapmışsa user_id eklenir, yapmamışsa null geçilebilir veya tablo yapısına göre kaydedilir)
     const { data, error } = await supabase
       .from("cards")
       .insert([
         {
-          user_id: user.id,
+          user_id: user ? user.id : null,
           from_username: fromUsername,
           target_username: targetUsername,
           soru,
