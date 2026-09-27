@@ -195,6 +195,7 @@ function CardContent() {
     setFormStep(4);
   };
 
+  // URL'ye mekan ve saat parametrelerini de güvenli şekilde ekledik
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
     const params = new URLSearchParams();
@@ -204,9 +205,15 @@ function CardContent() {
     if (soru) params.set("s", soru);
     if (selectedTheme) params.set("t", selectedTheme);
     if (gifUrl) params.set("gif", gifUrl);
-    if (yer) params.set("yer", yer);
+    if (yer) {
+      params.set("yer", yer);
+      params.set("mekan", yer);
+    }
     if (tarih) params.set("tarih", tarih);
-    if (zaman) params.set("zaman", zaman);
+    if (zaman) {
+      params.set("zaman", zaman);
+      params.set("saat", zaman);
+    }
 
     return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
   };
@@ -503,7 +510,8 @@ function CardContent() {
                 ✨ {fromUsername}, {targetUsername}&apos;ye soruyor:
               </p>
             )}
-            {/* Burada mekan, tarih, saat ve sender değerleri KacanKart bileşenine aktarıldı */}
+            
+            {/* Mekan, tarih, saat hem yer/zaman hem mekan/saat parametreleriyle garantiye alındı */}
             <KacanKart
               targetUsername={targetUsername}
               sender={fromUsername}
@@ -512,9 +520,9 @@ function CardContent() {
               hayirMetni={searchParams.get("h") || "Hayır"}
               gifUrl={gifUrl}
               theme={selectedTheme}
-              mekan={yer}
-              tarih={tarih}
-              saat={zaman}
+              mekan={yer || searchParams.get("mekan") || searchParams.get("yer") || ""}
+              tarih={tarih || searchParams.get("tarih") || ""}
+              saat={zaman || searchParams.get("saat") || searchParams.get("zaman") || ""}
               onAccept={handleAcceptResponse}
             />
           </div>
