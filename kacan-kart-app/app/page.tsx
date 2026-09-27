@@ -85,7 +85,7 @@ function CardContent() {
 
   const urlCardId = searchParams.get("id");
   const urlUser = searchParams.get("u");
-  const urlFrom = searchParams.get("f");
+  const urlFrom = searchParams.get("f") || searchParams.get("sender") || searchParams.get("gonderen");
   const urlSoru = searchParams.get("s");
   const urlTheme = searchParams.get("t") as CardTheme | null;
   const urlGif = searchParams.get("gif");
