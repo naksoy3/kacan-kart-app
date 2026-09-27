@@ -40,9 +40,8 @@ export default function CardPage() {
   const searchParams = useSearchParams();
   const [selectedTheme, setSelectedTheme] = useState<CardTheme | null>(null);
 
-  // URL veya form parametrelerini yakalıyoruz (Eğer URL'den paylaşım linki açıldıysa oradan alır)
+  // URL veya form parametrelerini yakalıyoruz
   const targetUsername = searchParams.get("u") || searchParams.get("hedef") || "Nurullah";
-  const sender = searchParams.get("sender") || searchParams.get("gonderen") || "Gönderen";
   const soru = searchParams.get("s") || searchParams.get("soru") || "Benimle yemeğe çıkar mısın?";
   const gifUrl = searchParams.get("gif") || undefined;
   
@@ -115,7 +114,6 @@ export default function CardPage() {
       ) : (
         <EscapeCard
           targetUsername={targetUsername}
-          sender={sender}
           soru={soru}
           gifUrl={gifUrl}
           mekan={mekan}
