@@ -143,6 +143,9 @@ export default function KacanKart({
   const [timeLeft, setTimeLeft] = useState(10);
   const [shatterStage, setShatterStage] = useState(0);
 
+  // Tema 10 (Magnet) Durumu
+  const [isMagnetActive, setIsMagnetActive] = useState(false);
+
   // Yeni Tema Durumları (11 ve 12)
   const [riddleSolved, setRiddleSolved] = useState(false);
   const [riddleAnswer, setRiddleAnswer] = useState("");
@@ -256,8 +259,8 @@ export default function KacanKart({
           }
           return prev + 1;
         });
-      } else if (theme === "magnet" && type === "hover") {
-        patlat();
+      } else if (theme === "magnet" && type === "click") {
+        // Hayır'a tıklanırsa tıklama sayısını artırabilir veya şaka yapabiliriz
       } else if (theme === "riddle" && type === "click") {
         // Bulmaca çözülmeden hayır denemez
       }
@@ -265,7 +268,7 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Ölçeklendirmeler: Tema 3 için yavaşlatılmış oranlar
+  // Ölçeklendirmeler
   const evetOlcek =
     theme === "escaping" || theme === "teleporting" || theme === "persuasive"
       ? 1 + kacisSayisi * 0.05
@@ -502,7 +505,7 @@ export default function KacanKart({
               {/* Etkileşim Alanı */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-4 overflow-hidden ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
                   evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
@@ -524,15 +527,18 @@ export default function KacanKart({
                   </div>
                 ) : (
                   <>
-                    {/* EVET BUTONU */}
+                    {/* EVET BUTONU (Tema 10 Mıknatıs Desteği ile) */}
                     <motion.button
                       type="button"
                       onClick={patlat}
-                      animate={{ scale: evetOlcek }}
+                      animate={{
+                        scale: evetOlcek,
+                        x: theme === "magnet" && isMagnetActive ? 90 : 0,
+                      }}
                       transition={{
                         type: "spring",
-                        stiffness: 260,
-                        damping: 16,
+                        stiffness: 280,
+                        damping: 18,
                       }}
                       className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
                     >
@@ -547,7 +553,13 @@ export default function KacanKart({
                         <motion.button
                           ref={hayirRef}
                           type="button"
-                          onMouseEnter={() => handleNoAction("hover")}
+                          onMouseEnter={() => {
+                            handleNoAction("hover");
+                            if (theme === "magnet") setIsMagnetActive(true);
+                          }}
+                          onMouseLeave={() => {
+                            if (theme === "magnet") setIsMagnetActive(false);
+                          }}
                           onClick={() => handleNoAction("click")}
                           onTouchStart={(e) => {
                             e.preventDefault();
