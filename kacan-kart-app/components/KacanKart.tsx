@@ -314,15 +314,24 @@ export default function KacanKart({
 
         const zoneRect = zone.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
+        const padding = 12;
 
-        const minVisibleOffset = 15;
-        const minX = -btnRect.width + minVisibleOffset;
-        const maxX = zoneRect.width - minVisibleOffset;
-        const minY = -btnRect.height + minVisibleOffset;
-        const maxY = zoneRect.height - minVisibleOffset;
+        const maxX = Math.max(padding, zoneRect.width - btnRect.width - padding);
+        const maxY = Math.max(padding, zoneRect.height - btnRect.height - padding);
 
-        const yeniX = minX + Math.random() * (maxX - minX);
-        const yeniY = minY + Math.random() * (maxY - minY);
+        const currentX = btnRect.left - zoneRect.left;
+        const currentY = btnRect.top - zoneRect.top;
+
+        let yeniX = padding + Math.random() * (maxX - padding);
+        let yeniY = padding + Math.random() * (maxY - padding);
+
+        if (Math.abs(yeniX - currentX) < btnRect.width * 0.4) {
+          yeniX = Math.min(maxX, Math.max(padding, currentX + (Math.random() > 0.5 ? 36 : -36)));
+        }
+
+        if (Math.abs(yeniY - currentY) < btnRect.height * 0.4) {
+          yeniY = Math.min(maxY, Math.max(padding, currentY + (Math.random() > 0.5 ? 28 : -28)));
+        }
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -630,6 +639,7 @@ export default function KacanKart({
                         ref={hayirRef}
                         type="button"
                         onMouseEnter={() => handleNoAction("hover")}
+                        onMouseMove={() => handleNoAction("hover")}
                         onClick={() => handleNoAction("click")}
                         style={{
                           clipPath:
