@@ -298,7 +298,7 @@ export default function KacanKart({
   }, [onAccept]);
 
   const handleNoAction = useCallback(
-    (type: "click" | "hover") => {
+    (type: "click" | "hover", event?: React.MouseEvent<HTMLButtonElement>) => {
       if (theme === "escaping" || theme === "teleporting") {
         const card = cardRef.current;
         const btn = hayirRef.current;
@@ -307,19 +307,24 @@ export default function KacanKart({
         const cardRect = card.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
 
-        // Kartın sınırları içerisinde kalacak şekilde rastgele koordinatlar üretelim
-        const padding = 24;
-        const maxX = cardRect.width - btnRect.width - padding;
-        const maxY = cardRect.height - btnRect.height - padding;
-
+        const padding = 18;
         const minX = padding;
-        // Sadece üst kısımdaki yazılara ve resme çarpmaması için minimum Y değerini biraz aşağıda tutuyoruz
-        const minY = 220; 
+        const maxX = Math.max(padding, cardRect.width - btnRect.width - padding);
+        const minY = 90;
+        const maxY = Math.max(minY + 8, cardRect.height - btnRect.height - padding);
 
-        if (maxX <= minX || maxY <= minY) return;
+        let yeniX = minX + Math.random() * (maxX - minX);
+        let yeniY = minY + Math.random() * (maxY - minY);
 
-        const yeniX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-        const yeniY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+        if (event) {
+          const pointerX = event.clientX - cardRect.left;
+          const pointerY = event.clientY - cardRect.top;
+          const aimAwayX = pointerX < cardRect.width / 2 ? 1 : -1;
+          const aimAwayY = pointerY < cardRect.height / 2 ? 1 : -1;
+
+          yeniX = Math.min(maxX, Math.max(minX, pointerX + aimAwayX * (btnRect.width + 40)));
+          yeniY = Math.min(maxY, Math.max(minY, pointerY + aimAwayY * (btnRect.height + 30)));
+        }
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -634,11 +639,13 @@ export default function KacanKart({
                       <motion.button
                         ref={hayirRef}
                         type="button"
-                        onMouseEnter={() => handleNoAction("hover")}
-                        onMouseMove={() => handleNoAction("hover")}
+                        onMouseEnter={(event) => handleNoAction("hover", event)}
+                        onMouseMove={(event) => handleNoAction("hover", event)}
                         onClick={() => handleNoAction("click")}
                         style={{
                           position: theme === "escaping" || theme === "teleporting" ? "absolute" : "relative",
+                          left: theme === "escaping" || theme === "teleporting" ? `${pos.x}px` : undefined,
+                          top: theme === "escaping" || theme === "teleporting" ? `${pos.y}px` : undefined,
                           clipPath:
                             theme === "shattering" && shatterStage > 0
                               ? "polygon(0% 0%, 100% 5%, 95% 100%, 5% 95%, 50% 40%)"
@@ -654,15 +661,10 @@ export default function KacanKart({
                         animate={{
                           scale: hayirOlcek,
                           x:
-                            theme === "escaping" || theme === "teleporting"
-                              ? pos.x
-                              : theme === "shattering" && shatterStage > 0
+                            theme === "shattering" && shatterStage > 0
                               ? (shatterStage % 2 === 0 ? 2 : -2)
                               : 0,
-                          y:
-                            theme === "escaping" || theme === "teleporting"
-                              ? pos.y
-                              : 0,
+                          y: 0,
                           rotate:
                             theme === "shattering"
                               ? shatterStage * 6 - (shatterStage % 2) * 12
