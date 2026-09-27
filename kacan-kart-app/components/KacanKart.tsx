@@ -133,7 +133,6 @@ const YANLIS_CEVAP_MESAJLARI = [
   "Bu bilmeceyi çözmek yerine kalbini açıp Evet de! 🥰"
 ];
 
-// Herkese hitap eden tam 8 adet dikkat çekici ve hoş söz
 const SCRATCH_MESSAGES = [
   "🌟 Harika enerjinle etrafındaki herkese ilham oluyorsun!",
   "🚀 Bugün karşna çıkan tüm engelleri aşacak güçtesin, kendine inan!",
@@ -210,12 +209,11 @@ export default function KacanKart({
   // Tema 10 (Magnet) Durumu
   const [isMagnetActive, setIsMagnetActive] = useState(false);
 
-  // Tema 11 (Zor Bilmece - 10 Farklı Rastgele) Durumları
+  // Tema 11 (Zor Bilmece) Durumları
   const [secilenBilmece, setSecilenBilmece] = useState<{ soruMetni: string; ipucu: string } | null>(null);
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
 
-  // Sayfa yüklendiğinde rastgele bir bilmece seç
   useEffect(() => {
     if (theme === "riddle") {
       const rastgeleIndex = Math.floor(Math.random() * RIDDLES_LIST.length);
@@ -223,7 +221,7 @@ export default function KacanKart({
     }
   }, [theme]);
 
-  // Tema 12 (Dikkat Çekici Kazı-Kazan / 8 Sürpriz Söz) Durumları
+  // Tema 12 (Sürpriz Sözler) Durumları
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [scratchClicks, setScratchClicks] = useState(0);
 
@@ -328,8 +326,9 @@ export default function KacanKart({
         patlat();
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => Math.min(prev + 1, 15));
-      } else if (theme === "magnet" && type === "click") {
-        setKacisSayisi((n) => n + 1);
+      } else if (theme === "magnet") {
+        // Hayıra tıklanmaya çalışıldığında mıknatıs aktifleşir ve Evet butonu Hayır'ın üstüne kayar
+        setIsMagnetActive(true);
       }
     },
     [theme, patlat]
@@ -342,8 +341,6 @@ export default function KacanKart({
       ? 1 + kacisSayisi * 0.07
       : theme === "shattering"
       ? 1 + shatterStage * 0.08
-      : isMagnetActive
-      ? 1.15
       : 1;
 
   const hayirOlcek =
@@ -353,8 +350,6 @@ export default function KacanKart({
       ? Math.max(0.15, 1 - kacisSayisi * 0.03)
       : theme === "shattering"
       ? Math.max(0.08, 1 - shatterStage * 0.065) 
-      : isMagnetActive
-      ? 0.85
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
@@ -477,7 +472,7 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* TEMA 11: 10 Farklı Rastgele Bilmece ve Her Cevapta Yanlış / Pes Et Tuzağı */}
+              {/* TEMA 11: Bulmaca */}
               {theme === "riddle" && secilenBilmece && (
                 <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-2xl text-center shadow-lg">
                   <p className="text-xs text-indigo-200 font-semibold leading-relaxed">
@@ -516,7 +511,7 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* TEMA 12: Dikkat Çekici Süpriz Kazı-Kazan (8 Harika Söz) */}
+              {/* TEMA 12: Sürpriz Sözler */}
               {theme === "scratchpad" && (
                 <motion.div 
                   onClick={() => {
@@ -548,7 +543,7 @@ export default function KacanKart({
                 </motion.div>
               )}
 
-              {kacisSayisi > 2 && (theme === "escaping" || theme === "magnet") && (
+              {kacisSayisi > 2 && theme === "escaping" && (
                 <p className="mt-3 text-center text-xs text-indigo-300">
                   {kacisSayisi} kez denendi 🏃
                 </p>
@@ -566,9 +561,10 @@ export default function KacanKart({
                 </button>
               </div>
 
+              {/* BUTONLAR ALANI: Tema 10 için aralarındaki mesafe artırıldı ve mıknatıs efekti eklendi */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-6 px-4 overflow-hidden ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
                   evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
@@ -594,14 +590,15 @@ export default function KacanKart({
                       onClick={patlat}
                       animate={{ 
                         scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? -10 : 0 
+                        x: theme === "magnet" && isMagnetActive ? 95 : 0, // Hayır butonunun üzerine kayar
+                        zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
                       transition={{
                         type: "spring",
-                        stiffness: 300,
-                        damping: 20,
+                        stiffness: 280,
+                        damping: 18,
                       }}
-                      className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 z-10 cursor-pointer"
+                      className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-7 py-3.5 font-bold text-base text-slate-950 shadow-lg shadow-emerald-500/20 cursor-pointer"
                     >
                       {evetMetni}
                     </motion.button>
@@ -613,14 +610,8 @@ export default function KacanKart({
                         onMouseEnter={() => {
                           if (theme === "magnet") setIsMagnetActive(true);
                         }}
-                        onMouseLeave={() => {
-                          if (theme === "magnet") setIsMagnetActive(false);
-                        }}
                         onTouchStart={() => {
                           if (theme === "magnet") setIsMagnetActive(true);
-                        }}
-                        onTouchEnd={() => {
-                          if (theme === "magnet") setIsMagnetActive(false);
                         }}
                         onClick={() => handleNoAction("click")}
                         style={{
@@ -638,7 +629,7 @@ export default function KacanKart({
                         }`}
                         animate={{
                           scale: hayirOlcek,
-                          x: (theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 2 : -2) : 0) + (theme === "magnet" && isMagnetActive ? 10 : 0),
+                          x: (theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 2 : -2) : 0),
                           rotate:
                             theme === "shattering"
                               ? shatterStage * 6 - (shatterStage % 2) * 12
