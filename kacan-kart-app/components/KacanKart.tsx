@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 
-// 1. Temalar ve Tip Tanımları
+// 1. Temalar ve Tip Tanımları (Toplam 12 Tema)
 export type CardTheme =
   | "escaping"
   | "persuasive"
@@ -15,7 +15,9 @@ export type CardTheme =
   | "timer"
   | "reverse_psychology"
   | "shattering"
-  | "magnet";
+  | "magnet"
+  | "riddle"
+  | "scratchpad";
 
 export const THEME_NAMES: Record<CardTheme, string> = {
   escaping: "🎯 Tema 1: Kaçan Hayır",
@@ -28,6 +30,8 @@ export const THEME_NAMES: Record<CardTheme, string> = {
   reverse_psychology: "🪞 Tema 8: Ters Psikoloji",
   shattering: "💥 Tema 9: Parçalanan Buton",
   magnet: "🧲 Tema 10: Mıknatıs Evet",
+  riddle: "🧩 Tema 11: Bulmacalı Hayır",
+  scratchpad: "🎁 Tema 12: Sürpriz Kazı-Kazan",
 };
 
 export type KacanKartProps = {
@@ -117,6 +121,12 @@ export default function KacanKart({
   const [timeLeft, setTimeLeft] = useState(10);
   const [shatterStage, setShatterStage] = useState(0);
 
+  // Yeni Tema Durumları (11 ve 12)
+  const [riddleSolved, setRiddleSolved] = useState(false);
+  const [riddleAnswer, setRiddleAnswer] = useState("");
+  const [riddleError, setRiddleError] = useState(false);
+  const [scratchProgress, setScratchProgress] = useState(0);
+
   // Tema 7 (Timer) Sayacı
   useEffect(() => {
     if (theme === "timer" && !basarili && timeLeft > 0) {
@@ -180,7 +190,6 @@ export default function KacanKart({
     kutlamaSesiCal();
     setBasarili(true);
 
-    // Dışarıdan gelen onAccept fonksiyonunu çalıştır (Supabase durum güncellemesi için)
     if (onAccept) {
       onAccept();
     }
@@ -213,11 +222,19 @@ export default function KacanKart({
       } else if (theme === "pin_code" && type === "click") {
         setShowPinModal(true);
       } else if (theme === "reverse_psychology" && type === "click") {
-        patlat(); // Ters psikoloji: Hayır aslında Evet demektir!
+        patlat();
       } else if (theme === "shattering" && type === "click") {
-        setShatterStage((prev) => prev + 1);
+        setShatterStage((prev) => {
+          if (prev >= 2) {
+            patlat();
+            return 3;
+          }
+          return prev + 1;
+        });
       } else if (theme === "magnet" && type === "hover") {
         patlat();
+      } else if (theme === "riddle" && type === "click") {
+        // Bulmaca çözülmeden hayır denemez
       }
     },
     [theme, patlat]
@@ -236,7 +253,7 @@ export default function KacanKart({
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
       return PERSUASIVE_STEPS[
-        Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1)
+        Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1]
       ];
     }
     if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
@@ -314,7 +331,7 @@ export default function KacanKart({
           {onBack && (
             <button
               onClick={onBack}
-              className="text-[11px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-xl transition border border-white/10 text-slate-300"
+              className="text-[11px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-xl transition border border-white/10 text-slate-300 cursor-pointer"
             >
               ← Değiştir
             </button>
@@ -352,6 +369,67 @@ export default function KacanKart({
                   <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 py-1 px-3 rounded-full inline-block">
                     ⏳ Kalan Süre: {timeLeft}s
                   </span>
+                </div>
+              )}
+
+              {/* Tema 11: Bulmaca Alanı */}
+              {theme === "riddle" && !riddleSolved && (
+                <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-3.5 rounded-2xl text-center">
+                  <p className="text-xs text-indigo-200 font-medium">
+                    🧩 Bulmaca: En tatlı meyve nedir? (İpucu: Kelime "M" ile başlar)
+                  </p>
+                  <div className="mt-2.5 flex gap-2 justify-center">
+                    <input
+                      type="text"
+                      value={riddleAnswer}
+                      onChange={(e) => setRiddleAnswer(e.target.value)}
+                      placeholder="Cevabınız..."
+                      className="bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none w-36"
+                    />
+                    <button
+                      onClick={() => {
+                        if (riddleAnswer.trim().toLowerCase() === "muz") {
+                          setRiddleSolved(true);
+                          setRiddleError(false);
+                        } else {
+                          setRiddleError(true);
+                        }
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer"
+                    >
+                      Kontrol Et
+                    </button>
+                  </div>
+                  {riddleError && (
+                    <p className="text-[10px] text-rose-400 mt-1.5">
+                      Yanlış cevap! İpucuna dikkat et 😉
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Tema 12: Kazı Kazan Alanı */}
+              {theme === "scratchpad" && scratchProgress < 3 && (
+                <div 
+                  onClick={() => setScratchProgress((p) => p + 1)}
+                  className="mt-4 bg-gradient-to-r from-purple-900/60 to-pink-900/60 border border-purple-500/30 p-4 rounded-2xl text-center cursor-pointer select-none active:scale-95 transition-transform"
+                >
+                  <p className="text-xs font-bold text-purple-200">
+                    🎁 Sürprizi açmak için tıkla ({3 - scratchProgress} adım kaldı)
+                  </p>
+                  <p className="text-[10px] text-purple-300 mt-1">
+                    {scratchProgress === 0 && "Kazımak için dokun..."}
+                    {scratchProgress === 1 && "Az kaldı, biraz daha..."}
+                    {scratchProgress === 2 && "Neredeyse açıldı!"}
+                  </p>
+                </div>
+              )}
+
+              {theme === "scratchpad" && scratchProgress >= 3 && (
+                <div className="mt-4 bg-emerald-950/40 border border-emerald-500/30 p-3.5 rounded-2xl text-center">
+                  <p className="text-xs font-bold text-emerald-300">
+                    ✨ Sürpriz Mesaj: Seninle her an çok özel! Şimdi "Evet" de ve kutlayalım ❤️
+                  </p>
                 </div>
               )}
 
@@ -399,7 +477,8 @@ export default function KacanKart({
                 {/* HAYIR BUTONU */}
                 {hayirOlcek > 0 &&
                   !(theme === "timer" && timeLeft === 0) &&
-                  !(theme === "shattering" && shatterStage >= 3) && (
+                  !(theme === "shattering" && shatterStage >= 3) &&
+                  !(theme === "riddle" && !riddleSolved) && (
                     <motion.button
                       ref={hayirRef}
                       type="button"
@@ -411,8 +490,8 @@ export default function KacanKart({
                       }}
                       className={
                         (theme === "escaping" || theme === "teleporting") && pos
-                          ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md"
-                          : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md ${
+                          ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer"
+                          : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
                               theme === "shattering" && shatterStage === 1
                                 ? "border-dashed opacity-80"
                                 : theme === "shattering" && shatterStage === 2
@@ -467,13 +546,13 @@ export default function KacanKart({
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => setPinError(true)}
-                      className="px-4 py-1.5 bg-rose-600 text-white text-xs rounded-xl font-bold"
+                      className="px-4 py-1.5 bg-rose-600 text-white text-xs rounded-xl font-bold cursor-pointer"
                     >
                       Dene
                     </button>
                     <button
                       onClick={() => setShowPinModal(false)}
-                      className="px-4 py-1.5 bg-white/10 text-xs text-slate-300 rounded-xl"
+                      className="px-4 py-1.5 bg-white/10 text-xs text-slate-300 rounded-xl cursor-pointer"
                     >
                       Vazgeç (Evet De)
                     </button>
@@ -499,7 +578,7 @@ export default function KacanKart({
               <button
                 type="button"
                 onClick={patlat}
-                className="mt-6 rounded-2xl bg-indigo-500 hover:bg-indigo-400 px-6 py-2.5 font-bold text-xs text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-500/25"
+                className="mt-6 rounded-2xl bg-indigo-500 hover:bg-indigo-400 px-6 py-2.5 font-bold text-xs text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-500/25 cursor-pointer"
               >
                 Tekrar kutla 🎊
               </button>
