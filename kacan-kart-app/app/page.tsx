@@ -99,9 +99,9 @@ function CardContent() {
   const [fromUsername, setFromUsername] = useState(urlFrom || "");
   
   const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
-  const [yer, setYer] = useState(searchParams.get("yer") || "");
+  const [yer, setYer] = useState(searchParams.get("yer") || searchParams.get("mekan") || "");
   const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
-  const [zaman, setZaman] = useState(searchParams.get("zaman") || "");
+  const [zaman, setZaman] = useState(searchParams.get("zaman") || searchParams.get("saat") || "");
   const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
   const [cardId, setCardId] = useState<string | null>(urlCardId);
@@ -162,7 +162,6 @@ function CardContent() {
   };
 
   const handleProceedToPreview = async () => {
-    // Eğer daha önce bir cardId oluşturulmadıysa veritabanına kaydet
     if (!cardId) {
       const { data, error } = await supabase
         .from("cards")
@@ -504,13 +503,18 @@ function CardContent() {
                 ✨ {fromUsername}, {targetUsername}&apos;ye soruyor:
               </p>
             )}
+            {/* Burada mekan, tarih, saat ve sender değerleri KacanKart bileşenine aktarıldı */}
             <KacanKart
               targetUsername={targetUsername}
+              sender={fromUsername}
               soru={soru}
               evetMetni={searchParams.get("e") || "Evet!"}
               hayirMetni={searchParams.get("h") || "Hayır"}
               gifUrl={gifUrl}
               theme={selectedTheme}
+              mekan={yer}
+              tarih={tarih}
+              saat={zaman}
               onAccept={handleAcceptResponse}
             />
           </div>
