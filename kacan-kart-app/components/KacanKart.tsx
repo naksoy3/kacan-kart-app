@@ -254,29 +254,35 @@ export default function KacanKart({
       } else if (theme === "shattering" && type === "click") {
         // 10-15 kez tıklanabilmesi için aşamayı yavaşça artırıyoruz, otomatik kutlama tetiklenmiyor!
         setShatterStage((prev) => Math.min(prev + 1, 15));
+      } else if (theme === "magnet" && type === "click") {
+        setKacisSayisi((n) => n + 1);
       }
     },
     [theme, patlat]
   );
 
-  // Ölçeklendirmeler: Evet butonu her tıklamada %8 büyür
+  // Ölçeklendirmeler: Evet butonu her tıklamada veya etkileşimde büyür
   const evetOlcek =
-    theme === "escaping" || theme === "teleporting" || theme === "persuasive"
+    theme === "escaping" || theme === "teleporting" || theme === "persuasive" || theme === "magnet"
       ? 1 + kacisSayisi * 0.08
       : theme === "shrinking"
       ? 1 + kacisSayisi * 0.07
       : theme === "shattering"
       ? 1 + shatterStage * 0.08
+      : isMagnetActive
+      ? 1.15
       : 1;
 
-  // Hayır butonu dengeli küçülür (yaklaşık 12-15 tıklamada basılamayacak kadar ufak kalır)
+  // Hayır butonu dengeli küçülür (10-15 tıklamada basılamayacak kadar ufak kalır)
   const hayirOlcek =
-    theme === "persuasive"
+    theme === "persuasive" || theme === "magnet"
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
       ? Math.max(0.15, 1 - kacisSayisi * 0.03)
       : theme === "shattering"
       ? Math.max(0.08, 1 - shatterStage * 0.065) 
+      : isMagnetActive
+      ? 0.85
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
@@ -286,7 +292,7 @@ export default function KacanKart({
       ];
     }
     if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
-    return hayirMetni; // Tema 9 için sabit olarak kullanıcının gönderdiği hayır metni kalır
+    return hayirMetni;
   }, [theme, kacisSayisi, hayirMetni]);
 
   const parcaciklar = useMemo(() => {
@@ -462,9 +468,9 @@ export default function KacanKart({
                 </div>
               )}
 
-              {kacisSayisi > 2 && theme === "escaping" && (
+              {kacisSayisi > 2 && (theme === "escaping" || theme === "magnet") && (
                 <p className="mt-3 text-center text-xs text-indigo-300">
-                  {kacisSayisi} kez kaçtı bile 🏃
+                  {kacisSayisi} kez denendi 🏃
                 </p>
               )}
 
@@ -506,11 +512,14 @@ export default function KacanKart({
                   </div>
                 ) : (
                   <>
-                    {/* EVET BULUNU (%8 oranında büyür) */}
+                    {/* EVET BULUNU (%8 oranında büyür veya mıknatıs etkisindeyse çekilir) */}
                     <motion.button
                       type="button"
                       onClick={patlat}
-                      animate={{ scale: evetOlcek }}
+                      animate={{ 
+                        scale: evetOlcek,
+                        x: theme === "magnet" && isMagnetActive ? -10 : 0 
+                      }}
                       transition={{
                         type: "spring",
                         stiffness: 300,
@@ -556,11 +565,11 @@ export default function KacanKart({
                           }`}
                           animate={{
                             scale: hayirOlcek,
+                            x: (theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 2 : -2) : 0) + (theme === "magnet" && isMagnetActive ? 10 : 0),
                             rotate:
                               theme === "shattering"
                                 ? shatterStage * 6 - (shatterStage % 2) * 12
                                 : 0,
-                            x: theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 2 : -2) : 0,
                           }}
                           transition={{
                             type: "spring",
