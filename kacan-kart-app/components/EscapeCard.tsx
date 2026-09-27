@@ -155,6 +155,7 @@ export default function EscapeCard({
   const [shatterStage, setShatterStage] = useState(0); // 0: Normal, 1: Çatlak, 2: Ağır Çatlak, 3: Patladı
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   // Link Paylaşım Fonksiyonu
   const handleShare = async () => {
@@ -276,25 +277,48 @@ export default function EscapeCard({
     render();
   };
 
-  const handleNoInteraction = (type: "click" | "hover") => {
-    if (theme === "escaping" && type === "click") {
-      const randomTop = Math.floor(Math.random() * 60 + 20) + "%";
-      const randomLeft = Math.floor(Math.random() * 60 + 20) + "%";
-      setNoButtonPos({ top: randomTop, left: randomLeft });
+  const handleNoInteraction = (type: "click" | "hover", event?: React.MouseEvent<HTMLButtonElement>) => {
+    if ((theme === "escaping" || theme === "teleporting") && (type === "click" || type === "hover")) {
+      const card = cardRef.current;
+      if (!card) return;
+
+      const cardRect = card.getBoundingClientRect();
+      const btnWidth = 120;
+      const btnHeight = 54;
+      const padding = 18;
+
+      const minX = padding;
+      const maxX = Math.max(minX, cardRect.width - btnWidth - padding);
+      const minY = 90;
+      const maxY = Math.max(minY + 10, cardRect.height - btnHeight - padding);
+
+      let nextLeft = minX + Math.random() * (maxX - minX);
+      let nextTop = minY + Math.random() * (maxY - minY);
+
+      if (event) {
+        const pointerX = event.clientX - cardRect.left;
+        const pointerY = event.clientY - cardRect.top;
+        const directionX = pointerX < cardRect.width / 2 ? 1 : -1;
+        const directionY = pointerY < cardRect.height / 2 ? 1 : -1;
+
+        nextLeft = Math.min(maxX, Math.max(minX, pointerX + directionX * (btnWidth + 20)));
+        nextTop = Math.min(maxY, Math.max(minY, pointerY + directionY * (btnHeight + 18)));
+      }
+
+      setNoButtonPos({
+        top: `${Math.round(nextTop)}px`,
+        left: `${Math.round(nextLeft)}px`,
+      });
     } else if (theme === "persuasive" && type === "click") {
       setStepIndex((prev) => (prev + 1 < PERSUASIVE_STEPS.length ? prev + 1 : prev));
     } else if (theme === "shrinking" && type === "click") {
       setClickCount((prev) => prev + 1);
     } else if (theme === "role_reversal" && type === "hover") {
       setIsSwapped((prev) => !prev);
-    } else if (theme === "teleporting" && type === "hover") {
-      const randomTop = Math.floor(Math.random() * 70 + 15) + "%";
-      const randomLeft = Math.floor(Math.random() * 70 + 15) + "%";
-      setNoButtonPos({ top: randomTop, left: randomLeft });
     } else if (theme === "pin_code" && type === "click") {
       setShowPinModal(true);
     } else if (theme === "reverse_psychology" && type === "click") {
-      handleYes(); // "Hayır" aslında "Evet"tir!
+      handleYes();
     } else if (theme === "shattering" && type === "click") {
       setShatterStage((prev) => prev + 1);
     }
@@ -328,6 +352,7 @@ export default function EscapeCard({
     <div className="w-full max-w-lg mx-auto space-y-6">
       {/* ANA KART EKRANI */}
       <div
+        ref={cardRef}
         className={`w-full border rounded-3xl p-6 md:p-8 shadow-2xl ${selectedPalette.cardBg} ${selectedPalette.text} relative min-h-[480px] flex flex-col justify-between overflow-hidden transition-all duration-300`}
       >
         <canvas
@@ -498,11 +523,15 @@ export default function EscapeCard({
                 !(theme === "shattering" && shatterStage >= 3) && (
                   <button
                     onClick={() => handleNoInteraction("click")}
-                    onMouseEnter={(e) => {
-                      handleNoInteraction("hover");
-                      // Tema 10: Mıknatıs Efekti
+                    onMouseEnter={(event) => {
+                      handleNoInteraction("hover", event);
                       if (theme === "magnet") {
                         handleYes();
+                      }
+                    }}
+                    onMouseMove={(event) => {
+                      if (theme === "escaping" || theme === "teleporting") {
+                        handleNoInteraction("hover", event);
                       }
                     }}
                     style={{
