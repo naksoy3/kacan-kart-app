@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Baloo_2, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -31,12 +30,12 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${baloo.variable} ${inter.variable}`}>
       <body className="font-govde antialiased min-h-screen">
-        <Link
+        <a
           href="/"
           className="fixed left-4 top-4 z-50 rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
         >
           ← Anasayfa
-        </Link>
+        </a>
         {children}
       </body>
     </html>
