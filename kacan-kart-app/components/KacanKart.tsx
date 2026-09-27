@@ -485,10 +485,10 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Etkileşim Alanı */}
+              {/* Etkileşim Alanı (Normal Format, Butonlar Yakın ve Düzenli) */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-6 px-4 overflow-hidden ${
                   evetOlcek > 1.8 ? "flex-col" : isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
@@ -510,7 +510,7 @@ export default function KacanKart({
                   </div>
                 ) : (
                   <>
-                    {/* EVET BUTONU */}
+                    {/* EVET BUTONU (Büyür) */}
                     <motion.button
                       type="button"
                       onClick={patlat}
@@ -525,7 +525,7 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
-                    {/* HAYIR BUTONU (Parçalanma Efektli) */}
+                    {/* HAYIR BUTONU (Cam Kırılma ve Küçülme Efektli) */}
                     {hayirOlcek > 0 &&
                       !(theme === "timer" && timeLeft === 0) &&
                       !(theme === "shattering" && shatterStage >= 10) &&
@@ -546,22 +546,50 @@ export default function KacanKart({
                             if (theme === "magnet") setIsMagnetActive(false);
                           }}
                           onClick={() => handleNoAction("click")}
-                          className={`rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
+                          style={{
+                            clipPath:
+                              theme === "shattering" && shatterStage > 0
+                                ? "polygon(0% 0%, 100% 5%, 95% 100%, 5% 95%, 50% 40%)"
+                                : "none",
+                          }}
+                          className={`relative rounded-2xl px-6 py-3.5 font-semibold text-base whitespace-nowrap shadow-md cursor-pointer transition-colors ${
                             theme === "shattering"
-                              ? "border-dashed filter contrast-125"
-                              : ""
+                              ? shatterStage > 0
+                                ? "bg-rose-900/40 text-rose-200 border-2 border-dashed border-rose-400/80 shadow-[0_0_15px_rgba(244,63,94,0.4)] backdrop-blur-sm"
+                                : "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300"
+                              : "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300"
                           }`}
                           animate={{
                             scale: hayirOlcek,
-                            rotate: theme === "shattering" ? shatterStage * 6 : 0,
+                            rotate:
+                              theme === "shattering"
+                                ? shatterStage * 7 - (shatterStage % 2) * 14
+                                : 0,
+                            x: theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 3 : -3) : 0,
                           }}
                           transition={{
                             type: "spring",
-                            stiffness: 320,
-                            damping: 18,
+                            stiffness: 350,
+                            damping: 15,
                           }}
                         >
-                          {gosterilenHayirMetni}
+                          {/* Cam Çatlak Çizgileri Katmanı (Tema 9 için) */}
+                          {theme === "shattering" && shatterStage > 0 && (
+                            <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl opacity-80">
+                              <div className="absolute top-0 left-1/3 w-0.5 h-full bg-white/60 rotate-12" />
+                              <div className="absolute top-1/4 left-0 w-full h-0.5 bg-white/50 -rotate-6" />
+                              {shatterStage > 3 && (
+                                <>
+                                  <div className="absolute top-0 right-1/4 w-0.5 h-full bg-cyan-200/70 -rotate-45" />
+                                  <div className="absolute bottom-0 left-1/4 w-full h-0.5 bg-cyan-200/60 rotate-12" />
+                                </>
+                              )}
+                              {shatterStage > 6 && (
+                                <div className="absolute inset-0 bg-radial from-transparent via-rose-500/20 to-rose-900/50" />
+                              )}
+                            </div>
+                          )}
+                          <span className="relative z-10">{gosterilenHayirMetni}</span>
                         </motion.button>
                       )}
                   </>
