@@ -81,6 +81,58 @@ const RENKLI_EVET_BUTONLARI = [
   { metin: "Sonuna kadar Evet! 👑", renk: "bg-fuchsia-500 hover:bg-fuchsia-400 shadow-fuchsia-500/30" },
 ];
 
+const RIDDLES_LIST = [
+  {
+    soruMetni: "Gündüzleri ayaküstü dolaşırım, geceleri sırt üstü uyurum. Beni ne kadar ısıtırsan, o kadar terlerim.",
+    ipucu: "Yaz günlerinin vazgeçilmez dostu..."
+  },
+  {
+    soruMetni: "Uzaktan baktım bir taş, yanına vardım dört ayak bir baş.",
+    ipucu: "Yavaş yürür ama yolu hep yarılar."
+  },
+  {
+    soruMetni: "Çarşıdan aldım bir tane, eve geldim bin tane.",
+    ipucu: "Kırmızı renkli, sulu ve çok tatlı."
+  },
+  {
+    soruMetni: "Karşıdan baktım bir biçim, ağzı var dili yok, içindeki su içilmez hiç.",
+    ipucu: "Masmavi dalgaları vardır."
+  },
+  {
+    soruMetni: "Ağzı var odun yutar, bacası var duman tutar.",
+    ipucu: "Kış gecelerinde ısıtır."
+  },
+  {
+    soruMetni: "Uzun yassı, içine girilmez ama üstünde her şey taşınır.",
+    ipucu: "Altında tekerlekleri vardır."
+  },
+  {
+    soruMetni: "Kanadı var kuş değil, boynuzu var koç değil.",
+    ipucu: "Gökyüzünde süzülür, insan taşır."
+  },
+  {
+    soruMetni: "Biz biz idik, otuz iki kız idik, ezildik büzüldük, duvara dizildik.",
+    ipucu: "Ağzımızın içinde yaşarlar."
+  },
+  {
+    soruMetni: "Kuru kök üstünde yeşilbaş, dünyayı dolaşır yavaş yavaş.",
+    ipucu: "Sırtında evini taşır."
+  },
+  {
+    soruMetni: "Bir küçücük milcik, içi dolu kancık.",
+    ipucu: "Dikiş dikerken en büyük yardımcımızdır."
+  }
+];
+
+const YANLIS_CEVAP_MESAJLARI = [
+  "Cevabın yanlış ama bilemesen de pes et ve Evet de! 🎉",
+  "Çok yaklaştın ama yine de yanlış! Pes et ve Evet de! 😉",
+  "Bunu doğru tahmin etmenin imkanı yok, en iyisi pes edip Evet de! 💖",
+  "Hayır bu değil! Pes edip doğrudan Evet butonuna basmaya ne dersin? ✨",
+  "Zekice bir tahmdi ama maalesef yanlış. Pes et ve Evet de! 🚀",
+  "Bu bilmeceyi çözmek yerine kalbini açıp Evet de! 🥰"
+];
+
 const SCRATCH_MESSAGES = [
   "✨ Hayattaki en güzel tesadüf, seninle yollarımızın kesişmesi oldu!",
   "🌟 Yıldızlar kadar parlak, pırıl pırıl bir kalbin var. İyi ki varsın!",
@@ -157,9 +209,18 @@ export default function KacanKart({
   // Tema 10 (Magnet) Durumu
   const [isMagnetActive, setIsMagnetActive] = useState(false);
 
-  // Tema 11 (Zor Bilmece) Durumları
+  // Tema 11 (Zor Bilmece - 10 Farklı Rastgele) Durumları
+  const [secilenBilmece, setSecilenBilmece] = useState<{ soruMetni: string; ipucu: string } | null>(null);
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
+
+  // Sayfa yüklendiğinde rastgele bir bilmece seç
+  useEffect(() => {
+    if (theme === "riddle") {
+      const rastgeleIndex = Math.floor(Math.random() * RIDDLES_LIST.length);
+      setSecilenBilmece(RIDDLES_LIST[rastgeleIndex]);
+    }
+  }, [theme]);
 
   // Tema 12 (Dikkat Çekici Kazı-Kazan) Durumları
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
@@ -415,13 +476,13 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* TEMA 11: Çok Zor Bilmece ve Her Tahminde Yanlış / Pes Et Uyarısı */}
-              {theme === "riddle" && (
+              {/* TEMA 11: 10 Farklı Rastgele Bilmece ve Her Cevapta Yanlış / Pes Et Tuzağı */}
+              {theme === "riddle" && secilenBilmece && (
                 <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-2xl text-center shadow-lg">
                   <p className="text-xs text-indigo-200 font-semibold leading-relaxed">
-                    🧩 <strong className="text-white">Zor Bilmece:</strong> &quot;Gündüzleri ayaküstü dolaşırım, geceleri sırt üstü uyurum. Beni ne kadar ısıtırsan, o kadar terlerim.&quot; 
+                    🧩 <strong className="text-white">Günün Bilmecesine Hoş Geldin:</strong> &quot;{secilenBilmece.soruMetni}&quot;
                     <span className="block text-[11px] text-amber-300 mt-1.5 font-normal">
-                      💡 Doğru cevabı bilirsen &quot;Hayır&quot; diyebilirsin! Ama dikkat et...
+                      💡 İpucu: {secilenBilmece.ipucu}
                     </span>
                   </p>
                   <div className="mt-3 flex gap-2 justify-center">
@@ -434,12 +495,8 @@ export default function KacanKart({
                     />
                     <button
                       onClick={() => {
-                        const temizCevap = riddleAnswer.trim();
-                        if (temizCevap.length > 0) {
-                          setRiddleFeedback(`Doğru cevap "${temizCevap}" olsa dahi; cevap yanlış, pes et ve Evet de! 🎉`);
-                        } else {
-                          setRiddleFeedback("Lütfen bir cevap yazın ve pes edip Evet deyin! 😉");
-                        }
+                        const rastgeleMesaj = YANLIS_CEVAP_MESAJLARI[Math.floor(Math.random() * YANLIS_CEVAP_MESAJLARI.length)];
+                        setRiddleFeedback(rastgeleMesaj);
                       }}
                       className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer transition"
                     >
