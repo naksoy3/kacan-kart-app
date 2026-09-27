@@ -60,7 +60,7 @@ const PERSUASIVE_STEPS = [
   "Bunu yapamazsın! 🙈",
   "Kırdın beni... 💥",
   "Hâlâ hayır mı diyorsun? 😿",
-  "Kalbimi kırıyorsun amanın! 💘",
+  "Kalbimi kırıyorsun ama! 💘",
   "Bak valla küserim 😤",
   "İnat etme artık lütfen ✨",
   "Şaka yapıyorsun herhalde? 🙃",
@@ -222,17 +222,6 @@ export default function KacanKart({
     }
   }, [theme]);
 
-  useEffect(() => {
-    if ((theme === "escaping" || theme === "teleporting") && playzoneRef.current) {
-      const zoneRect = playzoneRef.current.getBoundingClientRect();
-      const sideX = Math.min(zoneRect.width - 120, Math.max(90, zoneRect.width * 0.58));
-      const sideY = Math.min(zoneRect.height - 40, Math.max(12, zoneRect.height * 0.38));
-      setPos({ x: sideX, y: sideY });
-    } else {
-      setPos({ x: 0, y: 0 });
-    }
-  }, [theme]);
-
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [scratchClicks, setScratchClicks] = useState(0);
 
@@ -312,15 +301,12 @@ export default function KacanKart({
         if (!zone) return;
 
         const zoneRect = zone.getBoundingClientRect();
-        const padding = 12;
-        const btnWidth = 110;
-        const btnHeight = 52;
+        // Butonların oyun alanı (kırmızı çerçeve) sınırları içinde kalması için güvenli marjin
+        const maxX = zoneRect.width - 95;
+        const maxY = zoneRect.height - 45;
 
-        const maxX = Math.max(padding, zoneRect.width - btnWidth - padding);
-        const maxY = Math.max(padding, zoneRect.height - btnHeight - padding);
-
-        const yeniX = padding + Math.random() * (maxX - padding);
-        const yeniY = padding + Math.random() * (maxY - padding);
+        const yeniX = Math.floor(Math.random() * Math.max(30, maxX - 20)) + 10;
+        const yeniY = Math.floor(Math.random() * Math.max(20, maxY - 15)) + 5;
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -346,9 +332,9 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // İstediğin oranlar: Evet her kaçışta %8 büyür, Hayır her kaçışta %5 küçülür (minimum 0.35 ile tamamen kaybolmaz)
-  const evetOlcek = 1 + kacisSayisi * 0.08;
-  const hayirOlcek = Math.max(0.35, 1 - kacisSayisi * 0.05);
+  // Güncellenen yumuşak oranlar: Evet her kaçışta %3 büyür, Hayır her kaçışta %2 küçülür (min 0.45 ile tamamen kaybolmaz)
+  const evetOlcek = 1 + kacisSayisi * 0.03;
+  const hayirOlcek = Math.max(0.45, 1 - kacisSayisi * 0.02);
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
@@ -565,12 +551,12 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Sınırları Koruyan Güvenli Alan */}
+              {/* Sınırları ve Taşmaları Kesinlikle Engelleyen Güvenli Oyun Alanı Kutusu */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 h-32 w-full overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
-                  evetOlcek > 1.8 ? "flex-col h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
-                } ${theme === "escaping" || theme === "teleporting" ? "justify-center" : "justify-between"}`}
+                className={`relative mt-8 h-36 w-full flex items-center justify-between px-4 overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
+                  evetOlcek > 1.4 ? "flex-col justify-center gap-2 h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
+                }`}
               >
                 {theme === "reverse_psychology" ? (
                   <div className="grid grid-cols-2 gap-2 w-full max-h-32 overflow-y-auto pr-1">
@@ -607,7 +593,7 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
-                    {/* Hayır Butonu: Sınırlar içinde güvenle kaçar, her kaçışta %5 küçülür */}
+                    {/* Hayır Butonu: Kırmızı kutunun dışına asla çıkmaz, yavaşça küçülür */}
                     {hayirOlcek > 0.1 && (
                       <motion.button
                         type="button"
@@ -616,8 +602,6 @@ export default function KacanKart({
                         onClick={() => handleNoAction("click")}
                         style={{
                           position: theme === "escaping" || theme === "teleporting" ? "absolute" : "relative",
-                          left: theme === "escaping" || theme === "teleporting" ? `${pos.x}px` : undefined,
-                          top: theme === "escaping" || theme === "teleporting" ? `${pos.y}px` : undefined,
                         }}
                         className={`rounded-2xl px-5 py-3 font-semibold text-sm sm:text-base whitespace-nowrap shadow-md cursor-pointer transition-colors z-20 ${
                           theme === "shattering" && shatterStage > 0
@@ -626,8 +610,14 @@ export default function KacanKart({
                         }`}
                         animate={{
                           scale: hayirOlcek,
-                          x: 0,
-                          y: 0,
+                          x:
+                            theme === "escaping" || theme === "teleporting"
+                              ? pos.x
+                              : 0,
+                          y:
+                            theme === "escaping" || theme === "teleporting"
+                              ? pos.y
+                              : 0,
                         }}
                         transition={{
                           type: "spring",
