@@ -1,12 +1,12 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import KacanKart from "@/components/KacanKart";
 
-export default function HomePage() {
+function InboxContent() {
   const searchParams = useSearchParams();
 
-  // URL'den parametreleri çekiyoruz
   const targetUsername = searchParams.get("u") || "Nurullah";
   const sender = searchParams.get("sender") || searchParams.get("gonderen") || "Gönderen";
   const soru = searchParams.get("s") || "Benimle yemeğe çıkar mısın?";
@@ -14,8 +14,7 @@ export default function HomePage() {
   const hayirMetni = searchParams.get("h") || "Hayır";
   const gifUrl = searchParams.get("gif") || undefined;
   const theme = (searchParams.get("t") as any) || "escaping";
-  
-  // Yer, Zaman ve Tarih parametreleri
+
   const mekan = searchParams.get("mekan") || searchParams.get("yer") || undefined;
   const tarih = searchParams.get("tarih") || undefined;
   const saat = searchParams.get("saat") || searchParams.get("zaman") || undefined;
@@ -35,5 +34,19 @@ export default function HomePage() {
         saat={saat}
       />
     </main>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+          <div className="text-slate-300 text-sm">Kart yükleniyor...</div>
+        </main>
+      }
+    >
+      <InboxContent />
+    </Suspense>
   );
 }

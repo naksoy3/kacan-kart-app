@@ -36,10 +36,14 @@ export const THEME_NAMES: Record<CardTheme, string> = {
 
 export type KacanKartProps = {
   targetUsername?: string;
+  sender?: string;
   soru?: string;
   evetMetni?: string;
   hayirMetni?: string;
   gifUrl?: string;
+  mekan?: string;
+  tarih?: string;
+  saat?: string;
   theme?: CardTheme;
   onBack?: () => void;
   onAccept?: () => void | Promise<void>;
@@ -182,10 +186,14 @@ function kutlamaSesiCal() {
 
 export default function KacanKart({
   targetUsername = "Nurullah",
+  sender,
   soru = "Benimle yemeğe çıkar mısın?",
   evetMetni = "Evet!",
   hayirMetni = "Hayır",
   gifUrl,
+  mekan,
+  tarih,
+  saat,
   theme = "escaping",
   onBack,
   onAccept,
@@ -245,6 +253,10 @@ export default function KacanKart({
     });
 
     if (gifUrl) params.set("gif", gifUrl);
+    if (sender) params.set("sender", sender);
+    if (mekan) params.set("mekan", mekan);
+    if (tarih) params.set("tarih", tarih);
+    if (saat) params.set("saat", saat);
 
     const shareUrl = `${baseUrl}?${params.toString()}`;
 
@@ -327,18 +339,19 @@ export default function KacanKart({
       } else if (theme === "shattering" && type === "click") {
         setShatterStage((prev) => Math.min(prev + 1, 15));
       } else if (theme === "magnet") {
-        // Hayıra tıklanmaya çalışıldığında Evet butonu hızla Hayır'ın üstüne kadar fırlar ve geri döner
         setIsMagnetActive(true);
         setTimeout(() => {
           setIsMagnetActive(false);
-        }, 750); // 0.75 saniye sonra eski yerine geri gider
+        }, 750);
       }
     },
     [theme, patlat]
   );
 
   const evetOlcek =
-    theme === "escaping" || theme === "teleporting" || theme === "persuasive" || theme === "magnet"
+    theme === "escaping" || theme === "teleporting"
+      ? 1 + kacisSayisi * 0.12
+      : theme === "persuasive" || theme === "magnet"
       ? 1 + kacisSayisi * 0.08
       : theme === "shrinking"
       ? 1 + kacisSayisi * 0.07
@@ -426,7 +439,7 @@ export default function KacanKart({
             </div>
             <div>
               <h3 className="text-xs font-bold text-white">
-                @{targetUsername}&apos;a Özel Kart
+                @{targetUsername}&apos;a Özel Kart {sender ? `(${sender})` : ""}
               </h3>
               <p className="text-[10px] text-slate-400">{THEME_NAMES[theme]}</p>
             </div>
@@ -441,6 +454,15 @@ export default function KacanKart({
             </button>
           )}
         </div>
+
+        {/* Ek Bilgiler (Mekan, Tarih, Saat) */}
+        {(mekan || tarih || saat) && (
+          <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-xl text-xs space-y-1 text-slate-300">
+            {mekan && <p>📍 <strong>Mekan:</strong> {mekan}</p>}
+            {tarih && <p>📅 <strong>Tarih:</strong> {tarih}</p>}
+            {saat && <p>⏰ <strong>Saat:</strong> {saat}</p>}
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
           {!basarili ? (
@@ -475,7 +497,6 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* TEMA 11: Bulmaca */}
               {theme === "riddle" && secilenBilmece && (
                 <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-2xl text-center shadow-lg">
                   <p className="text-xs text-indigo-200 font-semibold leading-relaxed">
@@ -514,7 +535,6 @@ export default function KacanKart({
                 </div>
               )}
 
-              {/* TEMA 12: Sürpriz Sözler */}
               {theme === "scratchpad" && (
                 <motion.div 
                   onClick={() => {
@@ -564,7 +584,6 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* BUTONLAR ALANI: Tema 10 Mıknatıs Efekti (Hayır'a tıklayınca Evet üstüne fırlar ve geri gider) */}
               <div
                 ref={playzoneRef}
                 className={`relative mt-8 min-h-[160px] flex items-center justify-between px-6 overflow-hidden ${
@@ -593,7 +612,7 @@ export default function KacanKart({
                       onClick={patlat}
                       animate={{ 
                         scale: evetOlcek,
-                        x: theme === "magnet" && isMagnetActive ? 115 : 0, // Hayır butonunun üzerine kadar fırlar
+                        x: theme === "magnet" && isMagnetActive ? 115 : 0,
                         zIndex: theme === "magnet" && isMagnetActive ? 30 : 10
                       }}
                       transition={{
@@ -627,7 +646,16 @@ export default function KacanKart({
                         }`}
                         animate={{
                           scale: hayirOlcek,
-                          x: (theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 2 : -2) : 0),
+                          x:
+                            theme === "escaping" || theme === "teleporting"
+                              ? pos?.x ?? 0
+                              : theme === "shattering" && shatterStage > 0
+                              ? (shatterStage % 2 === 0 ? 2 : -2)
+                              : 0,
+                          y:
+                            theme === "escaping" || theme === "teleporting"
+                              ? pos?.y ?? 0
+                              : 0,
                           rotate:
                             theme === "shattering"
                               ? shatterStage * 6 - (shatterStage % 2) * 12
