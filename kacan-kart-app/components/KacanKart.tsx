@@ -252,35 +252,31 @@ export default function KacanKart({
       } else if (theme === "reverse_psychology" && type === "click") {
         patlat();
       } else if (theme === "shattering" && type === "click") {
-        setShatterStage((prev) => {
-          if (prev >= 9) {
-            patlat();
-            return 10;
-          }
-          return prev + 1;
-        });
+        // 10-15 kez tıklanabilmesi için aşamayı yavaşça artırıyoruz, otomatik kutlama tetiklenmiyor!
+        setShatterStage((prev) => Math.min(prev + 1, 15));
       }
     },
     [theme, patlat]
   );
 
-  // Ölçeklendirmeler: Tema 9 için evet butonu her tıklamada %5 büyür
+  // Ölçeklendirmeler: Evet butonu her tıklamada %8 büyür
   const evetOlcek =
     theme === "escaping" || theme === "teleporting" || theme === "persuasive"
-      ? 1 + kacisSayisi * 0.05
+      ? 1 + kacisSayisi * 0.08
       : theme === "shrinking"
-      ? 1 + kacisSayisi * 0.04
+      ? 1 + kacisSayisi * 0.07
       : theme === "shattering"
-      ? 1 + shatterStage * 0.05
+      ? 1 + shatterStage * 0.08
       : 1;
 
+  // Hayır butonu dengeli küçülür (yaklaşık 12-15 tıklamada basılamayacak kadar ufak kalır)
   const hayirOlcek =
     theme === "persuasive"
       ? Math.max(0.35, 1 - kacisSayisi * 0.05)
       : theme === "shrinking"
       ? Math.max(0.15, 1 - kacisSayisi * 0.03)
       : theme === "shattering"
-      ? Math.max(0.1, 1 - shatterStage * 0.09)
+      ? Math.max(0.08, 1 - shatterStage * 0.065) 
       : 1;
 
   const gosterilenHayirMetni = useMemo(() => {
@@ -485,7 +481,7 @@ export default function KacanKart({
                 </button>
               </div>
 
-              {/* Etkileşim Alanı (Normal Format, Butonlar Yakın ve Düzenli) */}
+              {/* Etkileşim Alanı */}
               <div
                 ref={playzoneRef}
                 className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-6 px-4 overflow-hidden ${
@@ -510,7 +506,7 @@ export default function KacanKart({
                   </div>
                 ) : (
                   <>
-                    {/* EVET BUTONU (Büyür) */}
+                    {/* EVET BULUNU (%8 oranında büyür) */}
                     <motion.button
                       type="button"
                       onClick={patlat}
@@ -525,10 +521,9 @@ export default function KacanKart({
                       {evetMetni}
                     </motion.button>
 
-                    {/* HAYIR BUTONU (Cam Kırılma ve Küçülme Efektli) */}
-                    {hayirOlcek > 0 &&
+                    {/* HAYIR BUTONU (10-15 kez tıklanarak yavaşça küçülür, sonda tıklanamaz olur) */}
+                    {hayirOlcek > 0.08 &&
                       !(theme === "timer" && timeLeft === 0) &&
-                      !(theme === "shattering" && shatterStage >= 10) &&
                       !(theme === "riddle" && !riddleSolved) && (
                         <motion.button
                           ref={hayirRef}
@@ -563,9 +558,9 @@ export default function KacanKart({
                             scale: hayirOlcek,
                             rotate:
                               theme === "shattering"
-                                ? shatterStage * 7 - (shatterStage % 2) * 14
+                                ? shatterStage * 6 - (shatterStage % 2) * 12
                                 : 0,
-                            x: theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 3 : -3) : 0,
+                            x: theme === "shattering" && shatterStage > 0 ? (shatterStage % 2 === 0 ? 2 : -2) : 0,
                           }}
                           transition={{
                             type: "spring",
@@ -578,13 +573,13 @@ export default function KacanKart({
                             <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl opacity-80">
                               <div className="absolute top-0 left-1/3 w-0.5 h-full bg-white/60 rotate-12" />
                               <div className="absolute top-1/4 left-0 w-full h-0.5 bg-white/50 -rotate-6" />
-                              {shatterStage > 3 && (
+                              {shatterStage > 4 && (
                                 <>
                                   <div className="absolute top-0 right-1/4 w-0.5 h-full bg-cyan-200/70 -rotate-45" />
                                   <div className="absolute bottom-0 left-1/4 w-full h-0.5 bg-cyan-200/60 rotate-12" />
                                 </>
                               )}
-                              {shatterStage > 6 && (
+                              {shatterStage > 8 && (
                                 <div className="absolute inset-0 bg-radial from-transparent via-rose-500/20 to-rose-900/50" />
                               )}
                             </div>
