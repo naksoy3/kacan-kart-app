@@ -445,6 +445,7 @@ function CardContent() {
       {/* ADIM 4: ÖNİZLEME VEYA PAYLAŞILAN KİŞİNİN EKRANI */}
       {(formStep === 4 || isSharedView) && (
         <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
+          {/* YALNIZCA KARTI OLUŞTURAN KİŞİ İÇİN: Düzenle ve Linki Kopyala butonları */}
           {!isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
               <button
@@ -466,6 +467,7 @@ function CardContent() {
             </div>
           )}
 
+          {/* YALNIZCA KARTI ALAN (HEDEF) KİŞİ İÇİN: Sadece "Sen de Kendi Kartını Oluştur" butonu */}
           {isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
               <span className="text-xs text-slate-300">💌 Bu soru sana özel olarak gönderildi!</span>
