@@ -133,15 +133,16 @@ const YANLIS_CEVAP_MESAJLARI = [
   "Bu bilmeceyi çözmek yerine kalbini açıp Evet de! 🥰"
 ];
 
+// Herkese hitap eden tam 8 adet dikkat çekici ve hoş söz
 const SCRATCH_MESSAGES = [
-  "✨ Hayattaki en güzel tesadüf, seninle yollarımızın kesişmesi oldu!",
-  "🌟 Yıldızlar kadar parlak, pırıl pırıl bir kalbin var. İyi ki varsın!",
-  "💫 Dünyanın en harika enerjisine sahip insanlarından birisin!",
-  "🍀 Seninle geçen her an, hayatın bize sunduğu en tatlı ödül.",
-  "🚀 Karşısına çıkamayacağın hiçbir engel yok, harikalar yaratıyorsun!",
-  "🎨 Gülüşün etrafa öyle bir neşe saçıyor ki, her yeri güzelleştiriyor.",
-  "☕ Seninle sohbet etmek, kahvenin en güzel yanını tatmak gibi...",
-  "💖 Dünyanın en şanslı insanları, senin değerini bilenlerdir!",
+  "🌟 Harika enerjinle etrafındaki herkese ilham oluyorsun!",
+  "🚀 Bugün karşna çıkan tüm engelleri aşacak güçtesin, kendine inan!",
+  "🍀 Hayat senin gibi pozitif insanlarla çok daha güzel ve anlamlı.",
+  "☕ Güzel bir kahve ve tatlı bir gülümseme bütün gününe iyi gelecek!",
+  "✨ Etrafa saçtığın bu güzel neşe hiçbir zaman eksilmesin!",
+  "🎨 Bugün kendi hikayenin en güzel sayfasını yazmaya ne dersin?",
+  "🏆 Kararlılığın ve azminle başaramayacağın hiçbir şey yok!",
+  "🎈 Küçük şeylerden mutlu olabildiğin için kalbin hep çok özel.",
 ];
 
 const KONFETI_RENKLERI = ["#FF5D8F", "#FFD166", "#8B5CF6", "#10B981"];
@@ -222,7 +223,7 @@ export default function KacanKart({
     }
   }, [theme]);
 
-  // Tema 12 (Dikkat Çekici Kazı-Kazan) Durumları
+  // Tema 12 (Dikkat Çekici Kazı-Kazan / 8 Sürpriz Söz) Durumları
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [scratchClicks, setScratchClicks] = useState(0);
 
@@ -515,33 +516,36 @@ export default function KacanKart({
                 </div>
               )}
 
+              {/* TEMA 12: Dikkat Çekici Süpriz Kazı-Kazan (8 Harika Söz) */}
               {theme === "scratchpad" && (
-                <div 
+                <motion.div 
                   onClick={() => {
                     setScratchClicks((prev) => prev + 1);
                     setCurrentMessageIndex((prev) => (prev + 1) % SCRATCH_MESSAGES.length);
                   }}
-                  className="mt-4 bg-gradient-to-r from-purple-900/80 via-pink-900/80 to-indigo-900/80 border-2 border-dashed border-pink-400/60 p-5 rounded-2xl text-center cursor-pointer select-none shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:scale-[1.02] active:scale-95 transition-all relative overflow-hidden"
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="mt-5 bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-purple-500/20 border-2 border-amber-400 p-5 rounded-2xl text-center cursor-pointer select-none shadow-[0_0_25px_rgba(251,191,36,0.35)] hover:shadow-[0_0_35px_rgba(236,72,153,0.5)] hover:border-pink-400 transition-all relative overflow-hidden group"
                 >
-                  <div className="absolute top-1 right-2 text-[9px] bg-white/20 px-2 py-0.5 rounded-full text-pink-200 font-bold uppercase tracking-wider">
-                    Özel Sürpriz #{scratchClicks + 1}
+                  <div className="absolute top-1.5 right-2.5 bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-md uppercase tracking-wider animate-pulse">
+                    Sürpriz #{scratchClicks + 1} / 8 ✨
                   </div>
-                  <span className="text-2xl block mb-1">🎁✨</span>
-                  <p className="text-xs font-bold text-pink-100 uppercase tracking-wide">
-                    Sürprizi açmak için tıkla!
+                  <span className="text-3xl block mb-1 group-hover:scale-125 transition-transform duration-300">🎁💥</span>
+                  <p className="text-xs font-extrabold text-amber-200 uppercase tracking-wider drop-shadow">
+                    Günün Sürpriz Sözünü Açmak İçin Dokun!
                   </p>
                   <motion.p 
                     key={currentMessageIndex}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-xs text-white mt-2.5 font-medium leading-relaxed bg-black/30 p-2.5 rounded-xl border border-white/10 shadow-inner"
+                    initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="text-xs text-white mt-3 font-semibold leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-amber-400/30 shadow-inner"
                   >
                     {SCRATCH_MESSAGES[currentMessageIndex]}
                   </motion.p>
-                  <p className="text-[10px] text-pink-300 mt-2 italic">
-                    (Her tıklamada başka harika bir söz keşfetmek için dokunmaya devam et!)
+                  <p className="text-[10px] text-pink-300 mt-2 font-medium italic">
+                    (Her tıklamada yeni ve motive edici harika bir söz keşfet!)
                   </p>
-                </div>
+                </motion.div>
               )}
 
               {kacisSayisi > 2 && (theme === "escaping" || theme === "magnet") && (
