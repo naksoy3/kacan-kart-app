@@ -205,11 +205,16 @@ export default function KacanKart({
         const zoneRect = zone.getBoundingClientRect();
         const btnRect = btn.getBoundingClientRect();
 
-        const maxX = Math.max(zoneRect.width - btnRect.width, 0);
-        const maxY = Math.max(zoneRect.height - btnRect.height, 0);
+        // Butonun tamamen kaybolmasını önlemek için min/max sınırları belirliyoruz
+        // Böylece butonun en azından bir kısmı her zaman alanda görünür kalır
+        const minVisibleOffset = 15; // En az 15 pikseli dışarıda/görünür kalacak
+        const minX = -btnRect.width + minVisibleOffset;
+        const maxX = zoneRect.width - minVisibleOffset;
+        const minY = -btnRect.height + minVisibleOffset;
+        const maxY = zoneRect.height - minVisibleOffset;
 
-        const yeniX = Math.random() * maxX;
-        const yeniY = Math.random() * maxY;
+        const yeniX = minX + Math.random() * (maxX - minX);
+        const yeniY = minY + Math.random() * (maxY - minY);
 
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
@@ -240,7 +245,7 @@ export default function KacanKart({
     [theme, patlat]
   );
 
-  // Kaçan/Teleporting temalarında her kaçışta evet butonunu %5 (0.05) büyütme mantığı eklendi
+  // Kaçan/Teleporting temalarında her kaçışta evet butonunu %5 (0.05) büyütme
   const evetOlcek =
     theme === "escaping" || theme === "teleporting"
       ? 1 + kacisSayisi * 0.05
@@ -458,7 +463,7 @@ export default function KacanKart({
               {/* Etkileşim Alanı */}
               <div
                 ref={playzoneRef}
-                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-4 ${
+                className={`relative mt-8 min-h-[160px] flex items-center justify-center gap-4 overflow-hidden ${
                   isSwapped ? "flex-row-reverse" : "flex-row"
                 }`}
               >
@@ -493,7 +498,7 @@ export default function KacanKart({
                       }}
                       className={
                         (theme === "escaping" || theme === "teleporting") && pos
-                          ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer"
+                          ? "absolute top-0 left-0 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer z-20"
                           : `rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 px-6 py-3.5 font-semibold text-base text-rose-300 whitespace-nowrap shadow-md cursor-pointer ${
                               theme === "shattering" && shatterStage === 1
                                 ? "border-dashed opacity-80"
