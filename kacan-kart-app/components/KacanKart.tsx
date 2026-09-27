@@ -570,7 +570,7 @@ export default function KacanKart({
                 ref={playzoneRef}
                 className={`relative mt-8 h-32 w-full overflow-hidden rounded-2xl bg-white/5 border border-white/10 ${
                   evetOlcek > 1.8 ? "flex-col h-44" : isSwapped ? "flex-row-reverse" : "flex-row"
-                } ${theme === "escaping" || theme === "teleporting" ? "justify-center" : "justify-between"}`}
+                } ${theme === "escaping" || theme === "teleporting" ? "flex items-center justify-center gap-3" : "justify-between"}`}
               >
                 {theme === "reverse_psychology" ? (
                   <div className="grid grid-cols-2 gap-2 w-full max-h-32 overflow-y-auto pr-1">
@@ -615,9 +615,11 @@ export default function KacanKart({
                         onMouseMove={() => handleNoAction("hover")}
                         onClick={() => handleNoAction("click")}
                         style={{
-                          position: theme === "escaping" || theme === "teleporting" ? "absolute" : "relative",
-                          left: theme === "escaping" || theme === "teleporting" ? `${pos.x}px` : undefined,
-                          top: theme === "escaping" || theme === "teleporting" ? `${pos.y}px` : undefined,
+                          position: theme === "escaping" || theme === "teleporting"
+                            ? kacisSayisi > 0 ? "absolute" : "relative"
+                            : "relative",
+                          left: theme === "escaping" || theme === "teleporting" ? kacisSayisi > 0 ? `${pos.x}px` : undefined : undefined,
+                          top: theme === "escaping" || theme === "teleporting" ? kacisSayisi > 0 ? `${pos.y}px` : undefined : undefined,
                         }}
                         className={`rounded-2xl px-5 py-3 font-semibold text-sm sm:text-base whitespace-nowrap shadow-md cursor-pointer transition-colors z-20 ${
                           theme === "shattering" && shatterStage > 0
