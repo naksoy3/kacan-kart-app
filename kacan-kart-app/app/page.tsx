@@ -330,7 +330,10 @@ function CardContent() {
       {!isSharedView && formStep < 4 && (
         <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
           <div className="text-center space-y-3">
-            <h2 className="text-3xl font-extrabold tracking-tight">🃏 Soru Oluştur</h2>
+            <h2 className="flex items-center justify-center gap-3 text-3xl font-extrabold tracking-tight">
+              <img src="/icon.png" alt="Cardasks" className="h-9 w-9 rounded-lg object-cover" />
+              <span>Soru Oluştur</span>
+            </h2>
             <div className="flex justify-center gap-2 pt-1">
               {[1, 2, 3].map((stepNum) => (
                 <div
