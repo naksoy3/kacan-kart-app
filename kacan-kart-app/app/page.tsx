@@ -218,14 +218,7 @@ function CardContent() {
 
     const { data: sessionData } = await supabase.auth.getUser();
     const activeUser = sessionData.user || user;
-
-    if (!activeUser) {
-      setPreviewError("Önizlemeyi oluşturmak için önce giriş yapmalısın.");
-      setPreviewLoading(false);
-      return;
-    }
-
-    setUser(activeUser);
+    if (activeUser) setUser(activeUser);
 
     try {
       if (!cardId) {
@@ -233,7 +226,7 @@ function CardContent() {
           .from("cards")
           .insert([
             {
-              user_id: activeUser.id,
+              user_id: activeUser?.id ?? null,
               from_username: fromUsername,
               target_username: targetUsername,
               soru,
