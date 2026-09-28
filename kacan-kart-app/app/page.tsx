@@ -303,7 +303,20 @@ function CardContent() {
       <div className="absolute top-5 right-5 z-20 flex items-center gap-3">
         {user ? (
           <div className="flex items-center gap-3 bg-slate-900/80 border border-slate-800 backdrop-blur-md px-4 py-2 rounded-2xl text-white text-xs shadow-lg">
-            <span className="text-slate-300 font-medium">{user.email}</span>
+            <div
+              title={user.user_metadata?.full_name || user.user_metadata?.username || "Profil"}
+              className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-sm font-bold text-white"
+            >
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="Profil fotoğrafı"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                (user.user_metadata?.full_name || user.user_metadata?.username || "P").charAt(0).toUpperCase()
+              )}
+            </div>
             <button
               onClick={() => supabase.auth.signOut()}
               className="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 font-bold rounded-xl transition cursor-pointer"

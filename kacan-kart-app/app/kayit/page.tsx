@@ -115,7 +115,7 @@ export default function KayitPage() {
               required
               value={ad}
               onChange={(event) => setAd(event.target.value)}
-              placeholder="Örn: Nurullah"
+              placeholder="Adını yaz"
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-white outline-none transition focus:border-indigo-500"
             />
           </label>
@@ -127,7 +127,7 @@ export default function KayitPage() {
               minLength={3}
               value={kullaniciAdi}
               onChange={(event) => setKullaniciAdi(event.target.value.replace(/\s/g, "").toLowerCase())}
-              placeholder="Örn: nurullah"
+              placeholder="Kullanıcı adını yaz"
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-white outline-none transition focus:border-indigo-500"
             />
           </label>
