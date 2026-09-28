@@ -69,8 +69,7 @@ export default function MesajlarPage() {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session?.user) return;
-        const { data: refreshed } = await supabase.auth.refreshSession();
-        const activeUserId = refreshed.session?.user.id || data.session.user.id;
+        const activeUserId = data.session.user.id;
         setUserId(activeUserId);
         await loadMessages(activeUserId);
       } catch {

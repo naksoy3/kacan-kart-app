@@ -25,8 +25,7 @@ export default function BildirimlerPage() {
         const { data: userData } = await supabase.auth.getSession();
         if (!userData.session?.user) return;
 
-        const { data: refreshed } = await supabase.auth.refreshSession();
-        const activeUserId = refreshed.session?.user.id || userData.session.user.id;
+        const activeUserId = userData.session.user.id;
 
         const query = supabase
           .from("notifications")
