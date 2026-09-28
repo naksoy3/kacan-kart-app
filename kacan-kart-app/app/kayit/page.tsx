@@ -41,13 +41,32 @@ export default function KayitPage() {
     setError(null);
     setMessage(null);
 
+    const normalizedUsername = kullaniciAdi.trim().toLowerCase();
+    const { data: existingProfile, error: profileCheckError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", normalizedUsername)
+      .maybeSingle();
+
+    if (profileCheckError) {
+      setError("Kullanıcı adı servisi hazır değil. Supabase profiles tablosunu oluşturmalısın.");
+      setLoading(false);
+      return;
+    }
+
+    if (existingProfile) {
+      setError("Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç.");
+      setLoading(false);
+      return;
+    }
+
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password: sifre,
       options: {
         data: {
           full_name: ad,
-          username: kullaniciAdi,
+          username: normalizedUsername,
           avatar_url: fotoUrl || null,
         },
       },
@@ -62,6 +81,24 @@ export default function KayitPage() {
       });
 
       if (sessionData.session && !signInError) {
+        const { error: profileError } = await supabase.from("profiles").insert({
+          id: sessionData.session.user.id,
+          username: normalizedUsername,
+          full_name: ad,
+          avatar_url: fotoUrl || null,
+        });
+
+        if (profileError) {
+          await supabase.auth.signOut();
+          setError(
+            profileError.code === "23505"
+              ? "Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç."
+              : "Profil oluşturulamadı. Lütfen tekrar dene."
+          );
+          setLoading(false);
+          return;
+        }
+
         setMessage("Profilin oluşturuldu. Hoş geldin!");
         setTimeout(() => router.push("/"), 900);
       } else {
