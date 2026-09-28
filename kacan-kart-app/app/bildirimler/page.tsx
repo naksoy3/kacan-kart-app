@@ -20,33 +20,38 @@ export default function BildirimlerPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadNotifications = async () => {
+    const loadNotifications = async (userId: string) => {
       try {
-        const { data: userData } = await supabase.auth.getSession();
-        if (!userData.session?.user) return;
-
-        const activeUserId = userData.session.user.id;
+        const activeUserId = userId;
 
         const query = supabase
           .from("notifications")
           .select("id, title, message, created_at, read")
-          .eq("user_id", activeUserId)
+          .eq("user_id", userId)
           .order("created_at", { ascending: false });
         const { data, error: queryError } = await Promise.race([
           query,
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 20000)),
         ]);
 
-        if (queryError) setError(`Bildirimler yüklenemedi: ${queryError.message}`);
+        if (queryError) setError(`Bildirimler yüklenemedi: ${queryError.message}`); 
         setNotifications((data || []) as Notification[]);
       } catch {
-        setError("Bildirimler yüklenemedi. Supabase bağlantısını veya tablo ayarlarını kontrol et.");
+        setError("Bildirimler sorgusu zaman aşımına uğradı veya oturum okunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadNotifications();
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setLoading(false);
+        return;
+      }
+      window.setTimeout(() => loadNotifications(session.user.id), 0);
+    });
+
+    return () => data.subscription.unsubscribe();
   }, [router]);
 
   return (

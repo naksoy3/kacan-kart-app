@@ -65,20 +65,21 @@ export default function MesajlarPage() {
   };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        if (!data.session?.user) return;
-        const activeUserId = data.session.user.id;
-        setUserId(activeUserId);
-        await loadMessages(activeUserId);
-      } catch {
-        setError("Mesajlar yüklenemedi. Supabase bağlantısını veya tablo ayarlarını kontrol et.");
-      } finally {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
         setLoading(false);
+        return;
       }
-    };
-    load();
+
+      setUserId(session.user.id);
+      window.setTimeout(() => {
+        loadMessages(session.user.id)
+          .catch(() => setError("Mesajlar yüklenemedi. Lütfen tekrar dene."))
+          .finally(() => setLoading(false));
+      }, 0);
+    });
+
+    return () => data.subscription.unsubscribe();
   }, [router]);
 
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
