@@ -44,12 +44,12 @@ export default function RootLayout({
           >
             Bildirimler
           </Link>
-          <button
-            type="button"
+          <Link
+            href="/mesajlar"
             className="h-10 rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
           >
             Mesajlar
-          </button>
+          </Link>
         </nav>
         {children}
       </body>

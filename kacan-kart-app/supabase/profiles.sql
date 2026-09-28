@@ -80,3 +80,30 @@ end;
 $$;
 
 grant execute on function public.notify_card_accepted(uuid) to anon, authenticated;
+
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  sender_id uuid not null references auth.users(id) on delete cascade,
+  recipient_id uuid not null references auth.users(id) on delete cascade,
+  body text not null check (char_length(trim(body)) between 1 and 2000),
+  read boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.messages enable row level security;
+
+drop policy if exists "Users can read sent or received messages" on public.messages;
+create policy "Users can read sent or received messages"
+  on public.messages for select
+  using (auth.uid() = sender_id or auth.uid() = recipient_id);
+
+drop policy if exists "Users can send messages as themselves" on public.messages;
+create policy "Users can send messages as themselves"
+  on public.messages for insert
+  with check (auth.uid() = sender_id and sender_id <> recipient_id);
+
+drop policy if exists "Recipients can mark messages read" on public.messages;
+create policy "Recipients can mark messages read"
+  on public.messages for update
+  using (auth.uid() = recipient_id)
+  with check (auth.uid() = recipient_id);
