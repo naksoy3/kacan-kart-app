@@ -21,21 +21,27 @@ export default function BildirimlerPage() {
 
   useEffect(() => {
     const loadNotifications = async () => {
-      const { data: userData } = await supabase.auth.getSession();
-      if (!userData.session?.user) {
+      try {
+        const { data: userData } = await supabase.auth.getSession();
+        if (!userData.session?.user) return;
+
+        const query = supabase
+          .from("notifications")
+          .select("id, title, message, created_at, read")
+          .eq("user_id", userData.session.user.id)
+          .order("created_at", { ascending: false });
+        const { data, error: queryError } = await Promise.race([
+          query,
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+        ]);
+
+        if (queryError) setError(`Bildirimler yüklenemedi: ${queryError.message}`);
+        setNotifications((data || []) as Notification[]);
+      } catch {
+        setError("Bildirimler yüklenemedi. Supabase bağlantısını veya tablo ayarlarını kontrol et.");
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const { data, error: queryError } = await supabase
-        .from("notifications")
-        .select("id, title, message, created_at, read")
-        .eq("user_id", userData.session.user.id)
-        .order("created_at", { ascending: false });
-
-      if (queryError) setError("Bildirimler yüklenemedi. Supabase notifications tablosunu kontrol et.");
-      setNotifications((data || []) as Notification[]);
-      setLoading(false);
     };
 
     loadNotifications();

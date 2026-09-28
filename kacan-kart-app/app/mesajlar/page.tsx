@@ -34,14 +34,18 @@ export default function MesajlarPage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadMessages = async (currentUserId: string) => {
-    const { data, error: messagesError } = await supabase
+    const query = supabase
       .from("messages")
       .select("id, sender_id, recipient_id, body, read, created_at")
       .or(`sender_id.eq.${currentUserId},recipient_id.eq.${currentUserId}`)
       .order("created_at", { ascending: false });
+    const { data, error: messagesError } = await Promise.race([
+      query,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+    ]).catch(() => ({ data: null, error: new Error("timeout") }));
 
     if (messagesError) {
-      setError("Mesajlar yüklenemedi. Supabase messages tablosunu kontrol et.");
+      setError(`Mesajlar yüklenemedi: ${messagesError.message}`);
       return;
     }
 
@@ -62,14 +66,16 @@ export default function MesajlarPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session?.user) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session?.user) return;
+        setUserId(data.session.user.id);
+        await loadMessages(data.session.user.id);
+      } catch {
+        setError("Mesajlar yüklenemedi. Supabase bağlantısını veya tablo ayarlarını kontrol et.");
+      } finally {
         setLoading(false);
-        return;
       }
-      setUserId(data.session.user.id);
-      await loadMessages(data.session.user.id);
-      setLoading(false);
     };
     load();
   }, [router]);
