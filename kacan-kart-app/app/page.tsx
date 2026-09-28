@@ -216,15 +216,16 @@ function CardContent() {
     setPreviewLoading(true);
     setPreviewError(null);
 
-    if (!user) {
-      if (authLoading) {
-        setPreviewError("Oturum kontrol ediliyor. Lütfen birkaç saniye sonra tekrar dene.");
-      } else {
-        setPreviewError("Önizlemeyi oluşturmak için önce giriş yapmalısın.");
-      }
+    const { data: sessionData } = await supabase.auth.getUser();
+    const activeUser = sessionData.user || user;
+
+    if (!activeUser) {
+      setPreviewError("Önizlemeyi oluşturmak için önce giriş yapmalısın.");
       setPreviewLoading(false);
       return;
     }
+
+    setUser(activeUser);
 
     try {
       if (!cardId) {
@@ -232,7 +233,7 @@ function CardContent() {
           .from("cards")
           .insert([
             {
-              user_id: user.id,
+              user_id: activeUser.id,
               from_username: fromUsername,
               target_username: targetUsername,
               soru,
@@ -508,10 +509,10 @@ function CardContent() {
                 </button>
                 <button
                   onClick={handleProceedToPreview}
-                  disabled={previewLoading || authLoading}
+                  disabled={previewLoading}
                   className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer disabled:opacity-50"
                 >
-                  {previewLoading ? "Hazırlanıyor..." : authLoading ? "Oturum kontrol ediliyor..." : "Önizle & Paylaş 🚀"}
+                  {previewLoading ? "Hazırlanıyor..." : "Önizle & Paylaş 🚀"}
                 </button>
               </div>
               {previewError && (
