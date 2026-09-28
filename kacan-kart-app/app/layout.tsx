@@ -30,12 +30,26 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${baloo.variable} ${inter.variable}`}>
       <body className="font-govde antialiased min-h-screen">
-        <a
-          href="/"
-          className="fixed left-4 top-4 z-50 rounded-xl border border-white/10 bg-slate-900/90 px-3 py-2 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
-        >
-          ← Anasayfa
-        </a>
+        <nav className="fixed left-8 top-4 z-50 flex w-36 flex-col gap-2">
+          <a
+            href="/"
+            className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
+          >
+            Anasayfa
+          </a>
+          <button
+            type="button"
+            className="h-10 rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
+          >
+            Bildirimler
+          </button>
+          <button
+            type="button"
+            className="h-10 rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
+          >
+            Mesajlar
+          </button>
+        </nav>
         {children}
       </body>
     </html>
