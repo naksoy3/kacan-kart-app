@@ -218,7 +218,12 @@ function CardContent() {
 
     const { data: sessionData } = await supabase.auth.getSession();
     const activeUser = sessionData.session?.user || user;
-    if (activeUser) setUser(activeUser);
+    if (!activeUser) {
+      setPreviewError("Kart oluşturmak ve bildirim alabilmek için önce profil oluşturup giriş yapmalısın.");
+      setPreviewLoading(false);
+      return;
+    }
+    setUser(activeUser);
 
     try {
       if (!cardId) {
@@ -226,7 +231,7 @@ function CardContent() {
           .from("cards")
           .insert([
             {
-              user_id: activeUser?.id ?? null,
+              user_id: activeUser.id,
               from_username: fromUsername,
               target_username: targetUsername,
               soru,

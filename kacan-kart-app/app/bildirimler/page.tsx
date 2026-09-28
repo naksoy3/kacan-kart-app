@@ -20,22 +20,21 @@ export default function BildirimlerPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadNotifications = async (userId: string) => {
+    const loadNotifications = async (userId: string, accessToken: string) => {
       try {
-        const activeUserId = userId;
-
-        const query = supabase
-          .from("notifications")
-          .select("id, title, message, created_at, read")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false });
-        const { data, error: queryError } = await Promise.race([
-          query,
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 20000)),
-        ]);
-
-        if (queryError) setError(`Bildirimler yüklenemedi: ${queryError.message}`); 
-        setNotifications((data || []) as Notification[]);
+        const query = new URLSearchParams({
+          select: "id,title,message,created_at,read",
+          user_id: `eq.${userId}`,
+          order: "created_at.desc",
+        });
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/notifications?${query}`, {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (!response.ok) throw new Error(await response.text());
+        setNotifications((await response.json()) as Notification[]);
       } catch {
         setError("Bildirimler sorgusu zaman aşımına uğradı veya oturum okunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
       } finally {
@@ -48,7 +47,7 @@ export default function BildirimlerPage() {
         setLoading(false);
         return;
       }
-      window.setTimeout(() => loadNotifications(session.user.id), 0);
+      window.setTimeout(() => loadNotifications(session.user.id, session.access_token), 0);
     });
 
     return () => data.subscription.unsubscribe();

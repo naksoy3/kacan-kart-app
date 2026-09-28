@@ -33,23 +33,21 @@ export default function MesajlarPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const loadMessages = async (currentUserId: string) => {
-    const query = supabase
-      .from("messages")
-      .select("id, sender_id, recipient_id, body, read, created_at")
-      .or(`sender_id.eq.${currentUserId},recipient_id.eq.${currentUserId}`)
-      .order("created_at", { ascending: false });
-    const { data, error: messagesError } = await Promise.race([
-      query,
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 20000)),
-    ]).catch(() => ({ data: null, error: new Error("timeout") }));
+  const loadMessages = async (currentUserId: string, accessToken: string) => {
+    const query = new URLSearchParams({
+      select: "id,sender_id,recipient_id,body,read,created_at",
+      or: `(sender_id.eq.${currentUserId},recipient_id.eq.${currentUserId})`,
+      order: "created_at.desc",
+    });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/messages?${query}`, {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!response.ok) throw new Error(await response.text());
 
-    if (messagesError) {
-      setError(`Mesajlar yüklenemedi: ${messagesError.message}`);
-      return;
-    }
-
-    const rows = (data || []) as Message[];
+    const rows = (await response.json()) as Message[];
     const profileIds = Array.from(new Set(rows.flatMap((message) => [message.sender_id, message.recipient_id])));
     const { data: profiles } = await supabase
       .from("profiles")
@@ -73,7 +71,7 @@ export default function MesajlarPage() {
 
       setUserId(session.user.id);
       window.setTimeout(() => {
-        loadMessages(session.user.id)
+        loadMessages(session.user.id, session.access_token)
           .catch(() => setError("Mesajlar yüklenemedi. Lütfen tekrar dene."))
           .finally(() => setLoading(false));
       }, 0);
@@ -121,7 +119,8 @@ export default function MesajlarPage() {
       setFeedback("Mesajın gönderildi.");
       setRecipientUsername("");
       setBody("");
-      await loadMessages(userId);
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session) await loadMessages(userId, sessionData.session.access_token);
     }
     setSending(false);
   };
