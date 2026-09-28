@@ -27,18 +27,22 @@ export default function ProfilPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setLoading(false);
         router.replace("/");
         return;
       }
-      const profileUser = data.user as ProfileUser;
+
+      const profileUser = session.user as ProfileUser;
       setUser(profileUser);
       setName(profileUser.user_metadata?.full_name || "");
       setUsername(profileUser.user_metadata?.username || "");
       setAvatarUrl(profileUser.user_metadata?.avatar_url || "");
       setLoading(false);
     });
+
+    return () => data.subscription.unsubscribe();
   }, [router]);
 
   const handleSignOut = async () => {
