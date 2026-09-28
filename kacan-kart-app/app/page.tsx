@@ -242,7 +242,8 @@ function CardContent() {
           .single();
 
         if (error) {
-          setPreviewError(`Kart kaydedilemedi: ${error.message}`);
+          setPreviewError(`Kart veritabanına kaydedilemedi; geçici paylaşım bağlantısı hazırlandı. (${error.message})`);
+          goToStep(4);
           return;
         }
 
@@ -251,7 +252,8 @@ function CardContent() {
 
       goToStep(4);
     } catch (error) {
-      setPreviewError(error instanceof Error ? error.message : "Önizleme oluşturulamadı.");
+      setPreviewError("Kart veritabanına kaydedilemedi; geçici paylaşım bağlantısı hazırlandı.");
+      goToStep(4);
     } finally {
       setPreviewLoading(false);
     }
@@ -558,6 +560,12 @@ function CardContent() {
             <div className="w-full bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl text-emerald-400 text-center text-sm font-bold shadow-xl">
               🎉 Harika! Bu karta zaten &quot;Evet&quot; denildi ve gönderene bildirildi!
             </div>
+          )}
+
+          {previewError && !isSharedView && (
+            <p className="w-full rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-center text-xs text-amber-300">
+              {previewError}
+            </p>
           )}
 
           <div className="w-full flex flex-col items-center gap-2">
