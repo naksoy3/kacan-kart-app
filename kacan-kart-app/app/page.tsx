@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 import AuthModal from "@/components/AuthModal";
@@ -302,10 +303,11 @@ function CardContent() {
       {/* SAĞ ÜST KÖŞE GİRİŞ / KULLANICI ALANI */}
       <div className="absolute top-5 right-5 z-20 flex items-center gap-3">
         {user ? (
-          <div className="flex items-center gap-3 bg-slate-900/80 border border-slate-800 backdrop-blur-md px-4 py-2 rounded-2xl text-white text-xs shadow-lg">
-            <div
-              title={user.user_metadata?.full_name || user.user_metadata?.username || "Profil"}
-              className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-sm font-bold text-white"
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/profil"
+              title="Profilini aç"
+              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-sm font-bold text-white shadow-lg transition hover:scale-105"
             >
               {user.user_metadata?.avatar_url ? (
                 <img
@@ -316,10 +318,10 @@ function CardContent() {
               ) : (
                 (user.user_metadata?.full_name || user.user_metadata?.username || "P").charAt(0).toUpperCase()
               )}
-            </div>
+            </Link>
             <button
               onClick={() => supabase.auth.signOut()}
-              className="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 font-bold rounded-xl transition cursor-pointer"
+              className="rounded-xl border border-rose-500/20 bg-slate-900/90 px-3 py-1.5 text-[11px] font-bold text-rose-400 shadow-lg transition hover:bg-rose-600/20 cursor-pointer"
             >
               Çıkış
             </button>
