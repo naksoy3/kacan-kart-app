@@ -285,7 +285,10 @@ function CardContent() {
         .eq("id", urlCardId);
 
       if (!updateError) {
-        await supabase.rpc("notify_card_accepted", { p_card_id: urlCardId });
+        const { error: notificationError } = await supabase.rpc("notify_card_accepted", { p_card_id: urlCardId });
+        if (notificationError) {
+          console.error("Bildirim oluşturulamadı:", notificationError.message);
+        }
       }
       setCardStatus("accepted");
     }

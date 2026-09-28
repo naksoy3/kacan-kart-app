@@ -42,8 +42,10 @@ create policy "Users can read own notifications"
   on public.notifications for select
   using (auth.uid() = user_id);
 
+drop function if exists public.notify_card_accepted(uuid);
+
 create or replace function public.notify_card_accepted(p_card_id uuid)
-returns void
+returns boolean
 language plpgsql
 security definer
 set search_path = public
@@ -51,21 +53,31 @@ as $$
 declare
   card_owner uuid;
   card_question text;
+  card_sender text;
 begin
-  select user_id, soru
-    into card_owner, card_question
+  select user_id, soru, from_username
+    into card_owner, card_question, card_sender
     from public.cards
    where id = p_card_id;
 
+  if card_owner is null and card_sender is not null then
+    select id
+      into card_owner
+      from public.profiles
+     where lower(username) = lower(card_sender)
+        or lower(full_name) = lower(card_sender)
+     limit 1;
+  end if;
+
   if card_owner is null then
-    return;
+    return false;
   end if;
 
   if exists (
     select 1 from public.notifications
      where card_id = p_card_id and type = 'card_accepted'
   ) then
-    return;
+    return true;
   end if;
 
   insert into public.notifications (user_id, card_id, type, title, message)
@@ -76,6 +88,7 @@ begin
     'Kartına Evet cevabı geldi! 🎉',
     coalesce(card_question, 'Gönderdiğin soru kartı kabul edildi.')
   );
+  return true;
 end;
 $$;
 
