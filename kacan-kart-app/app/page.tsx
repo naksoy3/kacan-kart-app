@@ -125,6 +125,8 @@ function CardContent() {
   const [cardStatus, setCardStatus] = useState<string>("pending");
   const [loadingCard, setLoadingCard] = useState<boolean>(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   // Auth States
   const [user, setUser] = useState<any>(null);
@@ -163,8 +165,7 @@ function CardContent() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
-      setAuthLoading(false);
-    });
+    }).finally(() => setAuthLoading(false));
 
     const {
       data: { subscription },
@@ -211,46 +212,55 @@ function CardContent() {
   };
 
   const handleProceedToPreview = async () => {
+    if (previewLoading) return;
+    setPreviewLoading(true);
+    setPreviewError(null);
+
     if (!user) {
       if (authLoading) {
-        alert("Oturum kontrol ediliyor, lütfen tekrar dene.");
-        return;
+        setPreviewError("Oturum kontrol ediliyor. Lütfen birkaç saniye sonra tekrar dene.");
+      } else {
+        setPreviewError("Önizlemeyi oluşturmak için önce giriş yapmalısın.");
       }
-      alert("Bildirim alabilmek için kart oluşturmadan önce giriş yapmalısın.");
+      setPreviewLoading(false);
       return;
     }
 
-    if (!cardId) {
-      const { data, error } = await supabase
-        .from("cards")
-        .insert([
-          {
-            user_id: user ? user.id : null,
-            from_username: fromUsername,
-            target_username: targetUsername,
-            soru,
-            theme: selectedTheme,
-            gif_url: gifUrl,
-            yer,
-            tarih,
-            zaman,
-            status: "pending",
-          },
-        ])
-        .select()
-        .single();
+    try {
+      if (!cardId) {
+        const { data, error } = await supabase
+          .from("cards")
+          .insert([
+            {
+              user_id: user.id,
+              from_username: fromUsername,
+              target_username: targetUsername,
+              soru,
+              theme: selectedTheme,
+              gif_url: gifUrl,
+              yer,
+              tarih,
+              zaman,
+              status: "pending",
+            },
+          ])
+          .select()
+          .single();
 
-      if (error) {
-        alert("Kart kaydedilirken bir hata oluştu: " + error.message);
-        return;
+        if (error) {
+          setPreviewError(`Kart kaydedilemedi: ${error.message}`);
+          return;
+        }
+
+        if (data) setCardId(data.id);
       }
 
-      if (data) {
-        setCardId(data.id);
-      }
+      goToStep(4);
+    } catch (error) {
+      setPreviewError(error instanceof Error ? error.message : "Önizleme oluşturulamadı.");
+    } finally {
+      setPreviewLoading(false);
     }
-
-    goToStep(4);
   };
 
   // URL'ye mekan ve saat parametrelerini de güvenli şekilde ekledik
@@ -498,11 +508,17 @@ function CardContent() {
                 </button>
                 <button
                   onClick={handleProceedToPreview}
-                  className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
+                  disabled={previewLoading || authLoading}
+                  className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer disabled:opacity-50"
                 >
-                  Önizle & Paylaş 🚀
+                  {previewLoading ? "Hazırlanıyor..." : authLoading ? "Oturum kontrol ediliyor..." : "Önizle & Paylaş 🚀"}
                 </button>
               </div>
+              {previewError && (
+                <p className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-center text-xs text-rose-300">
+                  {previewError}
+                </p>
+              )}
             </div>
           )}
         </div>
