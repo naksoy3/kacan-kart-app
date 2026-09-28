@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/utils/supabase";
 
 interface AuthModalProps {
@@ -10,7 +11,6 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,28 +25,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setError(null);
     setMessage(null);
 
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        setMessage("Kayıt başarılı! Lütfen e-postanızı kontrol edin veya giriş yapın.");
-        setIsSignUp(false);
-      }
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      setError(error.message);
     } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) {
-        setError(error.message);
-      } else {
-        onSuccess();
-        onClose();
-      }
+      onSuccess();
+      onClose();
     }
     setLoading(false);
   };
@@ -63,12 +50,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         <div className="text-center space-y-2">
           <h3 className="text-2xl font-extrabold tracking-tight">
-            {isSignUp ? "✨ Hesap Oluştur" : "👋 Giriş Yap"}
+            👋 Giriş Yap
           </h3>
           <p className="text-xs text-slate-400">
-            {isSignUp
-              ? "Kart oluşturmak ve bildirim almak için hemen kaydol."
-              : "Hesabına giriş yaparak soru kartı göndermeye devam et."}
+            Hesabına giriş yaparak soru kartı göndermeye devam et.
           </p>
         </div>
 
@@ -114,24 +99,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             disabled={loading}
             className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer disabled:opacity-50 mt-2"
           >
-            {loading ? "İşleniyor..." : isSignUp ? "Kayıt Ol" : "Giriş Yap"}
+            {loading ? "İşleniyor..." : "Giriş Yap"}
           </button>
         </form>
 
         <div className="text-center pt-2">
-          <button
-            type="button"
-            onClick={() => {
-              setIsSignUp(!isSignUp);
-              setError(null);
-              setMessage(null);
-            }}
+          <Link
+            href="/kayit"
+            onClick={onClose}
             className="text-xs text-indigo-400 hover:underline cursor-pointer font-medium"
           >
-            {isSignUp
-              ? "Zaten hesabın var mı? Giriş yap"
-              : "Hesabın yok mu? Hemen kaydol"}
-          </button>
+            Hesabın yok mu? Hemen kaydol
+          </Link>
         </div>
       </div>
     </div>
