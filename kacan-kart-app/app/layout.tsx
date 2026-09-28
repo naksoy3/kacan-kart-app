@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Baloo_2, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -37,12 +38,12 @@ export default function RootLayout({
           >
             Anasayfa
           </a>
-          <button
-            type="button"
+          <Link
+            href="/bildirimler"
             className="h-10 rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"
           >
             Bildirimler
-          </button>
+          </Link>
           <button
             type="button"
             className="h-10 rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800"

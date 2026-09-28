@@ -279,10 +279,14 @@ function CardContent() {
 
   const handleAcceptResponse = async () => {
     if (urlCardId) {
-      await supabase
+      const { error: updateError } = await supabase
         .from("cards")
         .update({ status: "accepted" })
         .eq("id", urlCardId);
+
+      if (!updateError) {
+        await supabase.rpc("notify_card_accepted", { p_card_id: urlCardId });
+      }
       setCardStatus("accepted");
     }
   };
