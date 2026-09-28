@@ -216,8 +216,8 @@ function CardContent() {
     setPreviewLoading(true);
     setPreviewError(null);
 
-    const { data: sessionData } = await supabase.auth.getUser();
-    const activeUser = sessionData.user || user;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const activeUser = sessionData.session?.user || user;
     if (activeUser) setUser(activeUser);
 
     try {
