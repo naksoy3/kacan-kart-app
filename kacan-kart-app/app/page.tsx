@@ -4,7 +4,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
-import AuthModal from "@/components/AuthModal";
 import { supabase } from "@/utils/supabase";
 
 // Wikimedia Commons'tan lisansı doğrulanabilen komik ve açık lisanslı GIF'ler.
@@ -128,7 +127,6 @@ function CardContent() {
 
   // Auth States
   const [user, setUser] = useState<any>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   const goToStep = (step: number) => {
     if (isSharedView) return;
@@ -211,6 +209,11 @@ function CardContent() {
   };
 
   const handleProceedToPreview = async () => {
+    if (!user) {
+      alert("Bildirim alabilmek için kart oluşturmadan önce giriş yapmalısın.");
+      return;
+    }
+
     if (!cardId) {
       const { data, error } = await supabase
         .from("cards")
@@ -306,42 +309,6 @@ function CardContent() {
     <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-
-      {/* SAĞ ÜST KÖŞE GİRİŞ / KULLANICI ALANI */}
-      <div className="absolute top-5 right-5 z-20 flex items-center gap-3">
-        {user ? (
-          <div className="flex flex-col items-center gap-2">
-            <Link
-              href="/profil"
-              title="Profilini aç"
-              className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-sm font-bold text-white shadow-lg transition hover:scale-105"
-            >
-              {user.user_metadata?.avatar_url ? (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt="Profil fotoğrafı"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                (user.user_metadata?.full_name || user.user_metadata?.username || "P").charAt(0).toUpperCase()
-              )}
-            </Link>
-            <button
-              onClick={() => supabase.auth.signOut()}
-              className="rounded-xl border border-rose-500/20 bg-slate-900/90 px-3 py-1.5 text-[11px] font-bold text-rose-400 shadow-lg transition hover:bg-rose-600/20 cursor-pointer"
-            >
-              Çıkış
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl text-xs transition shadow-lg shadow-indigo-600/30 cursor-pointer"
-          >
-            Giriş Yap / Kayıt Ol
-          </button>
-        )}
-      </div>
 
       {!isSharedView && formStep < 4 && (
         <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
@@ -603,14 +570,6 @@ function CardContent() {
         </div>
       )}
 
-      {/* Auth Modal Bileşeni */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        onSuccess={() => {
-          goToStep(4);
-        }}
-      />
     </main>
   );
 }
