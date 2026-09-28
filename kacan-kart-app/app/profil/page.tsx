@@ -123,16 +123,6 @@ export default function ProfilPage() {
 
   return (
     <main className="relative min-h-screen bg-slate-950 px-4 py-24 text-white">
-      <div className="absolute left-5 top-20 flex items-center gap-3 sm:left-8">
-        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-lg font-bold shadow-lg">
-          {metadata.avatar_url ? <img src={metadata.avatar_url} alt="Profil fotoğrafı" className="h-full w-full object-cover" /> : displayName.charAt(0).toUpperCase()}
-        </div>
-        <div>
-          <p className="text-sm font-bold text-white">{displayName}</p>
-          {metadata.username && <p className="text-xs text-indigo-300">@{metadata.username}</p>}
-        </div>
-      </div>
-
       <div className="mx-auto w-full max-w-lg rounded-[28px] border border-slate-800 bg-slate-900/90 p-8 text-center shadow-2xl backdrop-blur-xl sm:p-10">
         <div className="mb-7">
           <h1 className="text-2xl font-extrabold">Profil</h1>
