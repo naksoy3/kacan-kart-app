@@ -41,7 +41,7 @@ export default function MesajlarPage() {
       .order("created_at", { ascending: false });
     const { data, error: messagesError } = await Promise.race([
       query,
-      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 20000)),
     ]).catch(() => ({ data: null, error: new Error("timeout") }));
 
     if (messagesError) {
@@ -69,8 +69,10 @@ export default function MesajlarPage() {
       try {
         const { data } = await supabase.auth.getSession();
         if (!data.session?.user) return;
-        setUserId(data.session.user.id);
-        await loadMessages(data.session.user.id);
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        const activeUserId = refreshed.session?.user.id || data.session.user.id;
+        setUserId(activeUserId);
+        await loadMessages(activeUserId);
       } catch {
         setError("Mesajlar yüklenemedi. Supabase bağlantısını veya tablo ayarlarını kontrol et.");
       } finally {

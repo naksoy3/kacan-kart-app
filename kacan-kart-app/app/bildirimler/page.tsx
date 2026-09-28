@@ -25,14 +25,17 @@ export default function BildirimlerPage() {
         const { data: userData } = await supabase.auth.getSession();
         if (!userData.session?.user) return;
 
+        const { data: refreshed } = await supabase.auth.refreshSession();
+        const activeUserId = refreshed.session?.user.id || userData.session.user.id;
+
         const query = supabase
           .from("notifications")
           .select("id, title, message, created_at, read")
-          .eq("user_id", userData.session.user.id)
+          .eq("user_id", activeUserId)
           .order("created_at", { ascending: false });
         const { data, error: queryError } = await Promise.race([
           query,
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 8000)),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 20000)),
         ]);
 
         if (queryError) setError(`Bildirimler yüklenemedi: ${queryError.message}`);
