@@ -17,21 +17,23 @@ export default function BildirimlerPage() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadNotifications = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        router.replace("/");
+      const { data: userData } = await supabase.auth.getSession();
+      if (!userData.session?.user) {
+        setLoading(false);
         return;
       }
 
-      const { data } = await supabase
+      const { data, error: queryError } = await supabase
         .from("notifications")
         .select("id, title, message, created_at, read")
-        .eq("user_id", userData.user.id)
+        .eq("user_id", userData.session.user.id)
         .order("created_at", { ascending: false });
 
+      if (queryError) setError("Bildirimler yüklenemedi. Supabase notifications tablosunu kontrol et.");
       setNotifications((data || []) as Notification[]);
       setLoading(false);
     };
@@ -54,6 +56,8 @@ export default function BildirimlerPage() {
 
         {loading ? (
           <p className="py-12 text-center text-sm text-slate-400">Bildirimler yükleniyor...</p>
+          ) : error ? (
+          <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-sm text-rose-300">{error}</div>
         ) : notifications.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center text-sm text-slate-400">
             Henüz bildirimin yok.

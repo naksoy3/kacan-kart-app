@@ -34,11 +34,16 @@ export default function MesajlarPage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadMessages = async (currentUserId: string) => {
-    const { data } = await supabase
+    const { data, error: messagesError } = await supabase
       .from("messages")
       .select("id, sender_id, recipient_id, body, read, created_at")
       .or(`sender_id.eq.${currentUserId},recipient_id.eq.${currentUserId}`)
       .order("created_at", { ascending: false });
+
+    if (messagesError) {
+      setError("Mesajlar yüklenemedi. Supabase messages tablosunu kontrol et.");
+      return;
+    }
 
     const rows = (data || []) as Message[];
     const profileIds = Array.from(new Set(rows.flatMap((message) => [message.sender_id, message.recipient_id])));
@@ -57,13 +62,13 @@ export default function MesajlarPage() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
-        router.replace("/");
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.user) {
+        setLoading(false);
         return;
       }
-      setUserId(data.user.id);
-      await loadMessages(data.user.id);
+      setUserId(data.session.user.id);
+      await loadMessages(data.session.user.id);
       setLoading(false);
     };
     load();
@@ -139,6 +144,8 @@ export default function MesajlarPage() {
           <h2 className="text-lg font-bold">Gelen ve gönderilen mesajlar</h2>
           {loading ? (
             <p className="py-12 text-center text-sm text-slate-400">Mesajlar yükleniyor...</p>
+          ) : error ? (
+            <div className="mt-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-sm text-rose-300">{error}</div>
           ) : messages.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-700 p-10 text-center text-sm text-slate-400">Henüz mesajın yok.</div>
           ) : (

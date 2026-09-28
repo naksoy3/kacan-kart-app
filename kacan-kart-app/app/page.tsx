@@ -124,6 +124,7 @@ function CardContent() {
   const [cardId, setCardId] = useState<string | null>(urlCardId);
   const [cardStatus, setCardStatus] = useState<string>("pending");
   const [loadingCard, setLoadingCard] = useState<boolean>(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Auth States
   const [user, setUser] = useState<any>(null);
@@ -162,6 +163,7 @@ function CardContent() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      setAuthLoading(false);
     });
 
     const {
@@ -210,6 +212,10 @@ function CardContent() {
 
   const handleProceedToPreview = async () => {
     if (!user) {
+      if (authLoading) {
+        alert("Oturum kontrol ediliyor, lütfen tekrar dene.");
+        return;
+      }
       alert("Bildirim alabilmek için kart oluşturmadan önce giriş yapmalısın.");
       return;
     }
