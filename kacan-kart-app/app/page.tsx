@@ -310,7 +310,7 @@ function CardContent() {
   const generateShareUrl = () => {
     if (typeof window === "undefined") return "";
     if (cardId) {
-      return `${window.location.origin}/k/card/${encodeURIComponent(cardId)}`;
+      return `${window.location.origin}/k/card/${encodeURIComponent(cardId)}?v=2`;
     }
     return "";
   };
@@ -674,7 +674,7 @@ function CardContent() {
               hayirMetni={searchParams.get("h") || "Hayır"}
               gifUrl={gifUrl}
               theme={selectedTheme}
-              shareUrl={cardId ? `/k/card/${encodeURIComponent(cardId)}` : undefined}
+              shareUrl={cardId ? `/k/card/${encodeURIComponent(cardId)}?v=2` : undefined}
               mekan={yer || searchParams.get("mekan") || searchParams.get("yer") || ""}
               tarih={tarih || searchParams.get("tarih") || ""}
               saat={zaman || searchParams.get("saat") || searchParams.get("zaman") || ""}
