@@ -5,7 +5,8 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
+  const requestedNext = searchParams.get('next') ?? '/'
+  const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/'
 
   if (code) {
     const cookieStore = cookies()
@@ -30,20 +31,32 @@ export async function GET(request: Request) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host')
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
+      const user = data.user
+      const username = typeof user?.user_metadata?.username === 'string'
+        ? user.user_metadata.username.trim().toLowerCase()
+        : ''
+      const fullName = typeof user?.user_metadata?.full_name === 'string'
+        ? user.user_metadata.full_name
+        : username
+
+      if (user && username) {
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: user.id,
+          username,
+          full_name: fullName || username,
+          avatar_url: typeof user.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : null,
+        }, { onConflict: 'id', ignoreDuplicates: true })
+
+        if (profileError) {
+          return NextResponse.redirect(new URL('/?verification=profile-error', origin))
+        }
       }
+
+      return NextResponse.redirect(new URL(next, origin))
     }
   }
 
-  // Hata durumunda yönlendirilecek adres
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+  return NextResponse.redirect(new URL('/?verification=failed', origin))
 }

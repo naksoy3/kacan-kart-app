@@ -243,6 +243,7 @@ const translations: Record<string, string> = {
   "Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç.": "That username is already taken. Please choose another.",
   "Profil oluşturulamadı. Lütfen tekrar dene.": "Could not create profile. Please try again.",
   "Profilin oluşturuldu. Hoş geldin!": "Your profile is ready. Welcome!",
+  "Kayıt tamamlandı. E-posta adresini doğrulamak için gelen kutunu kontrol et.": "Sign-up complete. Check your inbox to verify your email address.",
   "Kayıt tamamlandı ancak otomatik giriş yapılamadı. Supabase Auth ayarlarından e-posta doğrulamasını geçici olarak kapatmalısın.": "Sign-up is complete, but automatic login failed. Temporarily disable email confirmation in Supabase Auth settings.",
   "Profil fotoğrafı": "Profile photo",
   "Profil fotoğrafı önizlemesi": "Profile photo preview",

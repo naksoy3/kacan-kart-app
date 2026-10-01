@@ -71,10 +71,11 @@ export default function KayitPage() {
       return;
     }
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: normalizedEmail,
       password: sifre,
       options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
         data: {
           full_name: ad,
           username: normalizedUsername,
@@ -90,12 +91,10 @@ export default function KayitPage() {
           : signUpError.message
       );
     } else {
-      const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password: sifre,
-      });
-
-      if (sessionData.session && !signInError) {
+      const sessionData = signUpData;
+      if (!sessionData.session) {
+        setMessage(t("Kayıt tamamlandı. E-posta adresini doğrulamak için gelen kutunu kontrol et."));
+      } else {
         let uploadedAvatarUrl: string | null = null;
         if (fotoDosyasi) {
           const extension = fotoDosyasi.type === "image/jpeg" ? "jpg" : fotoDosyasi.type.split("/")[1];
@@ -141,8 +140,6 @@ export default function KayitPage() {
 
         setMessage(t("Profilin oluşturuldu. Hoş geldin!"));
         setTimeout(() => router.push("/"), 900);
-      } else {
-        setError(t("Kayıt tamamlandı ancak otomatik giriş yapılamadı. Supabase Auth ayarlarından e-posta doğrulamasını geçici olarak kapatmalısın."));
       }
     }
 
