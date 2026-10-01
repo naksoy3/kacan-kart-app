@@ -269,8 +269,7 @@ function CardContent() {
           .single();
 
         if (error) {
-          setPreviewError(`Kart veritabanına kaydedilemedi; geçici paylaşım bağlantısı hazırlandı. (${error.message})`);
-          goToStep(4);
+          setPreviewError(`Kart kaydedilemedi, bu nedenle kısa paylaşım bağlantısı oluşturulamadı: ${error.message}`);
           return;
         }
 
@@ -279,8 +278,7 @@ function CardContent() {
 
       goToStep(4);
     } catch (error) {
-      setPreviewError("Kart veritabanına kaydedilemedi; geçici paylaşım bağlantısı hazırlandı.");
-      goToStep(4);
+      setPreviewError(`Kart kaydedilemedi, bu nedenle kısa paylaşım bağlantısı oluşturulamadı: ${error instanceof Error ? error.message : "Beklenmeyen hata"}`);
     } finally {
       setPreviewLoading(false);
     }
@@ -292,28 +290,15 @@ function CardContent() {
     if (cardId) {
       return `${window.location.origin}/k/card/${encodeURIComponent(cardId)}`;
     }
-
-    const params = new URLSearchParams();
-    if (targetUsername) params.set("u", targetUsername);
-    if (fromUsername) params.set("f", fromUsername);
-    if (soru) params.set("s", soru);
-    if (selectedTheme) params.set("t", selectedTheme);
-    if (gifUrl) params.set("gif", gifUrl);
-    if (yer) {
-      params.set("yer", yer);
-      params.set("mekan", yer);
-    }
-    if (tarih) params.set("tarih", tarih);
-    if (zaman) {
-      params.set("zaman", zaman);
-      params.set("saat", zaman);
-    }
-
-    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    return "";
   };
 
   const handleCopyLink = () => {
     const link = generateShareUrl();
+    if (!link) {
+      setPreviewError("Kısa paylaşım linki oluşturulamadı. Kartı tekrar kaydetmeyi dene.");
+      return;
+    }
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -654,6 +639,7 @@ function CardContent() {
               hayirMetni={searchParams.get("h") || "Hayır"}
               gifUrl={gifUrl}
               theme={selectedTheme}
+              shareUrl={cardId ? `/k/card/${encodeURIComponent(cardId)}` : undefined}
               mekan={yer || searchParams.get("mekan") || searchParams.get("yer") || ""}
               tarih={tarih || searchParams.get("tarih") || ""}
               saat={zaman || searchParams.get("saat") || searchParams.get("zaman") || ""}

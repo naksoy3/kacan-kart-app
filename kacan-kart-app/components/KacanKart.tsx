@@ -44,6 +44,7 @@ export type KacanKartProps = {
   tarih?: string;
   saat?: string;
   theme?: CardTheme;
+  shareUrl?: string;
   onBack?: () => void;
   onAccept?: () => void | Promise<void>;
   showShareButton?: boolean;
@@ -202,6 +203,7 @@ export default function KacanKart({
   tarih,
   saat,
   theme = "escaping",
+  shareUrl,
   onBack,
   onAccept,
   showShareButton = true,
@@ -267,11 +269,13 @@ export default function KacanKart({
     if (tarih) params.set("tarih", tarih);
     if (saat) params.set("saat", saat);
 
-    const shareUrl = `${baseUrl}?${params.toString()}`;
+    const resolvedShareUrl = shareUrl
+      ? new URL(shareUrl, window.location.origin).toString()
+      : `${baseUrl}?${params.toString()}`;
     const shareData = {
       title: `${targetUsername} sana bir kart gönderdi! 🃏`,
       text: `"${soru}" - Bakalım ne cevap vereceksin? 😉`,
-      url: shareUrl,
+      url: resolvedShareUrl,
     };
 
     if (navigator.share) {
@@ -281,7 +285,7 @@ export default function KacanKart({
         // İptal edildi
       }
     } else {
-      await navigator.clipboard.writeText(shareUrl);
+      await navigator.clipboard.writeText(resolvedShareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
