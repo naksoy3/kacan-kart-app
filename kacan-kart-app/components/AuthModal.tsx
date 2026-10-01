@@ -40,6 +40,33 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setLoading(false);
   };
 
+  const handlePasswordReset = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError(t("Sıfırlama bağlantısı için e-posta adresini gir."));
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+
+    const redirectUrl = new URL("/auth/callback", window.location.origin);
+    redirectUrl.searchParams.set("next", "/sifre-yenile");
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: redirectUrl.toString(),
+      });
+      if (error) setError(error.message);
+      else setMessage(t("Şifre yenileme bağlantısı e-posta adresine gönderildi. Gelen kutunu kontrol et."));
+    } catch {
+      setError(t("Şifre sıfırlama e-postası gönderilemedi. Tekrar dene."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-[28px] p-8 text-white shadow-2xl relative space-y-6">
@@ -94,6 +121,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
               placeholder="••••••••"
               className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition text-sm"
             />
+            <button
+              type="button"
+              disabled={loading}
+              onClick={handlePasswordReset}
+              className="mt-2 text-xs font-medium text-indigo-300 hover:text-indigo-200 hover:underline disabled:opacity-50"
+            >
+              {loading ? t("Şifre sıfırlama e-postası gönderiliyor...") : t("Şifremi unuttum?")}
+            </button>
           </div>
 
           <button
