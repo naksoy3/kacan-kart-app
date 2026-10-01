@@ -30,13 +30,13 @@ export async function generateMetadata({ params }: CardLinkPageProps): Promise<M
       title,
       description,
       type: "website",
-      images: [{ url: "/icon.png", width: 512, height: 512, alt: "Cardasks" }],
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Cardasks" }],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description,
-      images: ["/icon.png"],
+      images: ["/opengraph-image"],
     },
   };
 }

@@ -18,10 +18,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://cardasks.com"),
   title: "Cardasks ile soru gönder",
   description: "Cardasks platformu üzerinden kolayca soru gönderin ve yönetin.",
   icons: {
     icon: "/icon.png",
+  },
+  openGraph: {
+    title: "Cardasks ile soru gönder",
+    description: "Sana özel bir soru kartı 💌",
+    siteName: "Cardasks",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Cardasks" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cardasks ile soru gönder",
+    description: "Sana özel bir soru kartı 💌",
+    images: ["/opengraph-image"],
   },
 };
 
