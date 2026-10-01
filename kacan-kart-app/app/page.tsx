@@ -486,16 +486,41 @@ function CardContent() {
                 </div>
                 <div>
                   <label className="block text-slate-400 mb-1.5 font-medium">Zaman:</label>
-                  <input
-                    type="time"
-                    step="60"
-                    value={zamanISO}
-                    onChange={(event) => {
-                      setZamanISO(event.target.value);
-                      setZaman(event.target.value);
-                    }}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
-                  />
+                  <div className="flex items-center gap-2">
+                    <select
+                      aria-label="Saat"
+                      value={zamanISO ? zamanISO.split(":")[0] : ""}
+                      onChange={(event) => {
+                        const minutes = zamanISO ? zamanISO.split(":")[1] : "00";
+                        const value = event.target.value ? `${event.target.value}:${minutes}` : "";
+                        setZamanISO(value);
+                        setZaman(value);
+                      }}
+                      className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500"
+                    >
+                      <option value="">Saat</option>
+                      {Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, "0")).map((hour) => (
+                        <option key={hour} value={hour}>{hour}</option>
+                      ))}
+                    </select>
+                    <span className="text-slate-400">:</span>
+                    <select
+                      aria-label="Dakika"
+                      value={zamanISO ? zamanISO.split(":")[1] : ""}
+                      onChange={(event) => {
+                        const hour = zamanISO ? zamanISO.split(":")[0] : "00";
+                        const value = event.target.value ? `${hour}:${event.target.value}` : "";
+                        setZamanISO(value);
+                        setZaman(value);
+                      }}
+                      className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500"
+                    >
+                      <option value="">Dakika</option>
+                      {Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, "0")).map((minute) => (
+                        <option key={minute} value={minute}>{minute}</option>
+                      ))}
+                    </select>
+                  </div>
                   {zamanISO && <p className="mt-1.5 text-[11px] text-indigo-300">Seçilen saat: {zamanISO}</p>}
                 </div>
               </div>
