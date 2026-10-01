@@ -73,6 +73,12 @@ create policy "Users can read own notifications"
   on public.notifications for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Users can mark own notifications read" on public.notifications;
+create policy "Users can mark own notifications read"
+  on public.notifications for update
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
 drop function if exists public.notify_card_accepted(uuid);
 
 create or replace function public.notify_card_accepted(p_card_id uuid)

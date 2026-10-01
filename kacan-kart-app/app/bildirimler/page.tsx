@@ -34,7 +34,23 @@ export default function BildirimlerPage() {
           },
         });
         if (!response.ok) throw new Error(await response.text());
-        setNotifications((await response.json()) as Notification[]);
+        const rows = (await response.json()) as Notification[];
+        setNotifications(rows);
+
+        const unreadIds = rows.filter((notification) => !notification.read);
+        if (unreadIds.length > 0) {
+          const readQuery = new URLSearchParams({ user_id: `eq.${userId}`, read: "eq.false" });
+          await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/notifications?${readQuery}`, {
+            method: "PATCH",
+            headers: {
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+              Prefer: "return=minimal",
+            },
+            body: JSON.stringify({ read: true }),
+          });
+        }
       } catch {
         setError("Bildirimler sorgusu zaman aşımına uğradı veya oturum okunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
       } finally {
