@@ -22,9 +22,11 @@ export default function ProfilPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [email, setEmail] = useState("");
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -39,6 +41,7 @@ export default function ProfilPage() {
       setName(profileUser.user_metadata?.full_name || "");
       setUsername(profileUser.user_metadata?.username || "");
       setAvatarUrl(profileUser.user_metadata?.avatar_url || "");
+      setEmail(profileUser.email || "");
       setLoading(false);
     });
 
@@ -73,9 +76,13 @@ export default function ProfilPage() {
 
     setSaving(true);
     setError(null);
+    setNotice(null);
     const normalizedUsername = username.trim().toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailChanged = normalizedEmail !== (user.email || "").toLowerCase();
 
     const { error: authError } = await supabase.auth.updateUser({
+      ...(emailChanged ? { email: normalizedEmail } : {}),
       data: {
         full_name: name.trim(),
         username: normalizedUsername,
@@ -109,7 +116,13 @@ export default function ProfilPage() {
     }
 
     const { data } = await supabase.auth.getUser();
-    if (data.user) setUser(data.user as ProfileUser);
+    if (data.user) {
+      setUser(data.user as ProfileUser);
+      setEmail(data.user.email || normalizedEmail);
+    }
+    if (emailChanged) {
+      setNotice("Profilin güncellendi. Yeni e-posta adresini etkinleştirmek için gelen doğrulama bağlantısını onayla.");
+    }
     setEditing(false);
     setSaving(false);
   };
@@ -130,6 +143,7 @@ export default function ProfilPage() {
         </div>
 
         {error && <div className="mb-5 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">{error}</div>}
+        {notice && <div className="mb-5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300">{notice}</div>}
 
         {editing ? (
           <form onSubmit={handleSave} className="space-y-4 text-left">
@@ -150,6 +164,10 @@ export default function ProfilPage() {
             <label className="block text-sm font-medium text-slate-300">
               Kullanıcı adı
               <input value={username} onChange={(event) => setUsername(event.target.value.replace(/\s/g, "").toLowerCase())} required minLength={3} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-indigo-500" />
+            </label>
+            <label className="block text-sm font-medium text-slate-300">
+              E-posta adresi
+              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-indigo-500" />
             </label>
 
             <div className="flex gap-3 pt-2">
