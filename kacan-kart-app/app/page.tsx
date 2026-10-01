@@ -124,6 +124,10 @@ function CardContent() {
   const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
   const [yer, setYer] = useState(searchParams.get("yer") || searchParams.get("mekan") || "");
   const [tarih, setTarih] = useState(searchParams.get("tarih") || "");
+  const [tarihISO, setTarihISO] = useState(() => {
+    const value = searchParams.get("tarih") || "";
+    return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
+  });
   const [zaman, setZaman] = useState(searchParams.get("zaman") || searchParams.get("saat") || "");
   const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
@@ -454,12 +458,27 @@ function CardContent() {
                 <div>
                   <label className="block text-slate-400 mb-1.5 font-medium">Tarih:</label>
                   <input
-                    type="text"
-                    placeholder="Örn: Cuma"
-                    value={tarih}
-                    onChange={(e) => setTarih(e.target.value)}
+                    type="date"
+                    value={tarihISO}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setTarihISO(value);
+                      if (!value) {
+                        setTarih("");
+                        return;
+                      }
+                      const [year, month, day] = value.split("-").map(Number);
+                      const selectedDate = new Date(year, month - 1, day);
+                      setTarih(selectedDate.toLocaleDateString("tr-TR", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      }));
+                    }}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                   />
+                  {tarih && <p className="mt-1.5 text-[11px] capitalize text-indigo-300">{tarih}</p>}
                 </div>
                 <div>
                   <label className="block text-slate-400 mb-1.5 font-medium">Zaman:</label>
