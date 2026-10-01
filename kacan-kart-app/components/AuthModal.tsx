@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/utils/supabase";
+import { useLanguage } from "@/components/LanguageProvider";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,10 +52,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         <div className="text-center space-y-2">
           <h3 className="text-2xl font-extrabold tracking-tight">
-            👋 Giriş Yap
+            {t("👋 Giriş Yap")}
           </h3>
           <p className="text-xs text-slate-400">
-            Hesabına giriş yaparak soru kartı göndermeye devam et.
+            {t("Hesabına giriş yaparak soru kartı göndermeye devam et.")}
           </p>
         </div>
 
@@ -71,19 +73,19 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
         <form onSubmit={handleAuth} className="space-y-4 text-sm">
           <div>
-            <label className="block text-slate-400 mb-1.5 font-medium">E-posta Adresi:</label>
+            <label className="block text-slate-400 mb-1.5 font-medium">{t("E-posta Adresi:")}</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ornek@mail.com"
+              placeholder={t("ornek@mail.com")}
               className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition text-sm"
             />
           </div>
 
           <div>
-            <label className="block text-slate-400 mb-1.5 font-medium">Şifre:</label>
+            <label className="block text-slate-400 mb-1.5 font-medium">{t("Şifre:")}</label>
             <input
               type="password"
               required
@@ -99,7 +101,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             disabled={loading}
             className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer disabled:opacity-50 mt-2"
           >
-            {loading ? "İşleniyor..." : "Giriş Yap"}
+            {loading ? t("İşleniyor...") : t("Giriş Yap")}
           </button>
         </form>
 
@@ -109,7 +111,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             onClick={onClose}
             className="text-xs text-indigo-400 hover:underline cursor-pointer font-medium"
           >
-            Hesabın yok mu? Hemen kaydol
+            {t("Hesabın yok mu? Hemen kaydol")}
           </Link>
         </div>
       </div>

@@ -4,8 +4,10 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export default function KayitPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [ad, setAd] = useState("");
   const [kullaniciAdi, setKullaniciAdi] = useState("");
@@ -22,12 +24,12 @@ export default function KayitPage() {
     if (!file) return;
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setError("Lütfen JPG, PNG veya WebP formatında bir fotoğraf seç.");
+      setError(t("Lütfen JPG, PNG veya WebP formatında bir fotoğraf seç."));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setError("Fotoğraf en fazla 2 MB olabilir.");
+      setError(t("Fotoğraf en fazla 2 MB olabilir."));
       return;
     }
 
@@ -43,6 +45,13 @@ export default function KayitPage() {
     setError(null);
     setMessage(null);
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizedEmail)) {
+      setError(t("Geçerli bir e-posta adresi gir. Örnek: ad@ornek.com"));
+      setLoading(false);
+      return;
+    }
+
     const normalizedUsername = kullaniciAdi.trim().toLowerCase();
     const { data: existingProfile, error: profileCheckError } = await supabase
       .from("profiles")
@@ -51,19 +60,19 @@ export default function KayitPage() {
       .maybeSingle();
 
     if (profileCheckError) {
-      setError("Kullanıcı adı servisi hazır değil. Supabase profiles tablosunu oluşturmalısın.");
+      setError(t("Kullanıcı adı servisi hazır değil. Supabase profiles tablosunu oluşturmalısın."));
       setLoading(false);
       return;
     }
 
     if (existingProfile) {
-      setError("Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç.");
+      setError(t("Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç."));
       setLoading(false);
       return;
     }
 
     const { error: signUpError } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password: sifre,
       options: {
         data: {
@@ -74,10 +83,15 @@ export default function KayitPage() {
     });
 
     if (signUpError) {
-      setError(signUpError.message);
+      const authMessage = signUpError.message.toLowerCase();
+      setError(
+        authMessage.includes("already registered") || authMessage.includes("already been registered") || authMessage.includes("user_already_exists")
+          ? t("Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyebilirsin.")
+          : signUpError.message
+      );
     } else {
       const { data: sessionData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: normalizedEmail,
         password: sifre,
       });
 
@@ -91,7 +105,7 @@ export default function KayitPage() {
             .upload(filePath, fotoDosyasi, { contentType: fotoDosyasi.type, cacheControl: "3600" });
 
           if (uploadError) {
-            setError(`Profil fotoğrafı yüklenemedi: ${uploadError.message}`);
+            setError(`${t("Profil fotoğrafı yüklenemedi:")} ${uploadError.message}`);
             setLoading(false);
             return;
           }
@@ -101,7 +115,7 @@ export default function KayitPage() {
             data: { full_name: ad, username: normalizedUsername, avatar_url: uploadedAvatarUrl },
           });
           if (metadataError) {
-            setError(`Profil fotoğrafı profiline bağlanamadı: ${metadataError.message}`);
+            setError(`${t("Profil fotoğrafı profiline bağlanamadı:")} ${metadataError.message}`);
             setLoading(false);
             return;
           }
@@ -118,17 +132,17 @@ export default function KayitPage() {
           await supabase.auth.signOut();
           setError(
             profileError.code === "23505"
-              ? "Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç."
-              : "Profil oluşturulamadı. Lütfen tekrar dene."
+              ? t("Bu kullanıcı adı zaten alınmış. Lütfen başka bir kullanıcı adı seç.")
+              : t("Profil oluşturulamadı. Lütfen tekrar dene.")
           );
           setLoading(false);
           return;
         }
 
-        setMessage("Profilin oluşturuldu. Hoş geldin!");
+        setMessage(t("Profilin oluşturuldu. Hoş geldin!"));
         setTimeout(() => router.push("/"), 900);
       } else {
-        setError("Kayıt tamamlandı ancak otomatik giriş yapılamadı. Supabase Auth ayarlarından e-posta doğrulamasını geçici olarak kapatmalısın.");
+        setError(t("Kayıt tamamlandı ancak otomatik giriş yapılamadı. Supabase Auth ayarlarından e-posta doğrulamasını geçici olarak kapatmalısın."));
       }
     }
 
@@ -142,9 +156,9 @@ export default function KayitPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-2xl shadow-lg">
             ✨
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Profilini Oluştur</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">{t("Profilini Oluştur")}</h1>
           <p className="mt-2 text-sm text-slate-400">
-            Cardasks deneyimini kişiselleştirmek için bilgilerini gir.
+            {t("Cardasks deneyimini kişiselleştirmek için bilgilerini gir.")}
           </p>
         </div>
 
@@ -163,59 +177,59 @@ export default function KayitPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-slate-800 bg-slate-800/40 p-5">
             <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 text-3xl shadow-lg">
-              {fotoUrl ? <img src={fotoUrl} alt="Profil önizlemesi" className="h-full w-full object-cover" /> : "👤"}
+              {fotoUrl ? <img src={fotoUrl} alt={t("Profil fotoğrafı önizlemesi")} className="h-full w-full object-cover" /> : "👤"}
             </div>
             <label className="cursor-pointer rounded-xl border border-indigo-400/30 bg-indigo-600/20 px-4 py-2 text-xs font-semibold text-indigo-200 transition hover:bg-indigo-600/30">
-              Profil fotoğrafı seç
+              {t("Profil fotoğrafı seç")}
               <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
             </label>
-            <p className="text-[11px] text-slate-500">İsteğe bağlı, en fazla 2 MB</p>
+            <p className="text-[11px] text-slate-500">{t("İsteğe bağlı, en fazla 2 MB")}</p>
           </div>
 
           <label className="block text-sm font-medium text-slate-300">
-            Adın
+            {t("Adın")}
             <input
               required
               value={ad}
               onChange={(event) => setAd(event.target.value)}
-              placeholder="Adını yaz"
+              placeholder={t("Adını yaz")}
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-white outline-none transition focus:border-indigo-500"
             />
           </label>
 
           <label className="block text-sm font-medium text-slate-300">
-            Kullanıcı adın
+            {t("Kullanıcı adın")}
             <input
               required
               minLength={3}
               value={kullaniciAdi}
               onChange={(event) => setKullaniciAdi(event.target.value.replace(/\s/g, "").toLowerCase())}
-              placeholder="Kullanıcı adını yaz"
+              placeholder={t("Kullanıcı adını yaz")}
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-white outline-none transition focus:border-indigo-500"
             />
           </label>
 
           <label className="block text-sm font-medium text-slate-300">
-            E-posta adresin
+            {t("E-posta adresin")}
             <input
               required
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="ornek@mail.com"
+              placeholder={t("ornek@mail.com")}
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-white outline-none transition focus:border-indigo-500"
             />
           </label>
 
           <label className="block text-sm font-medium text-slate-300">
-            Şifren
+            {t("Şifren")}
             <input
               required
               minLength={6}
               type="password"
               value={sifre}
               onChange={(event) => setSifre(event.target.value)}
-              placeholder="En az 6 karakter"
+              placeholder={t("En az 6 karakter")}
               className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-white outline-none transition focus:border-indigo-500"
             />
           </label>
@@ -225,14 +239,14 @@ export default function KayitPage() {
             disabled={loading}
             className="mt-2 w-full rounded-xl bg-indigo-600 py-3.5 text-sm font-bold shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-500 disabled:opacity-50"
           >
-            {loading ? "Profil oluşturuluyor..." : "Profil Oluştur"}
+            {loading ? t("Profil oluşturuluyor...") : t("Profil Oluştur")}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-slate-400">
-          Zaten hesabın var mı?{" "}
+          {t("Zaten hesabın var mı?")}{" "}
           <Link href="/" className="font-semibold text-indigo-400 hover:underline">
-            Giriş yap
+            {t("Giriş yap")}
           </Link>
         </p>
       </div>

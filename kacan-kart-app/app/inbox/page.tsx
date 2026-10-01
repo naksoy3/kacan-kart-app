@@ -3,12 +3,14 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import KacanKart from "@/components/KacanKart";
+import { useLanguage } from "@/components/LanguageProvider";
 
 function InboxContent() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
 
   const targetUsername = searchParams.get("u") || "Nurullah";
-  const sender = searchParams.get("sender") || searchParams.get("gonderen") || "Gönderen";
+  const sender = searchParams.get("sender") || searchParams.get("gonderen") || t("Gönderen");
   const soru = searchParams.get("s") || "Benimle yemeğe çıkar mısın?";
   const evetMetni = searchParams.get("e") || "Evet!";
   const hayirMetni = searchParams.get("h") || "Hayır";
@@ -24,7 +26,7 @@ function InboxContent() {
       <div className="flex w-full max-w-md flex-col items-center gap-4">
         {sender && targetUsername && (
           <p className="text-center text-base font-bold tracking-wide text-indigo-300 sm:text-lg">
-            ✨ {sender}, {targetUsername}&apos;ye soruyor:
+            ✨ {sender}, {targetUsername}&apos;ye {t("soruyor:")}
           </p>
         )}
         <KacanKart
@@ -46,11 +48,12 @@ function InboxContent() {
 }
 
 export default function HomePage() {
+  const { t } = useLanguage();
   return (
     <Suspense
       fallback={
         <main className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-          <div className="text-slate-300 text-sm">Kart yükleniyor...</div>
+          <div className="text-slate-300 text-sm">{t("Kart yükleniyor...")}</div>
         </main>
       }
     >

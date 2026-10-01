@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import L from "leaflet";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type LocationPickerProps = {
   value: string;
@@ -17,10 +18,12 @@ type NominatimResult = {
 };
 
 export default function LocationPicker({ value, onChange }: LocationPickerProps) {
+  const { language, t } = useLanguage();
   const mapElement = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
   const marker = useRef<L.CircleMarker | null>(null);
   const onChangeRef = useRef(onChange);
+  const languageRef = useRef(language);
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [busy, setBusy] = useState(false);
@@ -29,6 +32,10 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    languageRef.current = language;
+  }, [language]);
 
   useEffect(() => {
     if (!mapElement.current || mapInstance.current) return;
@@ -53,7 +60,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       setBusy(true);
       setMessage("Konum adı bulunuyor...");
       try {
-        const params = new URLSearchParams({ format: "jsonv2", lat: String(latlng.lat), lon: String(latlng.lng), "accept-language": "tr" });
+        const params = new URLSearchParams({ format: "jsonv2", lat: String(latlng.lat), lon: String(latlng.lng), "accept-language": languageRef.current });
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`);
         if (!response.ok) throw new Error("reverse lookup failed");
         const result = await response.json();
@@ -93,7 +100,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
         format: "jsonv2",
         limit: "6",
         addressdetails: "1",
-        "accept-language": "tr",
+        "accept-language": language,
       });
       const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
       if (!response.ok) throw new Error("search failed");
@@ -132,7 +139,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       mapInstance.current?.setView(point, 15);
       marker.current?.setLatLng(point);
       setBusy(false);
-      const params = new URLSearchParams({ format: "jsonv2", lat: String(coords.latitude), lon: String(coords.longitude), "accept-language": "tr" });
+      const params = new URLSearchParams({ format: "jsonv2", lat: String(coords.latitude), lon: String(coords.longitude), "accept-language": language });
       try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`);
         const result = await response.json();
@@ -159,19 +166,19 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Şehir, adres veya mekan ara"
+            placeholder={t("Şehir, adres veya mekan ara")}
             className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500"
           />
           <button type="submit" disabled={busy} className="rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-50">
-            Ara
+            {t("Ara")}
           </button>
         </form>
         <button type="button" onClick={useMyLocation} disabled={busy} className="rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-50">
-          Konumumu bul
+          {t("Konumumu bul")}
         </button>
       </div>
       {results.length > 0 && (
-        <div className="max-h-56 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/95 p-1 shadow-lg" aria-label="Konum arama sonuçları">
+        <div className="max-h-56 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900/95 p-1 shadow-lg" aria-label={t("Konum arama sonuçları")}>
           {results.map((result, index) => {
             const [placeName, ...addressParts] = result.display_name.split(",");
             return (
@@ -195,8 +202,11 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       )}
       <div ref={mapElement} className="h-64 w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-800" />
       <div className="flex min-h-4 items-center justify-between gap-3 text-[11px] text-slate-400">
-        <span>{busy ? "İşleniyor..." : message || (value ? `Seçilen: ${value}` : "Haritaya tıkla veya konum ara")}</span>
-        {value && <button type="button" onClick={() => { onChange(""); setSearch(""); setMessage(""); }} className="shrink-0 text-indigo-300 hover:text-indigo-200">Temizle</button>}
+        <span>{busy ? t("İşleniyor...") : message ? (() => {
+          const count = message.match(/^(\d+) en alakalı konum bulundu\. Birini seç\.$/);
+          return count ? `${count[1]} ${t("en alakalı konum bulundu. Birini seç.")}` : t(message);
+        })() : value ? `${t("Seçilen:")} ${value}` : t("Haritaya tıkla veya konum ara")}</span>
+        {value && <button type="button" onClick={() => { onChange(""); setSearch(""); setMessage(""); }} className="shrink-0 text-indigo-300 hover:text-indigo-200">{t("Temizle")}</button>}
       </div>
     </section>
   );

@@ -4,6 +4,7 @@ import { Baloo_2, Inter } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import SiteHeader from "@/components/SiteHeader";
+import { LanguageProvider } from "@/components/LanguageProvider";
 
 const baloo = Baloo_2({
   subsets: ["latin"],
@@ -47,8 +48,10 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${baloo.variable} ${inter.variable}`}>
       <body className="font-govde antialiased min-h-screen">
-        <SiteHeader />
-        {children}
+        <LanguageProvider>
+          <SiteHeader />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

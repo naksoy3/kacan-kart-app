@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export type CardTheme =
   | "escaping"
@@ -208,6 +209,7 @@ export default function KacanKart({
   onAccept,
   showShareButton = true,
 }: KacanKartProps) {
+  const { language, t } = useLanguage();
   const playzoneRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [kacisSayisi, setKacisSayisi] = useState(0);
@@ -273,8 +275,8 @@ export default function KacanKart({
       ? new URL(shareUrl, window.location.origin).toString()
       : `${baseUrl}?${params.toString()}`;
     const shareData = {
-      title: `${targetUsername} sana bir kart gönderdi! 🃏`,
-      text: `"${soru}" - Bakalım ne cevap vereceksin? 😉`,
+      title: `${targetUsername} ${t("sana bir kart gönderdi! 🃏")}`,
+      text: `"${soru}" - ${t("Bakalım ne cevap vereceksin? 😉")}`,
       url: resolvedShareUrl,
     };
 
@@ -369,13 +371,13 @@ export default function KacanKart({
 
   const gosterilenHayirMetni = useMemo(() => {
     if (theme === "persuasive") {
-      return PERSUASIVE_STEPS[
+      return t(PERSUASIVE_STEPS[
         Math.min(kacisSayisi, PERSUASIVE_STEPS.length - 1)
-      ];
+      ]);
     }
-    if (theme === "reverse_psychology") return "Kesinlikle Evet! 😉";
-    return hayirMetni;
-  }, [theme, kacisSayisi, hayirMetni]);
+    if (theme === "reverse_psychology") return t("Kesinlikle Evet! 😉");
+    return t(hayirMetni);
+  }, [theme, kacisSayisi, hayirMetni, t]);
 
   const parcaciklar = useMemo(() => {
     const emojiler = ["🎉", "✨", "💫", "🎊", "💖"];
@@ -438,9 +440,9 @@ export default function KacanKart({
             </div>
             <div>
               <h3 className="text-xs font-bold text-white">
-                @{targetUsername}&apos;a Özel Kart {sender ? `(${sender})` : ""}
+                {language === "en" ? `A special card for @${targetUsername}` : `@${targetUsername}'a Özel Kart`} {sender ? `(${sender})` : ""}
               </h3>
-              <p className="text-[10px] text-slate-400">{THEME_NAMES[theme]}</p>
+              <p className="text-[10px] text-slate-400">{t(THEME_NAMES[theme])}</p>
             </div>
           </div>
 
@@ -449,16 +451,16 @@ export default function KacanKart({
               onClick={onBack}
               className="text-[11px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-xl transition border border-white/10 text-slate-300 cursor-pointer"
             >
-              ← Değiştir
+              ← {t("Değiştir")}
             </button>
           )}
         </div>
 
         {(mekan || tarih || saat) && (
           <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-xl text-xs space-y-1 text-slate-300">
-            {mekan && <p>📍 <strong>Mekan:</strong> {mekan}</p>}
-            {tarih && <p>📅 <strong>Tarih:</strong> {tarih}</p>}
-            {saat && <p>⏰ <strong>Saat:</strong> {saat}</p>}
+            {mekan && <p>📍 <strong>{t("Mekan:")}</strong> {mekan}</p>}
+            {tarih && <p>📅 <strong>{t("Tarih:")}</strong> {tarih}</p>}
+            {saat && <p>⏰ <strong>{t("Saat:")}</strong> {saat}</p>}
           </div>
         )}
 
@@ -490,11 +492,11 @@ export default function KacanKart({
               {theme === "timer" && (
                 <div className="mt-3 text-center">
                   <span className="text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 py-1 px-3 rounded-full inline-block">
-                    ⏳ Kalan Süre: {timeLeft}s
+                    {t("⏳ Kalan Süre:")} {timeLeft}s
                   </span>
                   {sureDoldu && (
                     <p className="mt-3 text-sm font-bold text-rose-300">
-                      Hayır demek için süren doldu, Evet demek zorundasın!
+                      {t("Hayır demek için süren doldu, Evet demek zorundasın!")}
                     </p>
                   )}
                 </div>
@@ -503,9 +505,9 @@ export default function KacanKart({
               {theme === "riddle" && secilenBilmece && (
                 <div className="mt-4 bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-2xl text-center shadow-lg">
                   <p className="text-xs text-indigo-200 font-semibold leading-relaxed">
-                    🧩 <strong className="text-white">Günün Bilmecesine Hoş Geldin:</strong> &quot;{secilenBilmece.soruMetni}&quot;
+                    {t("🧩 Günün Bilmecesine Hoş Geldin:")} &quot;{t(secilenBilmece.soruMetni)}&quot;
                     <span className="block text-[11px] text-amber-300 mt-1.5 font-normal">
-                      💡 İpucu: {secilenBilmece.ipucu}
+                      {t("💡 İpucu:")} {t(secilenBilmece.ipucu)}
                     </span>
                   </p>
                   <div className="mt-3 flex gap-2 justify-center">
@@ -513,7 +515,7 @@ export default function KacanKart({
                       type="text"
                       value={riddleAnswer}
                       onChange={(e) => setRiddleAnswer(e.target.value)}
-                      placeholder="Cevabınız..."
+                      placeholder={t("Cevabınız...")}
                       className="bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none w-40 text-center"
                     />
                     <button
@@ -523,7 +525,7 @@ export default function KacanKart({
                       }}
                       className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl text-xs font-bold text-white cursor-pointer transition"
                     >
-                      Tahmin Et
+                      {t("Tahmin Et")}
                     </button>
                   </div>
                   {riddleFeedback && (
@@ -532,7 +534,7 @@ export default function KacanKart({
                       animate={{ opacity: 1, y: 0 }} 
                       className="mt-3 p-2.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-[11px] text-rose-200 font-medium leading-snug"
                     >
-                      ❌ {riddleFeedback}
+                      ❌ {t(riddleFeedback)}
                     </motion.div>
                   )}
                 </div>
@@ -546,7 +548,7 @@ export default function KacanKart({
                 >
                   <span className="text-3xl block mb-1 group-hover:scale-125 transition-transform duration-300">🎁💥</span>
                   <p className="text-xs font-extrabold text-amber-200 uppercase tracking-wider drop-shadow">
-                    💌 {sender ? `${sender} diyor ki: Evet de!` : "Göndericinden bir mesaj var: Evet de!"}
+                    💌 {sender ? `${sender} ${t("diyor ki: Evet de!")}` : t("💌 Göndericinden bir mesaj var: Evet de!")}
                   </p>
                   <motion.p 
                     key={currentMessageIndex}
@@ -554,14 +556,14 @@ export default function KacanKart({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     className="text-xs text-white mt-3 font-semibold leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-amber-400/30 shadow-inner"
                   >
-                    {SCRATCH_MESSAGES[currentMessageIndex]}
+                    {t(SCRATCH_MESSAGES[currentMessageIndex])}
                   </motion.p>
                 </motion.div>
               )}
 
               {kacisSayisi > 2 && theme === "escaping" && (
                 <p className="mt-3 text-center text-xs text-indigo-300">
-                  {kacisSayisi} kez denendi 🏃
+                  {kacisSayisi} {t("kez denendi 🏃")}
                 </p>
               )}
 
@@ -573,7 +575,7 @@ export default function KacanKart({
                     className="px-4 py-2 bg-indigo-600/80 hover:bg-indigo-500 text-white font-medium rounded-xl shadow-lg transition-all flex items-center gap-1.5 text-xs border border-indigo-400/30 cursor-pointer"
                   >
                     <span>
-                      {copied ? "✓ Link Kopyalandı!" : "🔗 Arkadaşına Link At"}
+                      {copied ? `✓ ${t("Link Kopyalandı!")}` : t("🔗 Arkadaşına Link At")}
                     </span>
                   </button>
                 </div>
@@ -597,7 +599,7 @@ export default function KacanKart({
                         whileTap={{ scale: 0.95 }}
                         className={`rounded-xl px-3 py-2 font-bold text-xs text-white shadow-md cursor-pointer ${btn.renk}`}
                       >
-                        {btn.metin}
+                        {t(btn.metin)}
                       </motion.button>
                     ))}
                   </div>
@@ -618,7 +620,7 @@ export default function KacanKart({
                       }}
                       className="rounded-2xl bg-emerald-500 hover:bg-emerald-400 px-6 py-3 font-bold text-sm sm:text-base text-slate-950 shadow-lg shadow-emerald-500/20 cursor-pointer z-10"
                     >
-                      {evetMetni}
+                      {t(evetMetni)}
                     </motion.button>
 
                     {theme === "shattering" && shatterStage > 0 && shatterStage < 10 && (
@@ -690,19 +692,19 @@ export default function KacanKart({
                 <div className="absolute inset-0 bg-slate-950/95 rounded-[28px] p-6 flex flex-col items-center justify-center gap-3 z-30 animate-in fade-in">
                   <span className="text-3xl">🔒</span>
                   <h4 className="text-sm font-bold text-white">
-                    Hayır Demek İçin Şifre Girin
+                    {t("Hayır Demek İçin Şifre Girin")}
                   </h4>
                   <p className="text-[11px] text-slate-400">
-                    Bu işlem yetkilendirme gerektirir!
+                    {t("Bu işlem yetkilendirme gerektirir!")}
                   </p>
                   <input
                     type="password"
-                    placeholder="Şifreniz..."
+                    placeholder={t("Şifreniz...")}
                     className="bg-white/10 border border-white/20 rounded-xl px-3 py-2 text-center text-xs focus:outline-none text-white"
                   />
                   {pinError && (
                     <p className="text-[10px] text-rose-400">
-                      Hatalı Şifre! (Erişim Engellendi)
+                      {t("Hatalı Şifre! (Erişim Engellendi)")}
                     </p>
                   )}
                   <div className="flex gap-2 pt-2">
@@ -710,13 +712,13 @@ export default function KacanKart({
                       onClick={() => setPinError(true)}
                       className="px-4 py-1.5 bg-rose-600 text-white text-xs rounded-xl font-bold cursor-pointer"
                     >
-                      Dene
+                      {t("Dene")}
                     </button>
                     <button
                       onClick={() => setShowPinModal(false)}
                       className="px-4 py-1.5 bg-white/10 text-xs text-slate-300 rounded-xl cursor-pointer"
                     >
-                      Vazgeç (Evet De)
+                      {t("Vazgeç (Evet De)")}
                     </button>
                   </div>
                 </div>
@@ -732,17 +734,17 @@ export default function KacanKart({
             >
               <div className="text-5xl">🎉</div>
               <h2 className="font-black text-2xl text-white mt-4">
-                Harika, kabul edildi! ❤️
+                {t("Harika, kabul edildi! ❤️")}
               </h2>
               <p className="mt-2 text-xs text-slate-400">
-                Cevabın kaydedildi, harika bir tercih!
+                {t("Cevabın kaydedildi, harika bir tercih!")}
               </p>
               <button
                 type="button"
                 onClick={patlat}
                 className="mt-6 rounded-2xl bg-indigo-500 hover:bg-indigo-400 px-6 py-2.5 font-bold text-xs text-white hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-500/25 cursor-pointer"
               >
-                Tekrar kutla 🎊
+                {t("Tekrar kutla 🎊")}
               </button>
             </motion.div>
           )}

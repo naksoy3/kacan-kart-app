@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 import { supabase } from "@/utils/supabase";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
@@ -96,6 +97,7 @@ const KOMIK_GIFLER = [...ESKI_GIFLER, ...YENI_SVG_GIFLER];
 
 function CardContent() {
   const searchParams = useSearchParams();
+  const { language, t } = useLanguage();
 
   const urlCardId = searchParams.get("id");
   const urlUser = searchParams.get("u");
@@ -134,6 +136,23 @@ function CardContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isSharedView && ["Benimle yemeğe çıkar mısın?", "Would you like to go out for dinner with me?"].includes(soru)) {
+      setSoru(language === "en" ? "Would you like to go out for dinner with me?" : "Benimle yemeğe çıkar mısın?");
+    }
+  }, [isSharedView, language, soru]);
+
+  useEffect(() => {
+    if (!tarihISO) return;
+    const [year, month, day] = tarihISO.split("-").map(Number);
+    setTarih(new Date(year, month - 1, day).toLocaleDateString(language === "en" ? "en-US" : "tr-TR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }));
+  }, [language, tarihISO]);
 
   // Auth States
   const [user, setUser] = useState<any>(null);
@@ -235,11 +254,11 @@ function CardContent() {
 
   const handleContinueToGif = () => {
     if (!targetUsername.trim()) {
-      setPreviewError("Hedef kişinin adını yazmalısın.");
+      setPreviewError(t("Hedef kişinin adını yazmalısın."));
       return;
     }
     if (!soru.trim()) {
-      setPreviewError("Soru alanı zorunludur.");
+      setPreviewError(t("Soru alanı zorunludur."));
       return;
     }
     setPreviewError(null);
@@ -257,7 +276,7 @@ function CardContent() {
       const activeSession = sessionData.session;
       const activeUser = activeSession?.user || user;
       if (!activeUser || !activeSession?.access_token) {
-        setPreviewError("Kart oluşturmak ve bildirim alabilmek için önce profil oluşturup giriş yapmalısın.");
+        setPreviewError(t("Kart oluşturmak ve bildirim alabilmek için önce profil oluşturup giriş yapmalısın."));
         return;
       }
       setUser(activeUser);
@@ -285,14 +304,14 @@ function CardContent() {
         try {
           result = JSON.parse(responseText);
         } catch {
-          result = { error: responseText.slice(0, 400) || "Sunucudan boş yanıt geldi." };
+          result = { error: responseText.slice(0, 400) || t("Sunucudan boş yanıt geldi.") };
         }
         if (!response.ok) {
-          setPreviewError(`Kart kaydedilemedi, kısa paylaşım bağlantısı oluşturulamadı: ${result.error || response.statusText}`);
+          setPreviewError(`${t("Kart kaydedilemedi, kısa paylaşım bağlantısı oluşturulamadı:")} ${t(result.error || response.statusText)}`);
           return;
         }
         if (!result.id) {
-          setPreviewError(`Kart kaydedildi yanıtı geçersiz: ${result.error || "Kart kimliği alınamadı."}`);
+          setPreviewError(`${t("Kart kaydedildi yanıtı geçersiz:")} ${t(result.error || "Kart kimliği alınamadı.")}`);
           return;
         }
         setCardId(result.id);
@@ -300,7 +319,7 @@ function CardContent() {
 
       goToStep(4);
     } catch (error) {
-      setPreviewError(`Kart kaydı başarısız: ${error instanceof Error ? error.message : "Beklenmeyen hata"}`);
+      setPreviewError(`${t("Kart kaydı başarısız:")} ${error instanceof Error ? error.message : t("Beklenmeyen hata")}`);
     } finally {
       setPreviewLoading(false);
     }
@@ -318,7 +337,7 @@ function CardContent() {
   const handleCopyLink = () => {
     const link = generateShareUrl();
     if (!link) {
-      setPreviewError("Kısa paylaşım linki oluşturulamadı. Kartı tekrar kaydetmeyi dene.");
+      setPreviewError(t("Kısa paylaşım linki oluşturulamadı. Kartı tekrar kaydetmeyi dene."));
       return;
     }
     navigator.clipboard.writeText(link);
@@ -346,7 +365,7 @@ function CardContent() {
   if (loadingCard) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <p className="animate-pulse text-lg">Kart yükleniyor...</p>
+        <p className="animate-pulse text-lg">{t("Kart yükleniyor...")}</p>
       </div>
     );
   }
@@ -361,7 +380,7 @@ function CardContent() {
           <div className="text-center space-y-3">
             <h2 className="flex items-center justify-center gap-3 text-3xl font-extrabold tracking-tight">
               <img src="/icon.png" alt="Cardasks" className="h-9 w-9 rounded-lg object-cover" />
-              <span>Soru Oluştur</span>
+              <span>{t("Soru Oluştur")}</span>
             </h2>
             <div className="flex justify-center gap-2 pt-1">
               {[1, 2, 3].map((stepNum) => (
@@ -383,7 +402,7 @@ function CardContent() {
           {formStep === 1 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                1. Adım: Kart Temasını Seçin
+                {t("1. Adım: Kart Temasını Seçin")}
               </label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {(Object.keys(THEME_NAMES) as CardTheme[]).map((themeKey) => (
@@ -398,7 +417,7 @@ function CardContent() {
                     }`}
                   >
                     <span className="text-4xl mb-3">🎨</span>
-                    <span className="text-sm font-semibold">{THEME_NAMES[themeKey]}</span>
+                    <span className="text-sm font-semibold">{t(THEME_NAMES[themeKey])}</span>
                   </button>
                 ))}
               </div>
@@ -406,7 +425,7 @@ function CardContent() {
                 onClick={() => goToStep(2)}
                 className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-base transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-4"
               >
-                Devam Et: Detayları Gir ➡️
+                {t("Devam Et: Detayları Gir ➡️")}
               </button>
             </div>
           )}
@@ -415,26 +434,26 @@ function CardContent() {
           {formStep === 2 && (
             <div className="space-y-5 text-sm">
               <label className="block text-slate-300 font-medium text-base text-center mb-2">
-                2. Adım: Soru ve Detaylar
+                {t("2. Adım: Soru ve Detaylar")}
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-400 mb-1.5 font-medium">Gönderen Kişinin Adı:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">{t("Gönderen Kişinin Adı:")}</label>
                   <input
                     type="text"
-                    placeholder="Profil adın"
+                    placeholder={t("Profil adın")}
                     value={fromUsername}
                     readOnly
                     className="w-full cursor-not-allowed rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-300 outline-none text-sm"
                   />
-                  <p className="mt-1 text-[11px] text-slate-500">Gönderici adı profilinden alınır.</p>
+                  <p className="mt-1 text-[11px] text-slate-500">{t("Gönderici adı profilinden alınır.")}</p>
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">{t("Hedef Kişinin Adı:")}</label>
                   <input
                     type="text"
-                    placeholder="Örn: Onun Adı"
+                    placeholder={t("Örn: Onun Adı")}
                     required
                     value={targetUsername}
                     onChange={(e) => {
@@ -447,10 +466,10 @@ function CardContent() {
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1.5 font-medium">Sormak İstediğin Soru:</label>
+                <label className="block text-slate-400 mb-1.5 font-medium">{t("Sormak İstediğin Soru:")}</label>
                 <input
                   type="text"
-                  placeholder="Örn: Benimle yemeğe çıkar mısın?"
+                  placeholder={t("Örn: Benimle yemeğe çıkar mısın?")}
                   required
                   value={soru}
                   onChange={(e) => {
@@ -462,13 +481,13 @@ function CardContent() {
               </div>
 
               <div>
-                <label className="mb-1.5 block font-medium text-slate-400">Buluşma konumu:</label>
+                <label className="mb-1.5 block font-medium text-slate-400">{t("Buluşma konumu:")}</label>
                 <LocationPicker value={yer} onChange={setYer} />
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-slate-400 mb-1.5 font-medium">Tarih:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">{t("Tarih:")}</label>
                   <input
                     type="date"
                     value={tarihISO}
@@ -481,7 +500,7 @@ function CardContent() {
                       }
                       const [year, month, day] = value.split("-").map(Number);
                       const selectedDate = new Date(year, month - 1, day);
-                      setTarih(selectedDate.toLocaleDateString("tr-TR", {
+                      setTarih(selectedDate.toLocaleDateString(language === "en" ? "en-US" : "tr-TR", {
                         weekday: "long",
                         day: "numeric",
                         month: "long",
@@ -493,10 +512,10 @@ function CardContent() {
                   {tarih && <p className="mt-1.5 text-[11px] capitalize text-indigo-300">{tarih}</p>}
                 </div>
                 <div>
-                  <label className="block text-slate-400 mb-1.5 font-medium">Zaman:</label>
+                  <label className="block text-slate-400 mb-1.5 font-medium">{t("Zaman:")}</label>
                   <div className="flex items-center gap-2">
                     <select
-                      aria-label="Saat"
+                      aria-label={t("Saat")}
                       value={zamanISO ? zamanISO.split(":")[0] : ""}
                       onChange={(event) => {
                         const minutes = zamanISO ? zamanISO.split(":")[1] : "00";
@@ -506,14 +525,14 @@ function CardContent() {
                       }}
                       className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500"
                     >
-                      <option value="">Saat</option>
+                      <option value="">{t("Saat")}</option>
                       {Array.from({ length: 24 }, (_, hour) => String(hour).padStart(2, "0")).map((hour) => (
                         <option key={hour} value={hour}>{hour}</option>
                       ))}
                     </select>
                     <span className="text-slate-400">:</span>
                     <select
-                      aria-label="Dakika"
+                      aria-label={t("Dakika")}
                       value={zamanISO ? zamanISO.split(":")[1] : ""}
                       onChange={(event) => {
                         const hour = zamanISO ? zamanISO.split(":")[0] : "00";
@@ -523,13 +542,13 @@ function CardContent() {
                       }}
                       className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500"
                     >
-                      <option value="">Dakika</option>
+                      <option value="">{t("Dakika")}</option>
                       {Array.from({ length: 60 }, (_, minute) => String(minute).padStart(2, "0")).map((minute) => (
                         <option key={minute} value={minute}>{minute}</option>
                       ))}
                     </select>
                   </div>
-                  {zamanISO && <p className="mt-1.5 text-[11px] text-indigo-300">Seçilen saat: {zamanISO}</p>}
+                  {zamanISO && <p className="mt-1.5 text-[11px] text-indigo-300">{t("Seçilen saat:")} {zamanISO}</p>}
                 </div>
               </div>
 
@@ -538,13 +557,13 @@ function CardContent() {
                   onClick={() => goToStep(1)}
                   className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
                 >
-                  ⬅️ Geri
+                  ⬅️ {t("Geri")}
                 </button>
                 <button
                   onClick={handleContinueToGif}
                   className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
-                  Devam Et: GIF Seç ➡️
+                  {t("Devam Et: GIF Seç ➡️")}
                 </button>
               </div>
               {previewError && (
@@ -559,7 +578,7 @@ function CardContent() {
           {formStep === 3 && (
             <div className="space-y-6">
               <label className="block text-slate-300 font-medium text-base text-center">
-                3. Adım: Bir GIF Seçin
+                {t("3. Adım: Bir GIF Seçin")}
               </label>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
@@ -590,14 +609,14 @@ function CardContent() {
                   onClick={() => goToStep(2)}
                   className="w-1/3 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-sm transition cursor-pointer"
                 >
-                  ⬅️ Geri
+                  ⬅️ {t("Geri")}
                 </button>
                 <button
                   onClick={handleProceedToPreview}
                   disabled={previewLoading}
                   className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer disabled:opacity-50"
                 >
-                  {previewLoading ? "Hazırlanıyor..." : "Önizle & Paylaş 🚀"}
+                  {previewLoading ? t("Hazırlanıyor...") : t("Önizle & Paylaş 🚀")}
                 </button>
               </div>
               {previewError && (
@@ -619,7 +638,7 @@ function CardContent() {
                 onClick={() => goToStep(3)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
               >
-                ✏️ Düzenlemeye Dön
+                {t("✏️ Düzenlemeye Dön")}
               </button>
               <button
                 onClick={handleCopyLink}
@@ -629,26 +648,26 @@ function CardContent() {
                     : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30"
                 }`}
               >
-                {copied ? "✅ Link Kopyalandı!" : "🔗 Bağlantıyı Kopyala & Paylaş"}
+                {copied ? t("✅ Link Kopyalandı!") : t("🔗 Bağlantıyı Kopyala & Paylaş")}
               </button>
             </div>
           )}
 
           {isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-white shadow-xl">
-              <span className="text-xs text-slate-300">💌 Bu soru sana özel olarak gönderildi!</span>
+              <span className="text-xs text-slate-300">{t("💌 Bu soru sana özel olarak gönderildi!")}</span>
               <a
                 href={window.location.pathname}
                 className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-xs transition shadow-lg shadow-indigo-600/30 text-center cursor-pointer"
               >
-                ✨ Sen de Kendi Kartını Oluştur
+                {t("✨ Sen de Kendi Kartını Oluştur")}
               </a>
             </div>
           )}
 
           {cardStatus === "accepted" && (
             <div className="w-full bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl text-emerald-400 text-center text-sm font-bold shadow-xl">
-              🎉 Harika! Bu karta zaten &quot;Evet&quot; denildi ve gönderene bildirildi!
+              {t("🎉 Harika! Bu karta zaten \"Evet\" denildi ve gönderene bildirildi!")}
             </div>
           )}
 
@@ -661,7 +680,7 @@ function CardContent() {
           <div className="w-full flex flex-col items-center gap-2">
             {fromUsername && targetUsername && (
               <p className="text-indigo-300 font-bold text-base sm:text-lg tracking-wide text-center">
-                ✨ {fromUsername}, {targetUsername}&apos;ye soruyor:
+                ✨ {fromUsername}, {targetUsername}&apos;ye {t("soruyor:")}
               </p>
             )}
             
@@ -670,8 +689,8 @@ function CardContent() {
               targetUsername={targetUsername}
               sender={fromUsername}
               soru={soru}
-              evetMetni={searchParams.get("e") || "Evet!"}
-              hayirMetni={searchParams.get("h") || "Hayır"}
+              evetMetni={searchParams.get("e") || t("Evet!")}
+              hayirMetni={searchParams.get("h") || t("Hayır")}
               gifUrl={gifUrl}
               theme={selectedTheme}
               shareUrl={cardId ? `/k/card/${encodeURIComponent(cardId)}?v=2` : undefined}
@@ -690,8 +709,9 @@ function CardContent() {
 }
 
 export default function CardPage() {
+  const { t } = useLanguage();
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">Yükleniyor...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">{t("Yükleniyor...")}</div>}>
       <CardContent />
     </Suspense>
   );

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
+import { useLanguage } from "@/components/LanguageProvider";
 
 type Notification = {
   id: string;
@@ -14,10 +15,19 @@ type Notification = {
 };
 
 export default function BildirimlerPage() {
+  const { language, t } = useLanguage();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const translateNotificationMessage = (message: string) => {
+    const marker = " soruna Evet yanıtı verdi: ";
+    const markerIndex = message.indexOf(marker);
+    if (language === "en" && markerIndex >= 0) {
+      return `${message.slice(0, markerIndex)} ${t("soruna Evet yanıtı verdi:")} ${message.slice(markerIndex + marker.length)}`;
+    }
+    return t(message);
+  };
 
   useEffect(() => {
     const loadNotifications = async (userId: string, accessToken: string) => {
@@ -52,7 +62,7 @@ export default function BildirimlerPage() {
           });
         }
       } catch {
-        setError("Bildirimler sorgusu zaman aşımına uğradı veya oturum okunamadı. Lütfen çıkış yapıp tekrar giriş yap.");
+        setError(t("Bildirimler sorgusu zaman aşımına uğradı veya oturum okunamadı. Lütfen çıkış yapıp tekrar giriş yap."));
       } finally {
         setLoading(false);
       }
@@ -74,30 +84,30 @@ export default function BildirimlerPage() {
       <div className="mx-auto w-full max-w-2xl rounded-[28px] border border-slate-800 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold">Bildirimler</h1>
-            <p className="mt-1 text-xs text-slate-400">Kartlarına gelen yanıtlar burada görünür.</p>
+            <h1 className="text-2xl font-extrabold">{t("Bildirimler")}</h1>
+            <p className="mt-1 text-xs text-slate-400">{t("Kartlarına gelen yanıtlar burada görünür.")}</p>
           </div>
           <Link href="/" className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold hover:bg-indigo-500">
-            Anasayfa
+            {t("Anasayfa")}
           </Link>
         </div>
 
         {loading ? (
-          <p className="py-12 text-center text-sm text-slate-400">Bildirimler yükleniyor...</p>
+          <p className="py-12 text-center text-sm text-slate-400">{t("Bildirimler yükleniyor...")}</p>
           ) : error ? (
           <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-sm text-rose-300">{error}</div>
         ) : notifications.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center text-sm text-slate-400">
-            Henüz bildirimin yok.
+            {t("Henüz bildirimin yok.")}
           </div>
         ) : (
           <div className="space-y-3">
             {notifications.map((notification) => (
               <article key={notification.id} className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
-                <h2 className="text-sm font-bold text-emerald-300">{notification.title}</h2>
-                <p className="mt-1 text-sm text-slate-200">{notification.message}</p>
+                <h2 className="text-sm font-bold text-emerald-300">{t(notification.title)}</h2>
+                <p className="mt-1 text-sm text-slate-200">{translateNotificationMessage(notification.message)}</p>
                 <time className="mt-2 block text-[11px] text-slate-500">
-                  {new Date(notification.created_at).toLocaleString("tr-TR")}
+                  {new Date(notification.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}
                 </time>
               </article>
             ))}
