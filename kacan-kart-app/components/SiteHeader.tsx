@@ -97,9 +97,9 @@ function SiteHeaderContent() {
         </nav>
       )}
 
-      <div className="fixed right-4 top-4 z-50">
+      <div className="fixed right-3 top-14 z-50 flex items-center gap-2 sm:right-4 sm:top-4">
         {user ? (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2">
             <Link href="/profil" title={t("Profilini aç")} className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-sm font-bold text-white shadow-lg transition hover:scale-105">
               {user.user_metadata?.avatar_url ? <img src={user.user_metadata.avatar_url} alt="Profil fotoğrafı" className="h-full w-full object-cover" /> : (user.user_metadata?.full_name || user.user_metadata?.username || "P").charAt(0).toUpperCase()}
             </Link>
@@ -112,20 +112,19 @@ function SiteHeaderContent() {
             {t("Giriş Yap / Kayıt Ol")}
           </button>
         )}
-      </div>
-
-      <div className="fixed right-4 top-16 z-50 flex rounded-lg border border-white/10 bg-slate-900/90 p-1 text-[10px] font-bold shadow-lg backdrop-blur" aria-label="Language">
-        {(["tr", "en"] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setLanguage(option)}
-            aria-pressed={language === option}
-            className={`min-w-8 rounded-md px-2 py-1 transition ${language === option ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`}
-          >
-            {option.toUpperCase()}
-          </button>
-        ))}
+        <div className="flex rounded-lg border border-white/10 bg-slate-900/90 p-1 text-[10px] font-bold shadow-lg backdrop-blur" role="group" aria-label="Language">
+          {(["tr", "en"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setLanguage(option)}
+              aria-pressed={language === option}
+              className={`min-w-8 rounded-md px-2 py-1 transition ${language === option ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"}`}
+            >
+              {option.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={() => setAuthOpen(false)} />
