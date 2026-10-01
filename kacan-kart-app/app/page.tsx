@@ -267,9 +267,19 @@ function CardContent() {
             zaman,
           }),
         });
-        const result = await response.json();
+        const responseText = await response.text();
+        let result: { id?: string; error?: string };
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          result = { error: responseText.slice(0, 400) || "Sunucudan boş yanıt geldi." };
+        }
         if (!response.ok) {
           setPreviewError(`Kart kaydedilemedi, kısa paylaşım bağlantısı oluşturulamadı: ${result.error || response.statusText}`);
+          return;
+        }
+        if (!result.id) {
+          setPreviewError(`Kart kaydedildi yanıtı geçersiz: ${result.error || "Kart kimliği alınamadı."}`);
           return;
         }
         setCardId(result.id);
