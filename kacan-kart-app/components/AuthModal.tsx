@@ -51,7 +51,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setError(null);
     setMessage(null);
 
-    const redirectUrl = new URL("/auth/callback", window.location.origin);
+    const redirectOrigin = window.location.hostname === "cardasks.com"
+      ? "https://www.cardasks.com"
+      : window.location.origin;
+    const redirectUrl = new URL("/auth/callback", redirectOrigin);
     redirectUrl.searchParams.set("next", "/sifre-yenile");
 
     try {

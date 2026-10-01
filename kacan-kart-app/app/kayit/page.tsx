@@ -53,6 +53,9 @@ export default function KayitPage() {
     }
 
     const normalizedUsername = kullaniciAdi.trim().toLowerCase();
+    const redirectOrigin = window.location.hostname === "cardasks.com"
+      ? "https://www.cardasks.com"
+      : window.location.origin;
     const { data: existingProfile, error: profileCheckError } = await supabase
       .from("profiles")
       .select("id")
@@ -75,7 +78,7 @@ export default function KayitPage() {
       email: normalizedEmail,
       password: sifre,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${redirectOrigin}/auth/callback`,
         data: {
           full_name: ad,
           username: normalizedUsername,
