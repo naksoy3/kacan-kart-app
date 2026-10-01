@@ -164,13 +164,28 @@ function CardContent() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      if (!isSharedView && sessionUser) {
+        setFromUsername(
+          sessionUser.user_metadata?.full_name ||
+          sessionUser.user_metadata?.username ||
+          ""
+        );
+      }
     }).finally(() => setAuthLoading(false));
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (!isSharedView && session?.user) {
+        setFromUsername(
+          session.user.user_metadata?.full_name ||
+          session.user.user_metadata?.username ||
+          ""
+        );
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -394,11 +409,12 @@ function CardContent() {
                   <label className="block text-slate-400 mb-1.5 font-medium">Gönderen Kişinin Adı:</label>
                   <input
                     type="text"
-                    placeholder="Örn: Adın"
+                    placeholder="Profil adın"
                     value={fromUsername}
-                    onChange={(e) => setFromUsername(e.target.value)}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
+                    readOnly
+                    className="w-full cursor-not-allowed rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-slate-300 outline-none text-sm"
                   />
+                  <p className="mt-1 text-[11px] text-slate-500">Gönderici adı profilinden alınır.</p>
                 </div>
                 <div>
                   <label className="block text-slate-400 mb-1.5 font-medium">Hedef Kişinin Adı:</label>
