@@ -24,6 +24,37 @@ create policy "Users can update own profile"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('avatars', 'avatars', true, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Public can view profile avatars" on storage.objects;
+create policy "Public can view profile avatars"
+  on storage.objects for select
+  using (bucket_id = 'avatars');
+
+drop policy if exists "Users can upload own profile avatars" on storage.objects;
+create policy "Users can upload own profile avatars"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'avatars' and owner_id = auth.uid()::text);
+
+drop policy if exists "Users can update own profile avatars" on storage.objects;
+create policy "Users can update own profile avatars"
+  on storage.objects for update to authenticated
+  using (bucket_id = 'avatars' and owner_id = auth.uid()::text)
+  with check (bucket_id = 'avatars' and owner_id = auth.uid()::text);
+
+update auth.users
+   set raw_user_meta_data = raw_user_meta_data - 'avatar_url'
+ where raw_user_meta_data ->> 'avatar_url' like 'data:image/%';
+
+update public.profiles
+   set avatar_url = null
+ where avatar_url like 'data:image/%';
+
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,

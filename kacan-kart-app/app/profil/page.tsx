@@ -26,6 +26,7 @@ export default function ProfilPage() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [email, setEmail] = useState("");
 
   useEffect(() => {
@@ -56,8 +57,8 @@ export default function ProfilPage() {
   const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setError("Lütfen bir görsel dosyası seç.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Lütfen JPG, PNG veya WebP formatında bir fotoğraf seç.");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
@@ -65,6 +66,7 @@ export default function ProfilPage() {
       return;
     }
 
+    setAvatarFile(file);
     const reader = new FileReader();
     reader.onload = () => setAvatarUrl(String(reader.result));
     reader.readAsDataURL(file);
@@ -80,13 +82,30 @@ export default function ProfilPage() {
     const normalizedUsername = username.trim().toLowerCase();
     const normalizedEmail = email.trim().toLowerCase();
     const emailChanged = normalizedEmail !== (user.email || "").toLowerCase();
+    let savedAvatarUrl = avatarUrl.startsWith("data:image/") ? "" : avatarUrl;
+
+    if (avatarFile) {
+      const extension = avatarFile.type === "image/jpeg" ? "jpg" : avatarFile.type.split("/")[1];
+      const filePath = `${user.id}/avatar-${Date.now()}.${extension}`;
+      const { data: uploadedFile, error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, avatarFile, { contentType: avatarFile.type, cacheControl: "3600" });
+
+      if (uploadError) {
+        setError(`Profil fotoğrafı yüklenemedi: ${uploadError.message}`);
+        setSaving(false);
+        return;
+      }
+
+      savedAvatarUrl = supabase.storage.from("avatars").getPublicUrl(uploadedFile.path).data.publicUrl;
+    }
 
     const { error: authError } = await supabase.auth.updateUser({
       ...(emailChanged ? { email: normalizedEmail } : {}),
       data: {
         full_name: name.trim(),
         username: normalizedUsername,
-        avatar_url: avatarUrl || null,
+        avatar_url: savedAvatarUrl || null,
       },
     });
 
@@ -101,7 +120,7 @@ export default function ProfilPage() {
       .update({
         full_name: name.trim(),
         username: normalizedUsername,
-        avatar_url: avatarUrl || null,
+        avatar_url: savedAvatarUrl || null,
       })
       .eq("id", user.id);
 
@@ -120,6 +139,8 @@ export default function ProfilPage() {
       setUser(data.user as ProfileUser);
       setEmail(data.user.email || normalizedEmail);
     }
+    setAvatarUrl(savedAvatarUrl);
+    setAvatarFile(null);
     if (emailChanged) {
       setNotice("Profilin güncellendi. Yeni e-posta adresini etkinleştirmek için gelen doğrulama bağlantısını onayla.");
     }

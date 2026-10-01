@@ -10,6 +10,7 @@ export default function KayitPage() {
   const [ad, setAd] = useState("");
   const [kullaniciAdi, setKullaniciAdi] = useState("");
   const [fotoUrl, setFotoUrl] = useState("");
+  const [fotoDosyasi, setFotoDosyasi] = useState<File | null>(null);
   const [email, setEmail] = useState("");
   const [sifre, setSifre] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,8 +21,8 @@ export default function KayitPage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setError("Lütfen bir görsel dosyası seç.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setError("Lütfen JPG, PNG veya WebP formatında bir fotoğraf seç.");
       return;
     }
 
@@ -30,6 +31,7 @@ export default function KayitPage() {
       return;
     }
 
+    setFotoDosyasi(file);
     const reader = new FileReader();
     reader.onload = () => setFotoUrl(String(reader.result));
     reader.readAsDataURL(file);
@@ -67,7 +69,6 @@ export default function KayitPage() {
         data: {
           full_name: ad,
           username: normalizedUsername,
-          avatar_url: fotoUrl || null,
         },
       },
     });
@@ -81,11 +82,36 @@ export default function KayitPage() {
       });
 
       if (sessionData.session && !signInError) {
+        let uploadedAvatarUrl: string | null = null;
+        if (fotoDosyasi) {
+          const extension = fotoDosyasi.type === "image/jpeg" ? "jpg" : fotoDosyasi.type.split("/")[1];
+          const filePath = `${sessionData.session.user.id}/avatar-${Date.now()}.${extension}`;
+          const { data: uploadedFile, error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, fotoDosyasi, { contentType: fotoDosyasi.type, cacheControl: "3600" });
+
+          if (uploadError) {
+            setError(`Profil fotoğrafı yüklenemedi: ${uploadError.message}`);
+            setLoading(false);
+            return;
+          }
+
+          uploadedAvatarUrl = supabase.storage.from("avatars").getPublicUrl(uploadedFile.path).data.publicUrl;
+          const { error: metadataError } = await supabase.auth.updateUser({
+            data: { full_name: ad, username: normalizedUsername, avatar_url: uploadedAvatarUrl },
+          });
+          if (metadataError) {
+            setError(`Profil fotoğrafı profiline bağlanamadı: ${metadataError.message}`);
+            setLoading(false);
+            return;
+          }
+        }
+
         const { error: profileError } = await supabase.from("profiles").insert({
           id: sessionData.session.user.id,
           username: normalizedUsername,
           full_name: ad,
-          avatar_url: fotoUrl || null,
+          avatar_url: uploadedAvatarUrl,
         });
 
         if (profileError) {
