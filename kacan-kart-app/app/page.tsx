@@ -238,47 +238,46 @@ function CardContent() {
     setPreviewLoading(true);
     setPreviewError(null);
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const activeUser = sessionData.session?.user || user;
-    if (!activeUser) {
-      setPreviewError("Kart oluşturmak ve bildirim alabilmek için önce profil oluşturup giriş yapmalısın.");
-      setPreviewLoading(false);
-      return;
-    }
-    setUser(activeUser);
-
     try {
-      if (!cardId) {
-        const { data, error } = await supabase
-          .from("cards")
-          .insert([
-            {
-              user_id: activeUser.id,
-              from_username: fromUsername,
-              target_username: targetUsername,
-              soru,
-              theme: selectedTheme,
-              gif_url: gifUrl,
-              yer,
-              tarih,
-              zaman,
-              status: "pending",
-            },
-          ])
-          .select()
-          .single();
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      const activeSession = sessionData.session;
+      const activeUser = activeSession?.user || user;
+      if (!activeUser || !activeSession?.access_token) {
+        setPreviewError("Kart oluşturmak ve bildirim alabilmek için önce profil oluşturup giriş yapmalısın.");
+        return;
+      }
+      setUser(activeUser);
 
-        if (error) {
-          setPreviewError(`Kart kaydedilemedi, bu nedenle kısa paylaşım bağlantısı oluşturulamadı: ${error.message}`);
+      if (!cardId) {
+        const response = await fetch("/api/cards", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${activeSession.access_token}`,
+          },
+          body: JSON.stringify({
+            from_username: fromUsername,
+            target_username: targetUsername,
+            soru,
+            theme: selectedTheme,
+            gif_url: gifUrl,
+            yer,
+            tarih,
+            zaman,
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          setPreviewError(`Kart kaydedilemedi, kısa paylaşım bağlantısı oluşturulamadı: ${result.error || response.statusText}`);
           return;
         }
-
-        if (data) setCardId(data.id);
+        setCardId(result.id);
       }
 
       goToStep(4);
     } catch (error) {
-      setPreviewError(`Kart kaydedilemedi, bu nedenle kısa paylaşım bağlantısı oluşturulamadı: ${error instanceof Error ? error.message : "Beklenmeyen hata"}`);
+      setPreviewError(`Kart kaydı başarısız: ${error instanceof Error ? error.message : "Beklenmeyen hata"}`);
     } finally {
       setPreviewLoading(false);
     }
