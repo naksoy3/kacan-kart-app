@@ -1,10 +1,16 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
 import { supabase } from "@/utils/supabase";
+
+const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-xl border border-slate-700 bg-slate-800" />,
+});
 
 // Wikimedia Commons'tan lisansı doğrulanabilen komik ve açık lisanslı GIF'ler.
 const KOMIK_GIFLER = [
@@ -439,17 +445,12 @@ function CardContent() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-slate-400 mb-1.5 font-medium">Yer:</label>
-                  <input
-                    type="text"
-                    placeholder="Örn: Kadıköy"
-                    value={yer}
-                    onChange={(e) => setYer(e.target.value)}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
-                  />
-                </div>
+              <div>
+                <label className="mb-1.5 block font-medium text-slate-400">Buluşma konumu:</label>
+                <LocationPicker value={yer} onChange={setYer} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="block text-slate-400 mb-1.5 font-medium">Tarih:</label>
                   <input

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Baloo_2, Inter } from "next/font/google";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 import SiteHeader from "@/components/SiteHeader";
 
 const baloo = Baloo_2({
