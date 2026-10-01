@@ -90,10 +90,11 @@ as $$
 declare
   card_owner uuid;
   card_question text;
+  card_target text;
   card_sender text;
 begin
-  select user_id, soru, from_username
-    into card_owner, card_question, card_sender
+  select user_id, soru, target_username, from_username
+    into card_owner, card_question, card_target, card_sender
     from public.cards
    where id = p_card_id;
 
@@ -123,7 +124,11 @@ begin
     p_card_id,
     'card_accepted',
     'Kartına Evet cevabı geldi! 🎉',
-    coalesce(card_question, 'Gönderdiğin soru kartı kabul edildi.')
+    format(
+      '%s soruna Evet yanıtı verdi: %s',
+      coalesce(card_target, 'Alıcı'),
+      coalesce(card_question, 'Gönderdiğin soru kartı kabul edildi.')
+    )
   );
   return true;
 end;
