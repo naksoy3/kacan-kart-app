@@ -233,6 +233,19 @@ function CardContent() {
     setKirikGifIdleri((prev) => (prev.includes(id) ? prev : [...prev, id]));
   };
 
+  const handleContinueToGif = () => {
+    if (!targetUsername.trim()) {
+      setPreviewError("Hedef kişinin adını yazmalısın.");
+      return;
+    }
+    if (!soru.trim()) {
+      setPreviewError("Soru alanı zorunludur.");
+      return;
+    }
+    setPreviewError(null);
+    goToStep(3);
+  };
+
   const handleProceedToPreview = async () => {
     if (previewLoading) return;
     setPreviewLoading(true);
@@ -422,8 +435,12 @@ function CardContent() {
                   <input
                     type="text"
                     placeholder="Örn: Onun Adı"
+                    required
                     value={targetUsername}
-                    onChange={(e) => setTargetUsername(e.target.value)}
+                    onChange={(e) => {
+                      setTargetUsername(e.target.value);
+                      if (e.target.value.trim()) setPreviewError(null);
+                    }}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                   />
                 </div>
@@ -434,8 +451,12 @@ function CardContent() {
                 <input
                   type="text"
                   placeholder="Örn: Benimle yemeğe çıkar mısın?"
+                  required
                   value={soru}
-                  onChange={(e) => setSoru(e.target.value)}
+                  onChange={(e) => {
+                    setSoru(e.target.value);
+                    if (e.target.value.trim()) setPreviewError(null);
+                  }}
                   className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                 />
               </div>
@@ -520,12 +541,17 @@ function CardContent() {
                   ⬅️ Geri
                 </button>
                 <button
-                  onClick={() => goToStep(3)}
+                  onClick={handleContinueToGif}
                   className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
                 >
                   Devam Et: GIF Seç ➡️
                 </button>
               </div>
+              {previewError && (
+                <p className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-center text-xs text-rose-300">
+                  {previewError}
+                </p>
+              )}
             </div>
           )}
 
