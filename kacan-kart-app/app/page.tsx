@@ -34,10 +34,65 @@ const emojiSvg = (expression: number, palette: number) => {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
-const KOMIK_GIFLER = Array.from({ length: 50 }, (_, index) => ({
-  id: String(index + 1),
+const ESKI_GIFLER = [
+  { id: "21", url: "https://media.giphy.com/media/WpNO2ZXjhJ85y/giphy.gif" },
+  { id: "22", url: "https://media.giphy.com/media/xaw15bdmMEkgg/giphy.gif" },
+  { id: "23", url: "https://media.giphy.com/media/tLwQSHQo6hjTa/giphy.gif" },
+  { id: "24", url: "https://media.giphy.com/media/3dcoLqDDjd9pC/giphy.gif" },
+  { id: "25", url: "https://media.giphy.com/media/QFfs8ubyDkluo/giphy.gif" },
+  { id: "26", url: "https://media.giphy.com/media/10hYVVSPrSpZS0/giphy.gif" },
+  { id: "27", url: "https://media.giphy.com/media/EYJz9cfMa7WAU/giphy.gif" },
+  { id: "28", url: "https://media.giphy.com/media/Q21vzIHyTtmaQ/giphy.gif" },
+  { id: "29", url: "https://media.giphy.com/media/pzmUOeqhzJTck/giphy.gif" },
+  { id: "30", url: "https://media.giphy.com/media/G6kt1Gb4Luxy0/giphy.gif" },
+  { id: "31", url: "https://media.giphy.com/media/13wjHxAz6B6E9i/giphy.gif" },
+  { id: "32", url: "https://media.giphy.com/media/ANbbM3IzH9Tna/giphy.gif" },
+  { id: "33", url: "https://media.giphy.com/media/EQ5I7NF4BDYA/giphy.gif" },
+  { id: "34", url: "https://media.giphy.com/media/L7gHewOS8GOWY/giphy.gif" },
+  { id: "35", url: "https://media.giphy.com/media/nO16UrmQh7khW/giphy.gif" },
+  { id: "36", url: "https://media.giphy.com/media/eGuk6gQM3Q29W/giphy.gif" },
+  { id: "37", url: "https://media.giphy.com/media/8dpPMMlxmDEJO/giphy.gif" },
+  { id: "38", url: "https://media.giphy.com/media/5ox090BjCB8ME/giphy.gif" },
+  { id: "39", url: "https://media.giphy.com/media/Hzm8c1eMSq3CM/giphy.gif" },
+  { id: "40", url: "https://media.giphy.com/media/2APlzZshLu3LO/giphy.gif" },
+  { id: "41", url: "https://media.giphy.com/media/dgygjvNe7jckw/giphy.gif" },
+  { id: "42", url: "https://media.giphy.com/media/5g0mypSSPupO0/giphy.gif" },
+  { id: "43", url: "https://media.giphy.com/media/10JmxORlA6dEFW/giphy.gif" },
+  { id: "44", url: "https://media.giphy.com/media/FjfMN9MwuqvJe/giphy.gif" },
+  { id: "45", url: "https://media.giphy.com/media/l0ExpaDR2IOTB2dAQ/giphy.gif" },
+  { id: "46", url: "https://media.giphy.com/media/GGJcBeeYN4q2I/giphy.gif" },
+  { id: "47", url: "https://media.giphy.com/media/Fml0fgAxVx1eM/giphy.gif" },
+  { id: "48", url: "https://media.giphy.com/media/1ofR3QioNy264/giphy.gif" },
+  { id: "49", url: "https://media.giphy.com/media/KyWQ96Lu2QCRi/giphy.gif" },
+  { id: "50", url: "https://media.giphy.com/media/ToMjGpKniGqRNLGBrhu/giphy.gif" },
+  { id: "51", url: "https://media.giphy.com/media/tcGxgQGmE2d2w/giphy.gif" },
+  { id: "52", url: "https://media.giphy.com/media/MIkhb8isTV2uc/giphy.gif" },
+  { id: "53", url: "https://media.giphy.com/media/AmK9GILSa4zsI/giphy.gif" },
+  { id: "54", url: "https://media.giphy.com/media/SeHUUxzIsCga4/giphy.gif" },
+  { id: "55", url: "https://media.giphy.com/media/118O4ZJYDByaoE/giphy.gif" },
+  { id: "56", url: "https://media.giphy.com/media/29jhb6s7LjWUg/giphy.gif" },
+  { id: "57", url: "https://media.giphy.com/media/EvWx1BeeRyyJi/giphy.gif" },
+  { id: "58", url: "https://media.giphy.com/media/13uDde6AxxDW5G/giphy.gif" },
+  { id: "59", url: "https://media.giphy.com/media/vxbSchlbqBIis/giphy.gif" },
+  { id: "60", url: "https://media.giphy.com/media/oaWZcKvDo8JBS/giphy.gif" },
+  { id: "61", url: "https://media.giphy.com/media/kmzID1Fn7MSOY/giphy.gif" },
+  { id: "62", url: "https://media.giphy.com/media/qEpDaeeyIiNMI/giphy.gif" },
+  { id: "63", url: "https://media.giphy.com/media/143AbsYXyOK2ME/giphy.gif" },
+  { id: "64", url: "https://media.giphy.com/media/qygzgFH2BXmhi/giphy.gif" },
+  { id: "65", url: "https://media.giphy.com/media/DliKKjgkxmQo0/giphy.gif" },
+  { id: "66", url: "https://media.giphy.com/media/D7Qzw12q9s8Tu/giphy.gif" },
+  { id: "67", url: "https://media.giphy.com/media/jAe22Ec5iICCk/giphy.gif" },
+  { id: "68", url: "https://media.giphy.com/media/iOS6z7r6ZhZOE/giphy.gif" },
+  { id: "69", url: "https://media.giphy.com/media/ciqSxn4GaWlHO/giphy.gif" },
+  { id: "70", url: "https://media.giphy.com/media/f4E0TH9flrfuE/giphy.gif" },
+];
+
+const YENI_SVG_GIFLER = Array.from({ length: 50 }, (_, index) => ({
+  id: `svg-${index + 1}`,
   url: emojiSvg(index % 10, Math.floor(index / 10)),
 }));
+
+const KOMIK_GIFLER = [...ESKI_GIFLER, ...YENI_SVG_GIFLER];
 
 function CardContent() {
   const searchParams = useSearchParams();
