@@ -129,6 +129,10 @@ function CardContent() {
     return /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
   });
   const [zaman, setZaman] = useState(searchParams.get("zaman") || searchParams.get("saat") || "");
+  const [zamanISO, setZamanISO] = useState(() => {
+    const value = searchParams.get("zaman") || searchParams.get("saat") || "";
+    return /^\d{2}:\d{2}$/.test(value) ? value : "";
+  });
   const [gifUrl, setGifUrl] = useState(urlGif || KOMIK_GIFLER[0].url);
   const [copied, setCopied] = useState(false);
   const [cardId, setCardId] = useState<string | null>(urlCardId);
@@ -483,12 +487,16 @@ function CardContent() {
                 <div>
                   <label className="block text-slate-400 mb-1.5 font-medium">Zaman:</label>
                   <input
-                    type="text"
-                    placeholder="Örn: 20:00"
-                    value={zaman}
-                    onChange={(e) => setZaman(e.target.value)}
+                    type="time"
+                    step="60"
+                    value={zamanISO}
+                    onChange={(event) => {
+                      setZamanISO(event.target.value);
+                      setZaman(event.target.value);
+                    }}
                     className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 text-sm transition"
                   />
+                  {zamanISO && <p className="mt-1.5 text-[11px] text-indigo-300">Seçilen saat: {zamanISO}</p>}
                 </div>
               </div>
 
