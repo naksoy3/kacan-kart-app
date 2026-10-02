@@ -15,12 +15,17 @@ type Message = {
   created_at: string;
   sender_name?: string;
   recipient_name?: string;
+  sender_username?: string;
+  recipient_username?: string;
+  sender_avatar_url?: string | null;
+  recipient_avatar_url?: string | null;
 };
 
 type Profile = {
   id: string;
   username: string;
   full_name: string;
+  avatar_url: string | null;
 };
 
 export default function MesajlarPage() {
@@ -35,6 +40,7 @@ export default function MesajlarPage() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [openConversations, setOpenConversations] = useState<Record<string, boolean>>({});
   const [sendingReplyTo, setSendingReplyTo] = useState<string | null>(null);
   const [replyError, setReplyError] = useState<{ participantId: string; message: string } | null>(null);
 
@@ -56,7 +62,7 @@ export default function MesajlarPage() {
     const profileIds = Array.from(new Set(rows.flatMap((message) => [message.sender_id, message.recipient_id])));
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, username, full_name")
+      .select("id, username, full_name, avatar_url")
       .in("id", profileIds);
 
     const profileMap = new Map((profiles || []).map((profile: Profile) => [profile.id, profile]));
@@ -64,6 +70,10 @@ export default function MesajlarPage() {
       ...message,
       sender_name: profileMap.get(message.sender_id)?.full_name || profileMap.get(message.sender_id)?.username || t("Kullanıcı"),
       recipient_name: profileMap.get(message.recipient_id)?.full_name || profileMap.get(message.recipient_id)?.username || t("Kullanıcı"),
+      sender_username: profileMap.get(message.sender_id)?.username,
+      recipient_username: profileMap.get(message.recipient_id)?.username,
+      sender_avatar_url: profileMap.get(message.sender_id)?.avatar_url,
+      recipient_avatar_url: profileMap.get(message.recipient_id)?.avatar_url,
     })));
   };
 
@@ -88,6 +98,12 @@ export default function MesajlarPage() {
     window.dispatchEvent(new Event("messages-read"));
   };
 
+  const toggleConversation = (participantId: string) => {
+    const willOpen = !openConversations[participantId];
+    setOpenConversations((current) => ({ ...current, [participantId]: willOpen }));
+    if (willOpen) void markConversationRead(participantId);
+  };
+
   const conversations = Array.from(messages.reduce((groups, message) => {
     const participantId = message.sender_id === userId ? message.recipient_id : message.sender_id;
     const conversation = groups.get(participantId) || [];
@@ -101,10 +117,18 @@ export default function MesajlarPage() {
     const participantName = latestMessage.sender_id === participantId
       ? latestMessage.sender_name
       : latestMessage.recipient_name;
+    const participantUsername = latestMessage.sender_id === participantId
+      ? latestMessage.sender_username
+      : latestMessage.recipient_username;
+    const participantAvatar = latestMessage.sender_id === participantId
+      ? latestMessage.sender_avatar_url
+      : latestMessage.recipient_avatar_url;
 
     return {
       participantId,
       participantName,
+      participantUsername,
+      participantAvatar,
       messages: sortedMessages,
       latestMessage,
       unreadCount: conversationMessages.filter((message) =>
@@ -250,33 +274,42 @@ export default function MesajlarPage() {
           ) : (
             <div className="mt-5 space-y-3">
               {conversations.map((conversation) => (
-                <details
-                  key={conversation.participantId}
-                  onToggle={(event) => {
-                    if (event.currentTarget.open) void markConversationRead(conversation.participantId);
-                  }}
-                  className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/50"
-                >
-                  <summary className="flex cursor-pointer list-none items-center gap-3 p-4 hover:bg-slate-800">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-200">
-                      {conversation.participantName?.charAt(0).toUpperCase() || "?"}
-                    </span>
-                    <span className="min-w-0 flex-1">
+                <article key={conversation.participantId} className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/50">
+                  <div className="flex items-center gap-3 p-4">
+                    <Link
+                      href={conversation.participantUsername ? `/u/${encodeURIComponent(conversation.participantUsername)}` : "/"}
+                      className="flex min-w-0 shrink-0 items-center gap-3"
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-200">
+                        {conversation.participantAvatar
+                          ? <img src={conversation.participantAvatar} alt="" className="h-full w-full object-cover" />
+                          : conversation.participantName?.charAt(0).toUpperCase() || "?"}
+                      </span>
+                      <span className="min-w-0 truncate text-sm font-bold text-white">
+                        @{conversation.participantUsername || conversation.participantName}
+                      </span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => toggleConversation(conversation.participantId)}
+                      aria-expanded={Boolean(openConversations[conversation.participantId])}
+                      className="min-w-0 flex-1 text-left"
+                    >
                       <span className="flex items-center justify-between gap-3">
-                        <span className="truncate text-sm font-bold text-white">{conversation.participantName}</span>
+                        <span className="truncate text-xs text-slate-400">{conversation.latestMessage.body}</span>
                         <time className="shrink-0 text-[11px] text-slate-500">
                           {new Date(conversation.latestMessage.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}
                         </time>
                       </span>
-                      <span className="mt-1 block truncate text-xs text-slate-400">{conversation.latestMessage.body}</span>
-                    </span>
+                    </button>
                     {conversation.unreadCount > 0 && (
                       <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
                         {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
                       </span>
                     )}
-                  </summary>
-                  <div className="space-y-2 border-t border-slate-800 p-4">
+                  </div>
+                  {openConversations[conversation.participantId] && (
+                    <div className="space-y-2 border-t border-slate-800 p-4">
                     {conversation.messages.map((message) => {
                       const sent = message.sender_id === userId;
                       return (
@@ -309,8 +342,9 @@ export default function MesajlarPage() {
                     {replyError?.participantId === conversation.participantId && (
                       <p role="alert" className="mt-2 text-xs text-rose-300">{replyError.message}</p>
                     )}
-                  </div>
-                </details>
+                    </div>
+                  )}
+                </article>
               ))}
             </div>
           )}

@@ -101,6 +101,7 @@ function CardContent() {
 
   const urlCardId = searchParams.get("id");
   const urlUser = searchParams.get("u");
+  const urlRecipient = searchParams.get("to");
   const urlFrom = searchParams.get("f") || searchParams.get("sender") || searchParams.get("gonderen");
   const urlSoru = searchParams.get("s");
   const urlTheme = searchParams.get("t") as CardTheme | null;
@@ -113,7 +114,7 @@ function CardContent() {
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : initialStep);
   const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
   
-  const [targetUsername, setTargetUsername] = useState(urlUser || "");
+  const [targetUsername, setTargetUsername] = useState(urlUser || urlRecipient || "");
   const [fromUsername, setFromUsername] = useState(urlFrom || "");
   const [senderUsername, setSenderUsername] = useState("");
   
