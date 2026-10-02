@@ -114,6 +114,7 @@ const translations: Record<string, string> = {
   "Alıcının kullanıcı adı": "Recipient username",
   "Mesajın": "Your message",
   "Mesajını yaz...": "Write your message...",
+  "Yanıtını yaz...": "Write a reply...",
   "Mesaj Gönder": "Send message",
   "Gönderiliyor...": "Sending...",
   "Gelen ve gönderilen mesajlar": "Inbox and sent messages",

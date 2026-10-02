@@ -34,6 +34,9 @@ export default function MesajlarPage() {
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [sendingReplyTo, setSendingReplyTo] = useState<string | null>(null);
+  const [replyError, setReplyError] = useState<{ participantId: string; message: string } | null>(null);
 
   const loadMessages = async (currentUserId: string, accessToken: string) => {
     const query = new URLSearchParams({
@@ -173,6 +176,39 @@ export default function MesajlarPage() {
     setSending(false);
   };
 
+  const handleReply = async (event: FormEvent<HTMLFormElement>, participantId: string) => {
+    event.preventDefault();
+    if (!userId || sendingReplyTo) return;
+
+    const replyBody = replyDrafts[participantId]?.trim();
+    if (!replyBody) return;
+
+    setSendingReplyTo(participantId);
+    setReplyError(null);
+    const { error: messageError } = await supabase.from("messages").insert({
+      sender_id: userId,
+      recipient_id: participantId,
+      body: replyBody,
+    });
+
+    if (messageError) {
+      setReplyError({ participantId, message: messageError.message });
+      setSendingReplyTo(null);
+      return;
+    }
+
+    setReplyDrafts((current) => ({ ...current, [participantId]: "" }));
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session) {
+      try {
+        await loadMessages(userId, sessionData.session.access_token);
+      } catch {
+        setReplyError({ participantId, message: t("Mesajlar yüklenemedi. Lütfen tekrar dene.") });
+      }
+    }
+    setSendingReplyTo(null);
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-24 text-white">
       <div className="mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[320px_1fr]">
@@ -244,6 +280,27 @@ export default function MesajlarPage() {
                         </div>
                       );
                     })}
+                    <form onSubmit={(event) => void handleReply(event, conversation.participantId)} className="mt-4 flex items-end gap-2 border-t border-slate-800 pt-4">
+                      <textarea
+                        required
+                        rows={1}
+                        maxLength={2000}
+                        value={replyDrafts[conversation.participantId] || ""}
+                        onChange={(event) => setReplyDrafts((current) => ({ ...current, [conversation.participantId]: event.target.value }))}
+                        placeholder={t("Yanıtını yaz...")}
+                        className="min-h-11 min-w-0 flex-1 resize-y rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white outline-none focus:border-indigo-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={sendingReplyTo === conversation.participantId || !replyDrafts[conversation.participantId]?.trim()}
+                        className="h-11 shrink-0 rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white hover:bg-indigo-500 disabled:opacity-50"
+                      >
+                        {sendingReplyTo === conversation.participantId ? t("Gönderiliyor...") : t("Mesaj Gönder")}
+                      </button>
+                    </form>
+                    {replyError?.participantId === conversation.participantId && (
+                      <p role="alert" className="mt-2 text-xs text-rose-300">{replyError.message}</p>
+                    )}
                   </div>
                 </details>
               ))}
