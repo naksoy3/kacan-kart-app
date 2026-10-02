@@ -8,6 +8,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 
 type Notification = {
   id: string;
+  card_id: string | null;
   title: string;
   message: string;
   created_at: string;
@@ -61,7 +62,7 @@ export default function BildirimlerPage() {
     const loadNotifications = async (userId: string, accessToken: string) => {
       try {
         const query = new URLSearchParams({
-          select: "id,title,message,created_at,read,type,actor_id,actor_username",
+          select: "id,card_id,title,message,created_at,read,type,actor_id,actor_username",
           user_id: `eq.${userId}`,
           order: "created_at.desc",
         });
@@ -145,8 +146,17 @@ export default function BildirimlerPage() {
           <div className="space-y-3">
             {notifications.map((notification) => (
               <article key={notification.id} className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4">
-                <h2 className="text-sm font-bold text-emerald-300">{t(notification.title)}</h2>
-                <p className="mt-1 text-sm text-slate-200">{translateNotificationMessage(notification.message)}</p>
+                {notification.type === "card_received" && notification.card_id ? (
+                  <Link href={`/k/card/${encodeURIComponent(notification.card_id)}?v=2`} className="group block rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-emerald-300">
+                    <h2 className="text-sm font-bold text-emerald-300 group-hover:underline">{t(notification.title)}</h2>
+                    <p className="mt-1 text-sm text-slate-200 group-hover:text-white">{translateNotificationMessage(notification.message)}</p>
+                  </Link>
+                ) : (
+                  <>
+                    <h2 className="text-sm font-bold text-emerald-300">{t(notification.title)}</h2>
+                    <p className="mt-1 text-sm text-slate-200">{translateNotificationMessage(notification.message)}</p>
+                  </>
+                )}
                 <time className="mt-2 block text-[11px] text-slate-500">
                   {new Date(notification.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}
                 </time>
