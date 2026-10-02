@@ -161,6 +161,77 @@ $$;
 
 grant execute on function public.notify_card_accepted(uuid) to anon, authenticated;
 
+create or replace function public.notify_card_received(p_card_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  card_owner uuid := auth.uid();
+  card_question text;
+  card_target text;
+  card_sender text;
+  target_user uuid;
+  card_owner_username text;
+begin
+  if card_owner is null then
+    return false;
+  end if;
+
+  select soru, target_username, from_username
+    into card_question, card_target, card_sender
+    from public.cards
+   where id = p_card_id and user_id = card_owner;
+
+  if not found then
+    return false;
+  end if;
+
+  select id
+    into target_user
+    from public.profiles
+   where lower(username) = lower(card_target)
+      or lower(full_name) = lower(card_target)
+   limit 1;
+
+  if target_user is null then
+    return false;
+  end if;
+
+  if exists (
+    select 1 from public.notifications
+     where card_id = p_card_id and user_id = target_user and type = 'card_received'
+  ) then
+    return true;
+  end if;
+
+  select username
+    into card_owner_username
+    from public.profiles
+   where id = card_owner;
+
+  insert into public.notifications (user_id, card_id, type, title, message, actor_id, actor_username)
+  values (
+    target_user,
+    p_card_id,
+    'card_received',
+    'Yeni cevap bekleyen bir sorun var! ❓',
+    format(
+      '%s sana cevaplaman için bir soru gönderdi: %s',
+      coalesce(card_sender, card_owner_username, 'Bir kullanıcı'),
+      coalesce(card_question, 'Sana bir soru gönderildi.')
+    ),
+    card_owner,
+    card_owner_username
+  );
+
+  return true;
+end;
+$$;
+
+grant execute on function public.notify_card_received(uuid) to authenticated;
+
 create table if not exists public.messages (
   id uuid primary key default gen_random_uuid(),
   sender_id uuid not null references auth.users(id) on delete cascade,

@@ -30,6 +30,11 @@ export default function BildirimlerPage() {
     if (language === "en" && markerIndex >= 0) {
       return `${message.slice(0, markerIndex)} ${t("soruna Evet yanıtı verdi:")} ${message.slice(markerIndex + marker.length)}`;
     }
+    const receivedMarker = " sana cevaplaman için bir soru gönderdi: ";
+    const receivedMarkerIndex = message.indexOf(receivedMarker);
+    if (language === "en" && receivedMarkerIndex >= 0) {
+      return `${message.slice(0, receivedMarkerIndex)} ${t("sana cevaplaman için bir soru gönderdi:")} ${message.slice(receivedMarkerIndex + receivedMarker.length)}`;
+    }
     return t(message);
   };
 

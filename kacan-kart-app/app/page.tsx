@@ -102,6 +102,7 @@ function CardContent() {
   const urlCardId = searchParams.get("id");
   const urlUser = searchParams.get("u");
   const urlRecipient = searchParams.get("to");
+  const isProfileQuestionFlow = Boolean(urlRecipient);
   const urlFrom = searchParams.get("f") || searchParams.get("sender") || searchParams.get("gonderen");
   const urlSoru = searchParams.get("s");
   const urlTheme = searchParams.get("t") as CardTheme | null;
@@ -138,6 +139,8 @@ function CardContent() {
   const [authLoading, setAuthLoading] = useState(true);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const [sendingToInbox, setSendingToInbox] = useState(false);
+  const [sentToInbox, setSentToInbox] = useState(false);
 
   useEffect(() => {
     if (!isSharedView && ["Benimle yemeğe çıkar mısın?", "Would you like to go out for dinner with me?"].includes(soru)) {
@@ -355,6 +358,25 @@ function CardContent() {
     navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSendToInbox = async () => {
+    if (!cardId || sendingToInbox || sentToInbox) return;
+    setSendingToInbox(true);
+    setPreviewError(null);
+
+    const { data, error: notificationError } = await supabase.rpc("notify_card_received", {
+      p_card_id: cardId,
+    });
+
+    if (notificationError) {
+      setPreviewError(t("Soru gönderilemedi. Lütfen tekrar dene."));
+    } else if (!data) {
+      setPreviewError(t("Bu kullanıcı adına ait hesap bulunamadı. Bağlantıyı paylaşabilirsin."));
+    } else {
+      setSentToInbox(true);
+    }
+    setSendingToInbox(false);
   };
 
   const handleAcceptResponse = async () => {
@@ -645,7 +667,7 @@ function CardContent() {
       {(formStep === 4 || isSharedView) && (
         <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
           {!isSharedView && (
-            <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 text-white shadow-xl">
+            <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-3 text-white shadow-xl">
               <button
                 onClick={() => goToStep(3)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition cursor-pointer"
@@ -662,6 +684,16 @@ function CardContent() {
               >
                 {copied ? t("✅ Link Kopyalandı!") : t("🔗 Bağlantıyı Kopyala & Paylaş")}
               </button>
+              {isProfileQuestionFlow && cardId && (
+                <button
+                  type="button"
+                  onClick={handleSendToInbox}
+                  disabled={sendingToInbox || sentToInbox}
+                  className={`w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold transition disabled:opacity-60 ${sentToInbox ? "bg-emerald-600 text-white" : "bg-emerald-600 hover:bg-emerald-500 text-white"}`}
+                >
+                  {sentToInbox ? t("✅ Gönderildi") : sendingToInbox ? t("Gönderiliyor...") : t("📨 Gönder")}
+                </button>
+              )}
             </div>
           )}
 
