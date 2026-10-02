@@ -17,7 +17,6 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState<ContactProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [removingId, setRemovingId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -69,21 +68,6 @@ export default function ContactsPage() {
     };
   }, []);
 
-  const removeContact = async (contactId: string) => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return;
-    setRemovingId(contactId);
-    const { error: removeError } = await supabase
-      .from("contacts")
-      .delete()
-      .eq("owner_id", data.user.id)
-      .eq("contact_id", contactId);
-
-    if (removeError) setError("Kişi listen güncellenemedi.");
-    else setContacts((current) => current.filter((contact) => contact.id !== contactId));
-    setRemovingId(null);
-  };
-
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-24 text-white">
       <section className="mx-auto w-full max-w-3xl rounded-[28px] border border-slate-800 bg-slate-900/90 p-6 shadow-2xl backdrop-blur-xl sm:p-8">
@@ -99,7 +83,7 @@ export default function ContactsPage() {
         ) : (
           <div className="divide-y divide-slate-800">
             {contacts.map((contact) => (
-              <div key={contact.id} className="flex items-center gap-3 py-4 first:pt-0">
+              <div key={contact.id} className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center">
                 <Link href={`/u/${encodeURIComponent(contact.username)}`} className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-200">
                     {contact.avatar_url
@@ -111,14 +95,20 @@ export default function ContactsPage() {
                     <span className="block truncate text-xs text-slate-400">@{contact.username}</span>
                   </span>
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => void removeContact(contact.id)}
-                  disabled={removingId === contact.id}
-                  className="shrink-0 rounded-lg border border-rose-500/20 px-3 py-2 text-[11px] font-semibold text-rose-300 transition hover:bg-rose-500/10 disabled:opacity-50"
-                >
-                  {t("Kişilerinden Çıkar")}
-                </button>
+                <div className="grid w-full shrink-0 grid-cols-2 gap-2 sm:w-auto">
+                  <Link
+                    href={`/mesajlar?to=${encodeURIComponent(contact.username)}`}
+                    className="flex h-10 items-center justify-center rounded-xl bg-indigo-600 px-3 text-[11px] font-bold text-white transition hover:bg-indigo-500"
+                  >
+                    {t("💬 Mesaj At")}
+                  </Link>
+                  <Link
+                    href={`/?to=${encodeURIComponent(contact.username)}&step=1`}
+                    className="flex h-10 items-center justify-center rounded-xl border border-indigo-400/30 bg-indigo-500/10 px-3 text-[11px] font-bold text-indigo-200 transition hover:bg-indigo-500/20"
+                  >
+                    {t("✨ Soru Sor")}
+                  </Link>
+                </div>
               </div>
             ))}
           </div>
