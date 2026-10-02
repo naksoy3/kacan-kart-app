@@ -12,6 +12,9 @@ type Notification = {
   message: string;
   created_at: string;
   read: boolean;
+  type: string;
+  actor_id: string | null;
+  actor_username: string | null;
 };
 
 export default function BildirimlerPage() {
@@ -20,6 +23,7 @@ export default function BildirimlerPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedInviteId, setCopiedInviteId] = useState<string | null>(null);
   const translateNotificationMessage = (message: string) => {
     const marker = " soruna Evet yanıtı verdi: ";
     const markerIndex = message.indexOf(marker);
@@ -29,11 +33,30 @@ export default function BildirimlerPage() {
     return t(message);
   };
 
+  const inviteToPlatform = async (notificationId: string) => {
+    const inviteUrl = new URL("/kayit", window.location.origin).toString();
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Cardasks",
+          text: t("Cardasks'e katıl ve kendi soru kartını oluştur!"),
+          url: inviteUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(inviteUrl);
+        setCopiedInviteId(notificationId);
+        window.setTimeout(() => setCopiedInviteId(null), 2500);
+      }
+    } catch {
+      // Share cancellation is not an error state.
+    }
+  };
+
   useEffect(() => {
     const loadNotifications = async (userId: string, accessToken: string) => {
       try {
         const query = new URLSearchParams({
-          select: "id,title,message,created_at,read",
+          select: "id,title,message,created_at,read,type,actor_id,actor_username",
           user_id: `eq.${userId}`,
           order: "created_at.desc",
         });
@@ -45,7 +68,20 @@ export default function BildirimlerPage() {
         });
         if (!response.ok) throw new Error(await response.text());
         const rows = (await response.json()) as Notification[];
-        setNotifications(rows);
+        const actorIds = Array.from(new Set(rows.flatMap((notification) => notification.actor_id ? [notification.actor_id] : [])));
+        let actorUsernames = new Map<string, string>();
+        if (actorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("id,username")
+            .in("id", actorIds);
+          actorUsernames = new Map((profiles || []).map((profile) => [profile.id, profile.username]));
+        }
+        const enrichedRows = rows.map((notification) => ({
+          ...notification,
+          actor_username: notification.actor_username || (notification.actor_id ? actorUsernames.get(notification.actor_id) || null : null),
+        }));
+        setNotifications(enrichedRows);
 
         const unreadIds = rows.filter((notification) => !notification.read);
         if (unreadIds.length > 0) {
@@ -109,6 +145,22 @@ export default function BildirimlerPage() {
                 <time className="mt-2 block text-[11px] text-slate-500">
                   {new Date(notification.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}
                 </time>
+                {notification.type === "card_accepted" && notification.actor_id && notification.actor_username ? (
+                  <Link
+                    href={`/mesajlar?to=${encodeURIComponent(notification.actor_username)}`}
+                    className="mt-3 inline-flex h-9 items-center justify-center rounded-xl bg-indigo-600 px-4 text-xs font-bold text-white transition hover:bg-indigo-500"
+                  >
+                    {t("💬 Mesaj Gönder")}
+                  </Link>
+                ) : notification.type === "card_accepted" && !notification.actor_id ? (
+                  <button
+                    type="button"
+                    onClick={() => void inviteToPlatform(notification.id)}
+                    className="mt-3 inline-flex h-9 items-center justify-center rounded-xl border border-indigo-400/30 bg-indigo-500/10 px-4 text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/20"
+                  >
+                    {copiedInviteId === notification.id ? t("Davet bağlantısı kopyalandı!") : t("Platforma Davet Et")}
+                  </button>
+                ) : null}
               </article>
             ))}
           </div>

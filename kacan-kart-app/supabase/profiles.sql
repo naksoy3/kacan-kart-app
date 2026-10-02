@@ -62,9 +62,16 @@ create table if not exists public.notifications (
   type text not null default 'card_accepted',
   title text not null,
   message text not null,
+  actor_id uuid references auth.users(id) on delete set null,
+  actor_username text,
   read boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+alter table public.notifications
+  add column if not exists actor_id uuid references auth.users(id) on delete set null;
+alter table public.notifications
+  add column if not exists actor_username text;
 
 alter table public.notifications enable row level security;
 
@@ -92,6 +99,8 @@ declare
   card_question text;
   card_target text;
   card_sender text;
+  card_actor_id uuid := auth.uid();
+  card_actor_username text;
 begin
   select user_id, soru, target_username, from_username
     into card_owner, card_question, card_target, card_sender
@@ -111,6 +120,20 @@ begin
     return false;
   end if;
 
+  if card_actor_id is not null then
+    select username
+      into card_actor_username
+      from public.profiles
+     where id = card_actor_id;
+
+    if card_actor_username is null then
+      select raw_user_meta_data ->> 'username'
+        into card_actor_username
+        from auth.users
+       where id = card_actor_id;
+    end if;
+  end if;
+
   if exists (
     select 1 from public.notifications
      where card_id = p_card_id and type = 'card_accepted'
@@ -118,7 +141,7 @@ begin
     return true;
   end if;
 
-  insert into public.notifications (user_id, card_id, type, title, message)
+  insert into public.notifications (user_id, card_id, type, title, message, actor_id, actor_username)
   values (
     card_owner,
     p_card_id,
@@ -128,7 +151,9 @@ begin
       '%s soruna Evet yanıtı verdi: %s',
       coalesce(card_target, 'Alıcı'),
       coalesce(card_question, 'Gönderdiğin soru kartı kabul edildi.')
-    )
+    ),
+    card_actor_id,
+    card_actor_username
   );
   return true;
 end;
