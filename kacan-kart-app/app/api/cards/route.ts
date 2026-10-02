@@ -64,6 +64,34 @@ export async function POST(request: Request) {
       return Response.json({ error: "Kart kaydedildi ancak kimliği alınamadı." }, { status: 502 });
     }
 
+    const webhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      try {
+        const telegramResponse = await fetch(new URL("/api/telegram-notify", request.url), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${webhookSecret}`,
+          },
+          body: JSON.stringify({
+            type: "INSERT",
+            schema: "public",
+            table: "cards",
+            record: { ...card, id: rows[0].id },
+          }),
+          cache: "no-store",
+        });
+
+        if (!telegramResponse.ok) {
+          console.error("Telegram card notification failed:", telegramResponse.status);
+        }
+      } catch (error) {
+        console.error("Telegram card notification request failed:", error instanceof Error ? error.message : "Unknown error");
+      }
+    } else {
+      console.warn("Telegram notification skipped: TELEGRAM_WEBHOOK_SECRET is not configured.");
+    }
+
     return Response.json({ id: rows[0].id });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Bilinmeyen sunucu hatası";
