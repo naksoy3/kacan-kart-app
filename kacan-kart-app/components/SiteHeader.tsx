@@ -23,7 +23,6 @@ function SiteHeaderContent() {
 
   useEffect(() => {
     if (pathname === "/bildirimler") setUnreadNotifications(0);
-    if (pathname === "/mesajlar") setUnreadMessages(0);
   }, [pathname]);
 
   useEffect(() => {
@@ -62,7 +61,7 @@ function SiteHeaderContent() {
         });
         if (!messagesResponse.ok) throw new Error("Unread messages request failed");
         const unreadMessageRows = await messagesResponse.json();
-        setUnreadMessages(window.location.pathname === "/mesajlar" ? 0 : Array.isArray(unreadMessageRows) ? unreadMessageRows.length : 0);
+        setUnreadMessages(Array.isArray(unreadMessageRows) ? unreadMessageRows.length : 0);
       } catch {
         setUnreadMessages(0);
       }
@@ -90,12 +89,17 @@ function SiteHeaderContent() {
     const handleFocus = () => {
       if (currentSession) loadUnreadCount(currentSession);
     };
+    const handleMessagesRead = () => {
+      if (currentSession) loadUnreadCount(currentSession);
+    };
     window.addEventListener("focus", handleFocus);
+    window.addEventListener("messages-read", handleMessagesRead);
 
     return () => {
       data.subscription.unsubscribe();
       window.clearInterval(refreshTimer);
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("messages-read", handleMessagesRead);
     };
   }, []);
 

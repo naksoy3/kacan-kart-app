@@ -49,23 +49,7 @@ export default function MesajlarPage() {
     });
     if (!response.ok) throw new Error(await response.text());
 
-    let rows = (await response.json()) as Message[];
-    const unreadIds = rows
-      .filter((message) => message.recipient_id === currentUserId && !message.read)
-      .map((message) => message.id);
-
-    if (unreadIds.length > 0) {
-      const { error: markReadError } = await supabase
-        .from("messages")
-        .update({ read: true })
-        .in("id", unreadIds)
-        .eq("recipient_id", currentUserId);
-
-      if (!markReadError) {
-        rows = rows.map((message) => unreadIds.includes(message.id) ? { ...message, read: true } : message);
-      }
-    }
-
+    const rows = (await response.json()) as Message[];
     const profileIds = Array.from(new Set(rows.flatMap((message) => [message.sender_id, message.recipient_id])));
     const { data: profiles } = await supabase
       .from("profiles")
@@ -79,6 +63,52 @@ export default function MesajlarPage() {
       recipient_name: profileMap.get(message.recipient_id)?.full_name || profileMap.get(message.recipient_id)?.username || t("Kullanıcı"),
     })));
   };
+
+  const markConversationRead = async (participantId: string) => {
+    if (!userId) return;
+    const unreadIds = messages
+      .filter((message) => message.sender_id === participantId && message.recipient_id === userId && !message.read)
+      .map((message) => message.id);
+    if (unreadIds.length === 0) return;
+
+    const { error: markReadError } = await supabase
+      .from("messages")
+      .update({ read: true })
+      .in("id", unreadIds)
+      .eq("recipient_id", userId);
+
+    if (markReadError) return;
+
+    setMessages((current) => current.map((message) => unreadIds.includes(message.id)
+      ? { ...message, read: true }
+      : message));
+    window.dispatchEvent(new Event("messages-read"));
+  };
+
+  const conversations = Array.from(messages.reduce((groups, message) => {
+    const participantId = message.sender_id === userId ? message.recipient_id : message.sender_id;
+    const conversation = groups.get(participantId) || [];
+    conversation.push(message);
+    groups.set(participantId, conversation);
+    return groups;
+  }, new Map<string, Message[]>())).map(([participantId, conversationMessages]) => {
+    const sortedMessages = [...conversationMessages].sort((first, second) =>
+      new Date(first.created_at).getTime() - new Date(second.created_at).getTime());
+    const latestMessage = sortedMessages[sortedMessages.length - 1];
+    const participantName = latestMessage.sender_id === participantId
+      ? latestMessage.sender_name
+      : latestMessage.recipient_name;
+
+    return {
+      participantId,
+      participantName,
+      messages: sortedMessages,
+      latestMessage,
+      unreadCount: conversationMessages.filter((message) =>
+        message.sender_id === participantId && message.recipient_id === userId && !message.read).length,
+    };
+  }).sort((first, second) =>
+    new Date(second.latestMessage.created_at).getTime() - new Date(first.latestMessage.created_at).getTime());
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -171,22 +201,52 @@ export default function MesajlarPage() {
             <p className="py-12 text-center text-sm text-slate-400">{t("Mesajlar yükleniyor...")}</p>
           ) : error ? (
             <div className="mt-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-10 text-center text-sm text-rose-300">{error}</div>
-          ) : messages.length === 0 ? (
+          ) : conversations.length === 0 ? (
             <div className="mt-6 rounded-2xl border border-dashed border-slate-700 p-10 text-center text-sm text-slate-400">{t("Henüz mesajın yok.")}</div>
           ) : (
             <div className="mt-5 space-y-3">
-              {messages.map((message) => {
-                const received = message.recipient_id === userId;
-                return (
-                  <article key={message.id} className={`rounded-2xl border p-4 ${received ? "border-indigo-500/30 bg-indigo-500/10" : "border-slate-700 bg-slate-800/60"}`}>
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-bold text-white">{received ? message.sender_name : `${t("Alıcı:")} ${message.recipient_name}`}</p>
-                      <time className="text-[11px] text-slate-500">{new Date(message.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}</time>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-200">{message.body}</p>
-                  </article>
-                );
-              })}
+              {conversations.map((conversation) => (
+                <details
+                  key={conversation.participantId}
+                  onToggle={(event) => {
+                    if (event.currentTarget.open) void markConversationRead(conversation.participantId);
+                  }}
+                  className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-800/50"
+                >
+                  <summary className="flex cursor-pointer list-none items-center gap-3 p-4 hover:bg-slate-800">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-sm font-bold text-indigo-200">
+                      {conversation.participantName?.charAt(0).toUpperCase() || "?"}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="truncate text-sm font-bold text-white">{conversation.participantName}</span>
+                        <time className="shrink-0 text-[11px] text-slate-500">
+                          {new Date(conversation.latestMessage.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}
+                        </time>
+                      </span>
+                      <span className="mt-1 block truncate text-xs text-slate-400">{conversation.latestMessage.body}</span>
+                    </span>
+                    {conversation.unreadCount > 0 && (
+                      <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+                        {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
+                      </span>
+                    )}
+                  </summary>
+                  <div className="space-y-2 border-t border-slate-800 p-4">
+                    {conversation.messages.map((message) => {
+                      const sent = message.sender_id === userId;
+                      return (
+                        <div key={message.id} className={`max-w-[88%] rounded-xl p-3 ${sent ? "ml-auto bg-indigo-600/30 text-right" : "bg-slate-900 text-left"}`}>
+                          <p className="whitespace-pre-wrap break-words text-sm text-slate-100">{message.body}</p>
+                          <time className="mt-1 block text-[10px] text-slate-400">
+                            {new Date(message.created_at).toLocaleString(language === "en" ? "en-US" : "tr-TR")}
+                          </time>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </details>
+              ))}
             </div>
           )}
         </section>
