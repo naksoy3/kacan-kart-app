@@ -13,24 +13,33 @@ function CallbackContent() {
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
   const code = searchParams.get("code");
-  const requestedNext = searchParams.get("next") || "/";
-  const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "/";
+  const requestedNext = searchParams.get("next");
+  const queryType = searchParams.get("type");
 
   useEffect(() => {
     if (started.current) return;
     started.current = true;
 
     const completeAuthentication = async () => {
-      if (!code) {
-        setError("Doğrulama bağlantısı geçersiz veya süresi dolmuş. Yeni bir bağlantı iste.");
-        return;
-      }
-
       try {
-        const { data, error: authError } = await supabase.auth.exchangeCodeForSession(code);
-        if (authError) throw authError;
+        const hashParams = new URLSearchParams(window.location.hash.slice(1));
+        const isRecovery = queryType === "recovery" || hashParams.get("type") === "recovery" || requestedNext === "/sifre-yenile";
+        const fallbackNext = isRecovery ? "/sifre-yenile" : "/";
+        const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+          ? requestedNext
+          : fallbackNext;
 
-        const user = data.user;
+        let user;
+        if (code) {
+          const { data, error: authError } = await supabase.auth.exchangeCodeForSession(code);
+          if (authError) throw authError;
+          user = data.user;
+        } else {
+          const { data, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !data.session) throw sessionError || new Error("No recovery session found");
+          user = data.session.user;
+        }
+
         const username = typeof user?.user_metadata?.username === "string"
           ? user.user_metadata.username.trim().toLowerCase()
           : "";
@@ -56,7 +65,7 @@ function CallbackContent() {
     };
 
     completeAuthentication();
-  }, [code, next, router]);
+  }, [code, queryType, requestedNext, router]);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-20 text-white">
