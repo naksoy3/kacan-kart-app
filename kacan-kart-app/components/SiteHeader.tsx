@@ -15,6 +15,10 @@ function SiteHeaderContent() {
   const [authOpen, setAuthOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [profileSearch, setProfileSearch] = useState("");
+  const [profileResults, setProfileResults] = useState<Array<{ username: string; full_name: string; avatar_url: string | null }>>([]);
+  const [profileSearchLoading, setProfileSearchLoading] = useState(false);
+  const [profileSearchOpen, setProfileSearchOpen] = useState(false);
 
   const isSharedCard =
     pathname === "/inbox" ||
@@ -24,6 +28,37 @@ function SiteHeaderContent() {
   useEffect(() => {
     if (pathname === "/bildirimler") setUnreadNotifications(0);
   }, [pathname]);
+
+  useEffect(() => {
+    const normalizedQuery = profileSearch.trim().replace(/^@+/, "");
+    if (normalizedQuery.length < 2) {
+      setProfileResults([]);
+      setProfileSearchLoading(false);
+      return;
+    }
+
+    let active = true;
+    const timer = window.setTimeout(async () => {
+      setProfileSearchLoading(true);
+      const escapedQuery = normalizedQuery.replace(/[\\%_]/g, "\\$&");
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("username,full_name,avatar_url")
+        .ilike("username", `${escapedQuery}%`)
+        .order("username")
+        .limit(6);
+
+      if (active) {
+        setProfileResults(error ? [] : data || []);
+        setProfileSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [profileSearch]);
 
   useEffect(() => {
     let currentSession: any = null;
@@ -135,6 +170,57 @@ function SiteHeaderContent() {
           <Link href="/kisiler" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
             {t("Kişiler")}
           </Link>
+          <div className="relative col-span-3 sm:col-span-1">
+            <label className="sr-only" htmlFor="profile-search">{t("Kişi ara")}</label>
+            <input
+              id="profile-search"
+              type="search"
+              value={profileSearch}
+              onChange={(event) => {
+                setProfileSearch(event.target.value);
+                setProfileSearchOpen(true);
+              }}
+              onFocus={() => setProfileSearchOpen(true)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setProfileSearchOpen(false);
+                if (event.key === "Enter" && profileResults[0]) {
+                  window.location.href = `/u/${encodeURIComponent(profileResults[0].username)}`;
+                }
+              }}
+              placeholder={t("@ kullanıcı adı ara")}
+              autoComplete="off"
+              className="h-10 w-full rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs text-slate-200 shadow-lg outline-none placeholder:text-slate-500 focus:border-indigo-400/60"
+            />
+            {profileSearchOpen && profileSearch.trim().replace(/^@+/, "").length >= 2 && (
+              <div className="absolute left-0 top-full z-[60] mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 p-1 shadow-2xl">
+                {profileSearchLoading ? (
+                  <p className="px-3 py-2 text-xs text-slate-400">{t("Aranıyor...")}</p>
+                ) : profileResults.length === 0 ? (
+                  <p className="px-3 py-2 text-xs text-slate-400">{t("Arama sonucu bulunamadı.")}</p>
+                ) : profileResults.map((profile) => (
+                  <Link
+                    key={profile.username}
+                    href={`/u/${encodeURIComponent(profile.username)}`}
+                    onClick={() => {
+                      setProfileSearchOpen(false);
+                      setProfileSearch("");
+                    }}
+                    className="flex items-center gap-2 rounded-lg px-2 py-2 text-left transition hover:bg-white/5"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-indigo-500/20 text-xs font-bold text-indigo-200">
+                      {profile.avatar_url
+                        ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                        : profile.full_name.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-xs font-semibold text-white">{profile.full_name}</span>
+                      <span className="block truncate text-[10px] text-slate-400">@{profile.username}</span>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </nav>
       )}
 
