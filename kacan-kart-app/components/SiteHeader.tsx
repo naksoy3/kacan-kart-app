@@ -14,6 +14,7 @@ function SiteHeaderContent() {
   const [user, setUser] = useState<any>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   const isSharedCard =
     pathname === "/inbox" ||
@@ -22,12 +23,18 @@ function SiteHeaderContent() {
 
   useEffect(() => {
     if (pathname === "/bildirimler") setUnreadNotifications(0);
+    if (pathname === "/mesajlar") setUnreadMessages(0);
   }, [pathname]);
 
   useEffect(() => {
     let currentSession: any = null;
 
     const loadUnreadCount = async (session: any) => {
+      const headers = {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        Authorization: `Bearer ${session.access_token}`,
+      };
+
       try {
         const params = new URLSearchParams({
           select: "id",
@@ -35,16 +42,29 @@ function SiteHeaderContent() {
           read: "eq.false",
         });
         const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/notifications?${params}`, {
-          headers: {
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-            Authorization: `Bearer ${session.access_token}`,
-          },
+          headers,
         });
         if (!response.ok) throw new Error("Unread notifications request failed");
         const rows = await response.json();
         setUnreadNotifications(Array.isArray(rows) ? rows.length : 0);
       } catch {
         setUnreadNotifications(0);
+      }
+
+      try {
+        const messagesQuery = new URLSearchParams({
+          select: "id",
+          recipient_id: `eq.${session.user.id}`,
+          read: "eq.false",
+        });
+        const messagesResponse = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/messages?${messagesQuery}`, {
+          headers,
+        });
+        if (!messagesResponse.ok) throw new Error("Unread messages request failed");
+        const unreadMessageRows = await messagesResponse.json();
+        setUnreadMessages(window.location.pathname === "/mesajlar" ? 0 : Array.isArray(unreadMessageRows) ? unreadMessageRows.length : 0);
+      } catch {
+        setUnreadMessages(0);
       }
     };
 
@@ -58,7 +78,10 @@ function SiteHeaderContent() {
       currentSession = session;
       setUser(session?.user ?? null);
       if (session) window.setTimeout(() => loadUnreadCount(session), 0);
-      else setUnreadNotifications(0);
+          else {
+            setUnreadNotifications(0);
+            setUnreadMessages(0);
+          }
     });
 
     const refreshTimer = window.setInterval(() => {
@@ -91,8 +114,13 @@ function SiteHeaderContent() {
               </span>
             )}
           </Link>
-          <Link href="/mesajlar" className="flex h-10 flex-1 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none">
+          <Link href="/mesajlar" className="relative flex h-10 flex-1 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none">
             {t("Mesajlar")}
+            {unreadMessages > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-rose-500 px-1 text-[10px] font-bold leading-none text-white" aria-label={`${unreadMessages} unread messages`}>
+                {unreadMessages > 99 ? "99+" : unreadMessages}
+              </span>
+            )}
           </Link>
         </nav>
       )}

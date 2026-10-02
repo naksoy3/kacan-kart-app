@@ -49,7 +49,23 @@ export default function MesajlarPage() {
     });
     if (!response.ok) throw new Error(await response.text());
 
-    const rows = (await response.json()) as Message[];
+    let rows = (await response.json()) as Message[];
+    const unreadIds = rows
+      .filter((message) => message.recipient_id === currentUserId && !message.read)
+      .map((message) => message.id);
+
+    if (unreadIds.length > 0) {
+      const { error: markReadError } = await supabase
+        .from("messages")
+        .update({ read: true })
+        .in("id", unreadIds)
+        .eq("recipient_id", currentUserId);
+
+      if (!markReadError) {
+        rows = rows.map((message) => unreadIds.includes(message.id) ? { ...message, read: true } : message);
+      }
+    }
+
     const profileIds = Array.from(new Set(rows.flatMap((message) => [message.sender_id, message.recipient_id])));
     const { data: profiles } = await supabase
       .from("profiles")
