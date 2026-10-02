@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import AuthModal from "@/components/AuthModal";
 import { useLanguage } from "@/components/LanguageProvider";
 import { supabase } from "@/utils/supabase";
 
 type PublicProfile = {
+  id: string;
   username: string;
   full_name: string;
   avatar_url: string | null;
@@ -14,11 +16,17 @@ type PublicProfile = {
 
 export default function PublicProfilePage() {
   const params = useParams<{ username: string }>();
+  const router = useRouter();
   const { t } = useLanguage();
   const username = decodeURIComponent(params.username).toLowerCase();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isContact, setIsContact] = useState(false);
+  const [contactBusy, setContactBusy] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -26,7 +34,7 @@ export default function PublicProfilePage() {
     const loadProfile = async () => {
       const { data, error: profileError } = await supabase
         .from("profiles")
-        .select("username,full_name,avatar_url")
+        .select("id,username,full_name,avatar_url")
         .eq("username", username)
         .maybeSingle();
 
@@ -48,6 +56,54 @@ export default function PublicProfilePage() {
       active = false;
     };
   }, [username]);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setCurrentUserId(data.session?.user.id || null));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUserId(session?.user.id || null);
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    setIsContact(false);
+    if (!currentUserId || !profile || currentUserId === profile.id) return;
+
+    supabase
+      .from("contacts")
+      .select("contact_id")
+      .eq("owner_id", currentUserId)
+      .eq("contact_id", profile.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (active) setIsContact(Boolean(data));
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentUserId, profile]);
+
+  const toggleContact = async () => {
+    if (!profile) return;
+    if (!currentUserId) {
+      setContactError(t("Bir kişiyi eklemek için giriş yapmalısın."));
+      setAuthOpen(true);
+      return;
+    }
+    if (currentUserId === profile.id || contactBusy) return;
+
+    setContactBusy(true);
+    setContactError(null);
+    const result = isContact
+      ? await supabase.from("contacts").delete().eq("owner_id", currentUserId).eq("contact_id", profile.id)
+      : await supabase.from("contacts").insert({ owner_id: currentUserId, contact_id: profile.id });
+
+    if (result.error) setContactError(t("Kişi listen güncellenemedi."));
+    else setIsContact(!isContact);
+    setContactBusy(false);
+  };
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-24 text-white">
@@ -79,9 +135,25 @@ export default function PublicProfilePage() {
                 {t("✨ Soru Sor")}
               </Link>
             </div>
+            {currentUserId !== profile.id && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => void toggleContact()}
+                  disabled={contactBusy}
+                  className={`h-11 w-full rounded-xl border px-3 text-xs font-bold transition disabled:opacity-60 ${isContact ? "border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20" : "border-emerald-400/30 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20"}`}
+                >
+                  {contactBusy
+                    ? t(isContact ? "Kişilerinden çıkarılıyor..." : "Kişilerine ekleniyor...")
+                    : t(isContact ? "Kişilerinden Çıkar" : "Kişilerine Ekle")}
+                </button>
+                {contactError && <p role="alert" className="mt-2 text-xs text-rose-300">{contactError}</p>}
+              </div>
+            )}
           </>
         )}
       </section>
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} onSuccess={() => { setAuthOpen(false); router.refresh(); }} />
     </main>
   );
 }

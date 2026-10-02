@@ -24,6 +24,31 @@ create policy "Users can update own profile"
   using (auth.uid() = id)
   with check (auth.uid() = id);
 
+create table if not exists public.contacts (
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  contact_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (owner_id, contact_id),
+  check (owner_id <> contact_id)
+);
+
+alter table public.contacts enable row level security;
+
+drop policy if exists "Users can read own contacts" on public.contacts;
+create policy "Users can read own contacts"
+  on public.contacts for select
+  using (auth.uid() = owner_id);
+
+drop policy if exists "Users can add own contacts" on public.contacts;
+create policy "Users can add own contacts"
+  on public.contacts for insert
+  with check (auth.uid() = owner_id and owner_id <> contact_id);
+
+drop policy if exists "Users can remove own contacts" on public.contacts;
+create policy "Users can remove own contacts"
+  on public.contacts for delete
+  using (auth.uid() = owner_id);
+
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('avatars', 'avatars', true, 2097152, array['image/jpeg', 'image/png', 'image/webp'])
 on conflict (id) do update

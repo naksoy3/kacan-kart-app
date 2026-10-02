@@ -132,6 +132,9 @@ function SiteHeaderContent() {
           <Link href="/gelenler" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
             {t("Gelenler")}
           </Link>
+          <Link href="/kisiler" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
+            {t("Kişiler")}
+          </Link>
         </nav>
       )}
 
