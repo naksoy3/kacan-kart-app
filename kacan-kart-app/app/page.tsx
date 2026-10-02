@@ -115,6 +115,7 @@ function CardContent() {
   
   const [targetUsername, setTargetUsername] = useState(urlUser || "");
   const [fromUsername, setFromUsername] = useState(urlFrom || "");
+  const [senderUsername, setSenderUsername] = useState("");
   
   const [soru, setSoru] = useState(urlSoru || "Benimle yemeğe çıkar mısın?");
   const [yer, setYer] = useState(searchParams.get("yer") || searchParams.get("mekan") || "");
@@ -192,6 +193,7 @@ function CardContent() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const sessionUser = session?.user ?? null;
       setUser(sessionUser);
+      setSenderUsername(typeof sessionUser?.user_metadata?.username === "string" ? sessionUser.user_metadata.username : "");
       if (!isSharedView && sessionUser) {
         setFromUsername(
           sessionUser.user_metadata?.full_name ||
@@ -205,6 +207,7 @@ function CardContent() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setSenderUsername(typeof session?.user?.user_metadata?.username === "string" ? session.user.user_metadata.username : "");
       if (!isSharedView && session?.user) {
         setFromUsername(
           session.user.user_metadata?.full_name ||
@@ -229,6 +232,14 @@ function CardContent() {
           .single();
 
         if (data && !error) {
+          if (data.user_id) {
+            const { data: ownerProfile } = await supabase
+              .from("profiles")
+              .select("username")
+              .eq("id", data.user_id)
+              .maybeSingle();
+            setSenderUsername(ownerProfile?.username || "");
+          }
           setTargetUsername(data.target_username || "");
           setFromUsername(data.from_username || "");
           setSoru(data.soru);
@@ -688,6 +699,7 @@ function CardContent() {
             <KacanKart
               targetUsername={targetUsername}
               sender={fromUsername}
+              senderUsername={senderUsername}
               soru={soru}
               evetMetni={searchParams.get("e") || t("Evet!")}
               hayirMetni={searchParams.get("h") || t("Hayır")}

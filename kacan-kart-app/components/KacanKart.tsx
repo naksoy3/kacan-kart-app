@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useLanguage } from "@/components/LanguageProvider";
@@ -37,6 +38,7 @@ export const THEME_NAMES: Record<CardTheme, string> = {
 export type KacanKartProps = {
   targetUsername?: string;
   sender?: string;
+  senderUsername?: string;
   soru?: string;
   evetMetni?: string;
   hayirMetni?: string;
@@ -196,6 +198,7 @@ function kutlamaSesiCal() {
 export default function KacanKart({
   targetUsername = "Nurullah",
   sender,
+  senderUsername,
   soru = "Benimle yemeğe çıkar mısın?",
   evetMetni = "Evet!",
   hayirMetni = "Hayır",
@@ -746,6 +749,14 @@ export default function KacanKart({
               >
                 {t("Tekrar kutla 🎊")}
               </button>
+              {senderUsername && (
+                <Link
+                  href={`/mesajlar?to=${encodeURIComponent(senderUsername)}`}
+                  className="mx-auto mt-3 flex w-fit items-center justify-center gap-2 rounded-xl border border-indigo-400/30 bg-indigo-500/10 px-5 py-2.5 text-xs font-bold text-indigo-200 transition hover:bg-indigo-500/20"
+                >
+                  {t("💬 Mesaj Gönder")}
+                </Link>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -114,6 +114,11 @@ export default function MesajlarPage() {
     new Date(second.latestMessage.created_at).getTime() - new Date(first.latestMessage.created_at).getTime());
 
   useEffect(() => {
+    const preselectedRecipient = new URLSearchParams(window.location.search).get("to");
+    if (preselectedRecipient) setRecipientUsername(preselectedRecipient);
+  }, []);
+
+  useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user) {
         setLoading(false);
@@ -133,7 +138,10 @@ export default function MesajlarPage() {
 
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!userId) return;
+    if (!userId) {
+      setError(t("Mesaj göndermek için giriş yapmalısın."));
+      return;
+    }
 
     setSending(true);
     setError(null);

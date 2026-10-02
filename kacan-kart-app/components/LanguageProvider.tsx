@@ -118,6 +118,8 @@ const translations: Record<string, string> = {
   "Mesajını yaz...": "Write your message...",
   "Yanıtını yaz...": "Write a reply...",
   "Mesaj Gönder": "Send message",
+  "💬 Mesaj Gönder": "💬 Send a message",
+  "Mesaj göndermek için giriş yapmalısın.": "You need to sign in to send a message.",
   "Gönderiliyor...": "Sending...",
   "Gelen ve gönderilen mesajlar": "Inbox and sent messages",
   "Gönderdiğin sorular": "Questions you've sent",
