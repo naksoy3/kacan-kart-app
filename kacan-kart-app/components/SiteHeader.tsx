@@ -106,11 +106,11 @@ function SiteHeaderContent() {
   return (
     <>
       {!isSharedCard && (
-        <nav className="fixed left-2 top-2 z-50 flex w-[calc(100%-1rem)] flex-row gap-2 sm:left-8 sm:top-4 sm:w-36 sm:flex-col">
-          <a href="/" className="flex h-10 flex-1 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none">
+        <nav className="fixed left-2 top-2 z-50 grid w-[calc(100%-1rem)] grid-cols-3 gap-2 sm:left-8 sm:top-4 sm:w-36 sm:grid-cols-1 sm:flex sm:flex-col">
+          <a href="/" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
             {t("Anasayfa")}
           </a>
-          <Link href="/bildirimler" className="relative flex h-10 flex-1 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none">
+          <Link href="/bildirimler" className="relative flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
             {t("Bildirimler")}
             {unreadNotifications > 0 && (
               <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-rose-500 px-1 text-[10px] font-bold leading-none text-white">
@@ -118,13 +118,19 @@ function SiteHeaderContent() {
               </span>
             )}
           </Link>
-          <Link href="/mesajlar" className="relative flex h-10 flex-1 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-3 text-xs font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none">
+          <Link href="/mesajlar" className="relative flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
             {t("Mesajlar")}
             {unreadMessages > 0 && (
               <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-rose-500 px-1 text-[10px] font-bold leading-none text-white" aria-label={`${unreadMessages} unread messages`}>
                 {unreadMessages > 99 ? "99+" : unreadMessages}
               </span>
             )}
+          </Link>
+          <Link href="/gonderilenler" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
+            {t("Gönderilenler")}
+          </Link>
+          <Link href="/gelenler" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
+            {t("Gelenler")}
           </Link>
         </nav>
       )}
