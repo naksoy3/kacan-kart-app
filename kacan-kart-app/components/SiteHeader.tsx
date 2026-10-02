@@ -141,7 +141,7 @@ function SiteHeaderContent() {
   return (
     <>
       {!isSharedCard && (
-        <nav className="fixed left-2 top-2 z-50 grid w-[calc(100%-1rem)] grid-cols-3 gap-2 sm:left-8 sm:top-4 sm:w-36 sm:grid-cols-1 sm:flex sm:flex-col">
+        <nav className="relative z-50 mx-2 mt-2 grid w-[calc(100%-1rem)] grid-cols-3 gap-2 pb-1 sm:fixed sm:left-8 sm:top-4 sm:mx-0 sm:mt-0 sm:w-36 sm:grid-cols-1 sm:flex sm:flex-col sm:p-0">
           <a href="/" className="flex h-10 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 px-1.5 text-center text-[10px] font-semibold text-slate-200 shadow-lg backdrop-blur transition hover:bg-slate-800 sm:flex-none sm:px-3 sm:text-xs">
             {t("Anasayfa")}
           </a>
@@ -224,7 +224,7 @@ function SiteHeaderContent() {
         </nav>
       )}
 
-      <div className="fixed right-3 top-14 z-50 flex items-center gap-2 sm:right-4 sm:top-4">
+      <div className="relative z-50 ml-auto mr-3 mb-2 flex w-fit items-center gap-2 sm:fixed sm:right-4 sm:top-4 sm:ml-0 sm:mr-0 sm:mb-0">
         {user ? (
           <div className="flex items-center gap-2">
             <Link href="/profil" title={t("Profilini aç")} className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full border border-indigo-400/50 bg-gradient-to-tr from-indigo-500 to-purple-500 text-sm font-bold text-white shadow-lg transition hover:scale-105">
