@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
+import { prepareAvatarImage } from "@/utils/avatar-image";
 import { useLanguage } from "@/components/LanguageProvider";
 
 export default function KayitPage() {
@@ -19,7 +20,7 @@ export default function KayitPage() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -28,15 +29,16 @@ export default function KayitPage() {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setError(t("Fotoğraf en fazla 2 MB olabilir."));
-      return;
+    setError(null);
+    try {
+      const preparedFile = await prepareAvatarImage(file);
+      setFotoDosyasi(preparedFile);
+      const reader = new FileReader();
+      reader.onload = () => setFotoUrl(String(reader.result));
+      reader.readAsDataURL(preparedFile);
+    } catch {
+      setError(t("Fotoğraf sıkıştırılamadı. Lütfen başka bir fotoğraf seç."));
     }
-
-    setFotoDosyasi(file);
-    const reader = new FileReader();
-    reader.onload = () => setFotoUrl(String(reader.result));
-    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -183,7 +185,7 @@ export default function KayitPage() {
               {t("Profil fotoğrafı seç")}
               <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
             </label>
-            <p className="text-[11px] text-slate-500">{t("İsteğe bağlı, en fazla 2 MB")}</p>
+            <p className="text-[11px] text-slate-500">{t("İsteğe bağlı. Büyük fotoğraflar yükleme öncesi 2 MB altına sıkıştırılır.")}</p>
           </div>
 
           <label className="block text-sm font-medium text-slate-300">

@@ -4,6 +4,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/utils/supabase";
+import { prepareAvatarImage } from "@/utils/avatar-image";
 import { useLanguage } from "@/components/LanguageProvider";
 
 type ProfileUser = {
@@ -56,22 +57,23 @@ export default function ProfilPage() {
     router.replace("/");
   };
 
-  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
       setError(t("Lütfen JPG, PNG veya WebP formatında bir fotoğraf seç."));
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      setError(t("Fotoğraf en fazla 2 MB olabilir."));
-      return;
+    setError(null);
+    try {
+      const preparedFile = await prepareAvatarImage(file);
+      setAvatarFile(preparedFile);
+      const reader = new FileReader();
+      reader.onload = () => setAvatarUrl(String(reader.result));
+      reader.readAsDataURL(preparedFile);
+    } catch {
+      setError(t("Fotoğraf sıkıştırılamadı. Lütfen başka bir fotoğraf seç."));
     }
-
-    setAvatarFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setAvatarUrl(String(reader.result));
-    reader.readAsDataURL(file);
   };
 
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
