@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Cardasks ile soru gönder";
+export const alt = "Kaçan Kart | Soru kartı, istediğin cevabı al.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const runtime = "edge";
@@ -38,9 +38,9 @@ export default function OpenGraphImage() {
             ca
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 82, fontWeight: 700 }}>Cardasks</div>
+            <div style={{ fontSize: 82, fontWeight: 700 }}>Kaçan Kart</div>
             <div style={{ marginTop: 14, fontSize: 32, color: "#c4c9de" }}>
-              Sana özel bir soru kartı
+              Soru kartı, istediğin cevabı al.
             </div>
           </div>
         </div>
