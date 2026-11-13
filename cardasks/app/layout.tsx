@@ -1,22 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Baloo_2, Inter } from "next/font/google";
+import "@fontsource-variable/baloo-2";
+import "@fontsource-variable/inter";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import SiteHeader from "@/components/SiteHeader";
 import { LanguageProvider } from "@/components/LanguageProvider";
-
-const baloo = Baloo_2({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  variable: "--font-baloo",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-inter",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cardasks.com"),
@@ -46,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr" className={`${baloo.variable} ${inter.variable}`}>
+    <html lang="tr">
       <body className="font-govde antialiased min-h-screen">
         <LanguageProvider>
           <SiteHeader />
