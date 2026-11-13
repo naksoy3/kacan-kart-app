@@ -195,6 +195,35 @@ function kutlamaSesiCal() {
   }
 }
 
+function kacisSesiCal() {
+  try {
+    const AudioCtxClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtxClass) return;
+
+    const ctx = new AudioCtxClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const baslangic = ctx.currentTime;
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(520, baslangic);
+    osc.frequency.exponentialRampToValueAtTime(165, baslangic + 0.22);
+    gain.gain.setValueAtTime(0.0001, baslangic);
+    gain.gain.exponentialRampToValueAtTime(0.2, baslangic + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, baslangic + 0.26);
+
+    osc.connect(gain).connect(ctx.destination);
+    osc.onended = () => void ctx.close();
+    osc.start(baslangic);
+    osc.stop(baslangic + 0.27);
+  } catch {
+    // Ses engellenirse sessizce geç
+  }
+}
+
 export default function Cardasks({
   targetUsername = "Nurullah",
   sender,
@@ -214,11 +243,13 @@ export default function Cardasks({
 }: CardasksProps) {
   const { language, t } = useLanguage();
   const playzoneRef = useRef<HTMLDivElement>(null);
+  const lastEscapeSoundAtRef = useRef(0);
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [kacisSayisi, setKacisSayisi] = useState(0);
   const [basarili, setBasarili] = useState(false);
   const [gifHata, setGifHata] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [sesAcik, setSesAcik] = useState(true);
 
   const [isSwapped, setIsSwapped] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
@@ -230,6 +261,14 @@ export default function Cardasks({
   const [secilenBilmece, setSecilenBilmece] = useState<{ soruMetni: string; ipucu: string } | null>(null);
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
+
+  const kacisSesiCalAralikli = useCallback(() => {
+    const now = Date.now();
+    if (!sesAcik || now - lastEscapeSoundAtRef.current < 220) return;
+
+    lastEscapeSoundAtRef.current = now;
+    kacisSesiCal();
+  }, [sesAcik]);
 
   useEffect(() => {
     if (theme === "riddle") {
@@ -314,13 +353,13 @@ export default function Cardasks({
       150
     );
 
-    kutlamaSesiCal();
+    if (sesAcik) kutlamaSesiCal();
     setBasarili(true);
 
     if (onAccept) {
       onAccept();
     }
-  }, [onAccept]);
+  }, [onAccept, sesAcik]);
 
   const handleNoAction = useCallback(
     (type: "click" | "hover") => {
@@ -339,6 +378,7 @@ export default function Cardasks({
         const yeniX = padding + Math.random() * (maxX - padding);
         const yeniY = padding + Math.random() * (maxY - padding);
 
+        kacisSesiCalAralikli();
         setPos({ x: yeniX, y: yeniY });
         setKacisSayisi((n) => n + 1);
       } else if (theme === "persuasive" && type === "click") {
@@ -362,7 +402,7 @@ export default function Cardasks({
         }, 750);
       }
     },
-    [theme, patlat]
+    [theme, patlat, kacisSesiCalAralikli]
   );
 
   // İstediğin oranlar: Evet her kaçışta %8 büyür, Hayır her kaçışta %5 küçülür (minimum 0.35 ile tamamen kaybolmaz)
@@ -449,14 +489,30 @@ export default function Cardasks({
             </div>
           </div>
 
-          {onBack && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={onBack}
-              className="text-[11px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-xl transition border border-white/10 text-slate-300 cursor-pointer"
+              type="button"
+              onClick={() => setSesAcik((acik) => !acik)}
+              title={language === "en"
+                ? sesAcik ? "Turn sound effects off" : "Turn sound effects on"
+                : sesAcik ? "Ses efektlerini kapat" : "Ses efektlerini aç"}
+              aria-label={language === "en"
+                ? sesAcik ? "Turn sound effects off" : "Turn sound effects on"
+                : sesAcik ? "Ses efektlerini kapat" : "Ses efektlerini aç"}
+              aria-pressed={sesAcik}
+              className="h-8 w-8 rounded-lg bg-white/10 hover:bg-white/20 transition border border-white/10 text-slate-200 cursor-pointer"
             >
-              ← {t("Değiştir")}
+              <span aria-hidden="true">{sesAcik ? "🔊" : "🔇"}</span>
             </button>
-          )}
+            {onBack && (
+              <button
+                onClick={onBack}
+                className="text-[11px] bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-xl transition border border-white/10 text-slate-300 cursor-pointer"
+              >
+                ← {t("Değiştir")}
+              </button>
+            )}
+          </div>
         </div>
 
         {(mekan || tarih || saat) && (
