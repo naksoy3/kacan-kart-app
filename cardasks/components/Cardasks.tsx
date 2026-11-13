@@ -161,15 +161,8 @@ const SCRATCH_MESSAGES = [
 
 const KONFETI_RENKLERI = ["#FF5D8F", "#FFD166", "#8B5CF6", "#10B981"];
 
-function kutlamaSesiCal() {
+function kutlamaSesiCal(ctx: AudioContext) {
   try {
-    const AudioCtxClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
-    if (!AudioCtxClass) return;
-
-    const ctx = new AudioCtxClass();
     const notalar = [523.25, 659.25, 783.99, 1046.5];
 
     notalar.forEach((frekans, i) => {
@@ -189,21 +182,13 @@ function kutlamaSesiCal() {
       osc.stop(baslangic + 0.4);
     });
 
-    setTimeout(() => ctx.close(), 1000);
   } catch {
     // Ses engellenirse sessizce geç
   }
 }
 
-function kacisSesiCal() {
+function kacisSesiCal(ctx: AudioContext) {
   try {
-    const AudioCtxClass =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
-    if (!AudioCtxClass) return;
-
-    const ctx = new AudioCtxClass();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const baslangic = ctx.currentTime;
@@ -216,7 +201,6 @@ function kacisSesiCal() {
     gain.gain.exponentialRampToValueAtTime(0.0001, baslangic + 0.26);
 
     osc.connect(gain).connect(ctx.destination);
-    osc.onended = () => void ctx.close();
     osc.start(baslangic);
     osc.stop(baslangic + 0.27);
   } catch {
@@ -243,12 +227,15 @@ export default function Cardasks({
 }: CardasksProps) {
   const { language, t } = useLanguage();
   const playzoneRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const soundToggleRef = useRef<HTMLButtonElement>(null);
   const lastEscapeSoundAtRef = useRef(0);
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [kacisSayisi, setKacisSayisi] = useState(0);
   const [basarili, setBasarili] = useState(false);
   const [gifHata, setGifHata] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [sesAcik, setSesAcik] = useState(true);
 
   const [isSwapped, setIsSwapped] = useState(false);
@@ -262,12 +249,44 @@ export default function Cardasks({
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleFeedback, setRiddleFeedback] = useState<string | null>(null);
 
+  const getAudioContext = useCallback(() => {
+    if (audioContextRef.current) return audioContextRef.current;
+
+    const AudioCtxClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+    if (!AudioCtxClass) return null;
+
+    audioContextRef.current = new AudioCtxClass();
+    return audioContextRef.current;
+  }, []);
+
+  const unlockAudio = useCallback(() => {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    if (ctx.state === "suspended") {
+      void ctx.resume().then(() => {
+        if (ctx.state === "running") setAudioUnlocked(true);
+      }).catch(() => {});
+    } else if (ctx.state === "running") {
+      setAudioUnlocked(true);
+    }
+  }, [getAudioContext]);
+
+  useEffect(() => () => {
+    const ctx = audioContextRef.current;
+    if (ctx && ctx.state !== "closed") void ctx.close();
+  }, []);
+
   const kacisSesiCalAralikli = useCallback(() => {
     const now = Date.now();
-    if (!sesAcik || now - lastEscapeSoundAtRef.current < 220) return;
+    const ctx = audioContextRef.current;
+    if (!sesAcik || !ctx || ctx.state !== "running" || now - lastEscapeSoundAtRef.current < 220) return;
 
     lastEscapeSoundAtRef.current = now;
-    kacisSesiCal();
+    kacisSesiCal(ctx);
   }, [sesAcik]);
 
   useEffect(() => {
@@ -353,13 +372,26 @@ export default function Cardasks({
       150
     );
 
-    if (sesAcik) kutlamaSesiCal();
+    if (sesAcik) {
+      const ctx = getAudioContext();
+      if (ctx?.state === "running") {
+        setAudioUnlocked(true);
+        kutlamaSesiCal(ctx);
+      } else if (ctx) {
+        void ctx.resume().then(() => {
+          if (ctx.state === "running" && sesAcik) {
+            setAudioUnlocked(true);
+            kutlamaSesiCal(ctx);
+          }
+        }).catch(() => {});
+      }
+    }
     setBasarili(true);
 
     if (onAccept) {
       onAccept();
     }
-  }, [onAccept, sesAcik]);
+  }, [getAudioContext, onAccept, sesAcik]);
 
   const handleNoAction = useCallback(
     (type: "click" | "hover") => {
@@ -475,7 +507,12 @@ export default function Cardasks({
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 w-full max-w-md rounded-[28px] bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl px-7 py-8 sm:px-10 sm:py-10 text-slate-100 overflow-hidden">
+      <div
+        onPointerDownCapture={(event) => {
+          if (sesAcik && !soundToggleRef.current?.contains(event.target as Node)) unlockAudio();
+        }}
+        className="relative z-10 w-full max-w-md rounded-[28px] bg-slate-900/90 border border-slate-800 backdrop-blur-xl shadow-2xl px-7 py-8 sm:px-10 sm:py-10 text-slate-100 overflow-hidden"
+      >
         <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-white text-xs shadow-md">
@@ -491,8 +528,17 @@ export default function Cardasks({
 
           <div className="flex items-center gap-2">
             <button
+              ref={soundToggleRef}
               type="button"
-              onClick={() => setSesAcik((acik) => !acik)}
+              onClick={() => {
+                if (!audioUnlocked) {
+                  setSesAcik(true);
+                  unlockAudio();
+                  return;
+                }
+                if (!sesAcik) unlockAudio();
+                setSesAcik((acik) => !acik);
+              }}
               title={language === "en"
                 ? sesAcik ? "Turn sound effects off" : "Turn sound effects on"
                 : sesAcik ? "Ses efektlerini kapat" : "Ses efektlerini aç"}
