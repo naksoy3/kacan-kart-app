@@ -1,11 +1,11 @@
-# Kaçan Kart — İnteraktif Kaçan Butonlu Mesaj Kartı
+# Cardasks — İnteraktif Kaçan Butonlu Mesaj Kartı
 
 Next.js 14 (App Router) + TypeScript + Tailwind CSS + Framer Motion + canvas-confetti ile yapılmış, "Hayır" butonu kaçan, "Evet" butonuna basınca konfeti patlatan paylaşılabilir mesaj kartı.
 
 ## Dosya yapısı
 
 ```
-kacan-kart-app/
+cardasks/
 ├── app/
 │   ├── layout.tsx          # Kök layout, fontlar (Baloo 2 + Inter)
 │   ├── globals.css         # Tailwind + global stiller
@@ -14,7 +14,7 @@ kacan-kart-app/
 │       └── card/
 │           └── page.tsx    # Alıcının gördüğü sayfa (URL parametrelerini okur)
 ├── components/
-│   └── KacanKart.tsx       # Ana interaktif kart bileşeni
+│   └── Cardasks.tsx        # Ana interaktif kart bileşeni
 ├── package.json
 ├── tailwind.config.ts
 ├── postcss.config.js
@@ -27,7 +27,7 @@ kacan-kart-app/
 Bu klasörü bilgisayarınıza indirdikten sonra terminalde proje klasörüne girip:
 
 ```bash
-cd kacan-kart-app
+cd cardasks
 npm install
 ```
 
@@ -53,9 +53,9 @@ npm run start
 
 ## Nasıl çalışıyor?
 
-- **Kaçan buton:** `KacanKart.tsx` içinde "Hayır" butonu `onMouseEnter` (masaüstü) veya `onTouchStart` (mobil) tetiklendiğinde, çevresindeki oyun alanının (`playzone`) sınırları içinde rastgele bir `x`/`y` konumu hesaplanır ve Framer Motion'ın `spring` (`stiffness: 320, damping: 18`) animasyonuyla o konuma yumuşakça kayar. Buton ayrıca her kaçışta metnini değiştirir (“Emin misin?”, “Yakalayamazsın 😏” vb.).
+- **Kaçan buton:** `Cardasks.tsx` içinde "Hayır" butonu `onMouseEnter` (masaüstü) veya `onTouchStart` (mobil) tetiklendiğinde, çevresindeki oyun alanının (`playzone`) sınırları içinde rastgele bir `x`/`y` konumu hesaplanır ve Framer Motion'ın `spring` (`stiffness: 320, damping: 18`) animasyonuyla o konuma yumuşakça kayar. Buton ayrıca her kaçışta metnini değiştirir (“Emin misin?”, “Yakalayamazsın 😏” vb.).
 - **Konfeti:** "Evet" butonuna tıklanınca `canvas-confetti` ile üç ayrı patlama tetiklenir ve kart, başarı mesajına geçiş yapar (Framer Motion `AnimatePresence` ile yumuşak geçiş).
-- **Paylaşılabilir link:** Üretici sayfası, girilen metinleri `URLSearchParams` ile `/k/card` yoluna query parametresi olarak ekler. `app/k/card/page.tsx` bu parametreleri sunucu bileşeninde okuyup `KacanKart`'a prop olarak aktarır.
+- **Paylaşılabilir link:** Üretici sayfası, girilen metinleri `URLSearchParams` ile `/k/card` yoluna query parametresi olarak ekler. `app/k/card/page.tsx` bu parametreleri sunucu bileşeninde okuyup `Cardasks`'a prop olarak aktarır.
 
 ## Notlar / olası geliştirmeler
 

@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
-import KacanKart, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
+import Cardasks, { CardTheme, THEME_NAMES } from "@/components/Cardasks";
 import { supabase } from "@/utils/supabase";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -729,7 +729,7 @@ function CardContent() {
             )}
             
             {/* Mekan, tarih, saat hem yer/zaman hem mekan/saat parametreleriyle garantiye alındı */}
-            <KacanKart
+            <Cardasks
               targetUsername={targetUsername}
               sender={fromUsername}
               senderUsername={senderUsername}

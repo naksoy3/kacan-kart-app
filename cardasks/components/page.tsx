@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import EscapeCard, { CardTheme, THEME_NAMES } from "@/components/KacanKart";
+import EscapeCard, { CardTheme, THEME_NAMES } from "@/components/Cardasks";
 
 // 12 Temanın Açıklamaları
 const themeDescriptions: Record<string, string> = {

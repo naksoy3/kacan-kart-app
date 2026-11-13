@@ -160,7 +160,7 @@ export default function EscapeCard({
   // Link Paylaşım Fonksiyonu
   const handleShare = async () => {
     const shareData = {
-      title: "Kaçan Kart!",
+      title: "Cardasks",
       text: "Sana özel bir kart gönderdim, bakalım yakalayabilecek misin? 🃏✨",
       url: window.location.href,
     };
@@ -635,7 +635,7 @@ export default function EscapeCard({
 
         {/* Alt Bilgi */}
         <div className="pt-4 border-t border-white/10 text-center text-[10px] opacity-50 z-10">
-          Kaçan Kart Servisi • {THEME_NAMES[theme]}
+          Cardasks • {THEME_NAMES[theme]}
         </div>
       </div>
 

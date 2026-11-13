@@ -405,8 +405,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language;
     document.title = language === "en"
-      ? "Kaçan Kart | Question cards, get the answer you want."
-      : "Kaçan Kart | Soru kartı, istediğin cevabı al.";
+      ? "Cardasks | Question cards, get the answer you want."
+      : "Cardasks | Soru kartı, istediğin cevabı al.";
     window.localStorage.setItem("cardasks-language", language);
   }, [language]);
 

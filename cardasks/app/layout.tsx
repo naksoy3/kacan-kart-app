@@ -20,21 +20,21 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cardasks.com"),
-  title: "Kaçan Kart | Soru kartı, istediğin cevabı al.",
+  title: "Cardasks | Soru kartı, istediğin cevabı al.",
   description: "Sevdiklerine eğlenceli, kişiye özel soru kartları gönder. Hayır butonu kaçar, evet cevabı konfetiyle gelir!",
   icons: {
     icon: "/icon.png",
   },
   openGraph: {
-    title: "Kaçan Kart | Soru kartı, istediğin cevabı al.",
+    title: "Cardasks | Soru kartı, istediğin cevabı al.",
     description: "Sevdiklerine eğlenceli, kişiye özel soru kartları gönder. Hayır butonu kaçar, evet cevabı konfetiyle gelir!",
-    siteName: "Kaçan Kart",
+    siteName: "Cardasks",
     type: "website",
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Cardasks" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kaçan Kart | Soru kartı, istediğin cevabı al.",
+    title: "Cardasks | Soru kartı, istediğin cevabı al.",
     description: "Sevdiklerine eğlenceli, kişiye özel soru kartları gönder. Hayır butonu kaçar, evet cevabı konfetiyle gelir!",
     images: ["/opengraph-image"],
   },

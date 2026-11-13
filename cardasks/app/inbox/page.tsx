@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import KacanKart from "@/components/KacanKart";
+import Cardasks from "@/components/Cardasks";
 import { useLanguage } from "@/components/LanguageProvider";
 
 function InboxContent() {
@@ -29,7 +29,7 @@ function InboxContent() {
             ✨ {sender}, {targetUsername}&apos;ye {t("soruyor:")}
           </p>
         )}
-        <KacanKart
+        <Cardasks
           targetUsername={targetUsername}
           sender={sender}
           soru={soru}

@@ -35,7 +35,7 @@ export const THEME_NAMES: Record<CardTheme, string> = {
   scratchpad: "🎁 Tema 12: Sürpriz Kazı-Kazan",
 };
 
-export type KacanKartProps = {
+export type CardasksProps = {
   targetUsername?: string;
   sender?: string;
   senderUsername?: string;
@@ -195,7 +195,7 @@ function kutlamaSesiCal() {
   }
 }
 
-export default function KacanKart({
+export default function Cardasks({
   targetUsername = "Nurullah",
   sender,
   senderUsername,
@@ -211,7 +211,7 @@ export default function KacanKart({
   onBack,
   onAccept,
   showShareButton = true,
-}: KacanKartProps) {
+}: CardasksProps) {
   const { language, t } = useLanguage();
   const playzoneRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
