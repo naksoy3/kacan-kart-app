@@ -7,6 +7,21 @@ import "leaflet/dist/leaflet.css";
 import SiteHeader from "@/components/SiteHeader";
 import { LanguageProvider } from "@/components/LanguageProvider";
 
+// Import design system fonts
+import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-bricolage-grotesque",
+  weight: ["600", "700", "800"],
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-plus-jakarta-sans",
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://cardasks.com"),
   title: "Cardasks | Soru kartı, istediğin cevabı al.",
@@ -35,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
+    <html lang="tr" className={`${bricolageGrotesque.variable} ${plusJakartaSans.variable}`}>
       <body className="font-govde antialiased min-h-screen">
         <LanguageProvider>
           <SiteHeader />
