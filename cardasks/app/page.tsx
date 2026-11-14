@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import Cardasks, { CardTheme, THEME_NAMES } from "@/components/Cardasks";
+import CardCreationPreview from "@/components/CardCreationPreview";
+import ThemePicker from "@/components/ThemePicker";
 import { supabase } from "@/utils/supabase";
 import { useLanguage } from "@/components/LanguageProvider";
 
@@ -105,7 +107,7 @@ function CardContent() {
   const isProfileQuestionFlow = Boolean(urlRecipient);
   const urlFrom = searchParams.get("f") || searchParams.get("sender") || searchParams.get("gonderen");
   const urlSoru = searchParams.get("s");
-  const urlTheme = searchParams.get("t") as CardTheme | null;
+  const urlTheme = searchParams.get("t");
   const urlGif = searchParams.get("gif");
 
   const isSharedView = Boolean(urlCardId || urlUser || urlSoru);
@@ -113,7 +115,9 @@ function CardContent() {
   const urlStep = Number(searchParams.get("step"));
   const initialStep = !isSharedView && urlStep >= 1 && urlStep <= 4 ? urlStep : 1;
   const [formStep, setFormStep] = useState<number>(isSharedView ? 4 : initialStep);
-  const [selectedTheme, setSelectedTheme] = useState<CardTheme>(urlTheme || "escaping");
+  const [selectedTheme, setSelectedTheme] = useState<CardTheme>(
+    urlTheme && Object.prototype.hasOwnProperty.call(THEME_NAMES, urlTheme) ? urlTheme as CardTheme : "escaping"
+  );
   
   const [targetUsername, setTargetUsername] = useState(urlUser || urlRecipient || "");
   const [fromUsername, setFromUsername] = useState(urlFrom || "");
@@ -405,71 +409,42 @@ function CardContent() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <main className="relative min-h-screen overflow-hidden bg-background px-4 py-8 text-on-surface sm:py-12">
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
       {!isSharedView && formStep < 4 && (
-        <div className="glass-level-2 relative z-10 my-8 w-full max-w-3xl space-y-8 rounded-[32px] p-6 text-on-surface sm:p-10">
-          <div className="text-center space-y-3">
-            <h2 className="flex items-center justify-center gap-3 text-3xl font-extrabold tracking-tight">
-              <img src="/icon.png" alt="Cardasks" className="h-9 w-9 rounded-lg object-cover" />
-              <span>{t("Soru Oluştur")}</span>
-            </h2>
-            <div className="flex justify-center gap-2 pt-1">
-              {[1, 2, 3].map((stepNum) => (
-                <div
-                  key={stepNum}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    formStep === stepNum
-                      ? "w-10 bg-primary-container"
-                      : formStep > stepNum
-                      ? "w-2.5 bg-indigo-400/50"
-                      : "w-2.5 bg-slate-700"
-                  }`}
-                />
-              ))}
-            </div>
+        <div className="relative z-10 mx-auto w-full max-w-7xl">
+          <div className="mx-auto mb-8 max-w-3xl text-center sm:mb-10">
+            <span className="inline-flex rounded-full border border-primary-container/30 bg-surface-container-high/80 px-3 py-1 text-xs font-bold text-primary">✨ {t("Yeni Nesil Soru Deneyimi")}</span>
+            <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">{t("Kişiye özel soru kartını oluştur ve paylaş")} ✨</h1>
+            <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-on-surface-variant sm:text-base">{t("Eğlenceli ve kişiye özel interaktif sorularını hazırla.")}</p>
           </div>
 
-          {/* ADIM 1: TEMA */}
-          {formStep === 1 && (
-            <div className="space-y-6">
-              <label className="block text-slate-300 font-medium text-base text-center">
-                {t("1. Adım: Kart Temasını Seçin")}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {(Object.keys(THEME_NAMES) as CardTheme[]).map((themeKey) => (
-                  <button
-                    key={themeKey}
-                    type="button"
-                    onClick={() => setSelectedTheme(themeKey)}
-                    className={`aspect-square rounded-2xl border p-5 flex flex-col items-center justify-center text-center transition cursor-pointer relative overflow-hidden ${
-                      selectedTheme === themeKey
-                        ? "border-primary-container bg-primary-container/20 ring-2 ring-primary-container font-bold shadow-glow-coral"
-                        : "border-slate-800 bg-slate-800/40 hover:bg-slate-800 text-slate-300"
-                    }`}
-                  >
-                    <span className="text-4xl mb-3">🎨</span>
-                    <span className="text-sm font-semibold">{t(THEME_NAMES[themeKey])}</span>
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => goToStep(2)}
-                className="mt-4 w-full cursor-pointer rounded-xl bg-gradient-to-r from-inverse-primary to-on-primary-fixed-variant py-4 text-base font-bold text-white shadow-btn-glow transition hover:brightness-110 active:translate-y-0.5"
-              >
-                {t("Devam Et: Detayları Gir ➡️")}
-              </button>
-            </div>
-          )}
+          <ol className="mx-auto mb-8 grid max-w-3xl grid-cols-3 gap-1 rounded-2xl border border-outline-variant/30 bg-surface-container-low p-1.5 sm:gap-3" aria-label={t("Kart oluşturma adımları")}>
+            {["Tema Seçimi", "Kart Detayları", "GIF & Medya"].map((label, index) => {
+              const step = index + 1;
+              return (
+                <li key={label} aria-current={formStep === step ? "step" : undefined} className={`flex min-h-12 items-center gap-2 rounded-xl px-2 py-2 sm:px-3 ${formStep === step ? "border border-primary-container bg-primary-container/20 text-white" : "border border-transparent text-on-surface-variant"}`}>
+                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold ${formStep === step ? "bg-primary-container text-on-primary" : "bg-surface-container-high"}`}>{step}</span>
+                  <span className="text-xs font-bold">{t(label)}</span>
+                </li>
+              );
+            })}
+          </ol>
+
+          <div className="grid items-start gap-6 lg:grid-cols-12">
+            <div className="min-w-0 lg:col-span-7 xl:col-span-8">
+              {formStep === 1 && (
+                <ThemePicker selected={selectedTheme} onSelect={setSelectedTheme} onContinue={() => goToStep(2)} />
+              )}
 
           {/* ADIM 2: DETAYLAR */}
           {formStep === 2 && (
-            <div className="space-y-5 text-sm">
-              <label className="block text-slate-300 font-medium text-base text-center mb-2">
+            <div className="space-y-5 rounded-3xl border border-outline-variant/30 bg-surface-container/80 p-5 text-sm shadow-card-elevation-2 backdrop-blur-xl sm:p-6">
+              <h2 className="mb-2 text-xl font-bold text-white">
                 {t("2. Adım: Soru ve Detaylar")}
-              </label>
+              </h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -610,16 +585,18 @@ function CardContent() {
 
           {/* ADIM 3: KOMİK GIFLER */}
           {formStep === 3 && (
-            <div className="space-y-6">
-              <label className="block text-slate-300 font-medium text-base text-center">
+            <div className="space-y-6 rounded-3xl border border-outline-variant/30 bg-surface-container/80 p-5 shadow-card-elevation-2 backdrop-blur-xl sm:p-6">
+              <h2 className="text-xl font-bold text-white">
                 {t("3. Adım: Bir GIF Seçin")}
-              </label>
+              </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-h-80 overflow-y-auto pr-1">
-                {gosterilecekGifler.map((g) => (
+                {gosterilecekGifler.map((g, index) => (
                   <button
                     key={g.id}
                     type="button"
+                    aria-label={`${t("GIF")} ${index + 1}`}
+                    aria-pressed={gifUrl === g.url}
                     onClick={() => setGifUrl(g.url)}
                     className={`p-3 rounded-2xl border flex items-center justify-center transition cursor-pointer aspect-square ${
                       gifUrl === g.url
@@ -660,12 +637,17 @@ function CardContent() {
               )}
             </div>
           )}
+            </div>
+            <div className="min-w-0 lg:col-span-5 xl:col-span-4">
+              <CardCreationPreview theme={selectedTheme} sender={fromUsername} recipient={targetUsername} question={soru} gif={gifUrl} date={tarih} time={zaman} place={yer} />
+            </div>
+          </div>
         </div>
       )}
 
       {/* ADIM 4: ÖNİZLEME VEYA PAYLAŞILAN KİŞİNİN EKRANI */}
       {(formStep === 4 || isSharedView) && (
-        <div className="w-full max-w-2xl flex flex-col items-center gap-6 my-6 z-10">
+        <div className="relative z-10 mx-auto my-6 flex w-full max-w-2xl flex-col items-center gap-6">
           {!isSharedView && (
             <div className="w-full bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-5 rounded-2xl flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-3 text-white shadow-xl">
               <button
