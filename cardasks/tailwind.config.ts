@@ -8,6 +8,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Map the application's existing neutral and action utilities to the
+        // design system so older screens share the same visual foundation.
+        slate: {
+          100: "#ebdcff",
+          200: "#e5d5ed",
+          300: "#dfbec4",
+          400: "#cdb4c5",
+          500: "#b69cae",
+          700: "#584145",
+          800: "#302347",
+          900: "#25193c",
+          950: "#190c2f",
+        },
+        indigo: {
+          200: "#ffd9e0",
+          300: "#ffb1c2",
+          400: "#eb87a6",
+          500: "#98204d",
+          600: "#b32057",
+          800: "#65002b",
+          900: "#3f0018",
+          950: "#251033",
+        },
         // Nocturne Velvet & Bloom Design System
         // Surface Tones
         "surface": "#190c2f",
@@ -73,8 +96,8 @@ const config: Config = {
         mor: "#8B5CF6",
       },
       fontFamily: {
-        baslik: ["var(--font-baloo)", "sans-serif"],
-        govde: ["var(--font-inter)", "sans-serif"],
+        baslik: ["var(--font-bricolage-grotesque)", "sans-serif"],
+        govde: ["var(--font-plus-jakarta-sans)", "sans-serif"],
         // Design System Typography
         "headline-xl": ["Bricolage Grotesque", "sans-serif"],
         "headline-lg": ["Bricolage Grotesque", "sans-serif"],

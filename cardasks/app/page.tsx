@@ -410,7 +410,7 @@ function CardContent() {
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
 
       {!isSharedView && formStep < 4 && (
-        <div className="relative z-10 w-full max-w-3xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl p-8 sm:p-10 rounded-[32px] text-white shadow-2xl space-y-8 my-8">
+        <div className="glass-level-2 relative z-10 my-8 w-full max-w-3xl space-y-8 rounded-[32px] p-6 text-on-surface sm:p-10">
           <div className="text-center space-y-3">
             <h2 className="flex items-center justify-center gap-3 text-3xl font-extrabold tracking-tight">
               <img src="/icon.png" alt="Cardasks" className="h-9 w-9 rounded-lg object-cover" />
@@ -422,7 +422,7 @@ function CardContent() {
                   key={stepNum}
                   className={`h-2.5 rounded-full transition-all duration-300 ${
                     formStep === stepNum
-                      ? "w-10 bg-indigo-500"
+                      ? "w-10 bg-primary-container"
                       : formStep > stepNum
                       ? "w-2.5 bg-indigo-400/50"
                       : "w-2.5 bg-slate-700"
@@ -446,7 +446,7 @@ function CardContent() {
                     onClick={() => setSelectedTheme(themeKey)}
                     className={`aspect-square rounded-2xl border p-5 flex flex-col items-center justify-center text-center transition cursor-pointer relative overflow-hidden ${
                       selectedTheme === themeKey
-                        ? "border-indigo-500 bg-indigo-500/20 ring-2 ring-indigo-500 font-bold shadow-lg shadow-indigo-500/10"
+                        ? "border-primary-container bg-primary-container/20 ring-2 ring-primary-container font-bold shadow-glow-coral"
                         : "border-slate-800 bg-slate-800/40 hover:bg-slate-800 text-slate-300"
                     }`}
                   >
@@ -457,7 +457,7 @@ function CardContent() {
               </div>
               <button
                 onClick={() => goToStep(2)}
-                className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-base transition shadow-lg shadow-indigo-600/30 cursor-pointer mt-4"
+                className="mt-4 w-full cursor-pointer rounded-xl bg-gradient-to-r from-inverse-primary to-on-primary-fixed-variant py-4 text-base font-bold text-white shadow-btn-glow transition hover:brightness-110 active:translate-y-0.5"
               >
                 {t("Devam Et: Detayları Gir ➡️")}
               </button>
@@ -595,7 +595,7 @@ function CardContent() {
                 </button>
                 <button
                   onClick={handleContinueToGif}
-                  className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer"
+                  className="w-2/3 cursor-pointer rounded-xl bg-gradient-to-r from-inverse-primary to-on-primary-fixed-variant py-3.5 text-sm font-bold text-white shadow-btn-glow transition hover:brightness-110 active:translate-y-0.5"
                 >
                   {t("Devam Et: GIF Seç ➡️")}
                 </button>
@@ -623,7 +623,7 @@ function CardContent() {
                     onClick={() => setGifUrl(g.url)}
                     className={`p-3 rounded-2xl border flex items-center justify-center transition cursor-pointer aspect-square ${
                       gifUrl === g.url
-                        ? "border-indigo-500 bg-indigo-500/20 ring-2 ring-indigo-500 shadow-lg shadow-indigo-500/20"
+                        ? "border-primary-container bg-primary-container/20 ring-2 ring-primary-container shadow-glow-coral"
                         : "border-slate-800 bg-slate-800/50 hover:bg-slate-800"
                     }`}
                   >
@@ -648,7 +648,7 @@ function CardContent() {
                 <button
                   onClick={handleProceedToPreview}
                   disabled={previewLoading}
-                  className="w-2/3 py-3.5 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer disabled:opacity-50"
+                  className="w-2/3 cursor-pointer rounded-xl bg-gradient-to-r from-inverse-primary to-on-primary-fixed-variant py-3.5 text-sm font-bold text-white shadow-btn-glow transition hover:brightness-110 active:translate-y-0.5 disabled:opacity-50"
                 >
                   {previewLoading ? t("Hazırlanıyor...") : t("Önizle & Paylaş 🚀")}
                 </button>

@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import "@fontsource-variable/baloo-2";
-import "@fontsource-variable/inter";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import SiteHeader from "@/components/SiteHeader";

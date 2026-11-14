@@ -1,6 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -21,6 +19,19 @@ body {
   background: #190c2f;
   color: #ebdcff;
   font-family: var(--font-plus-jakarta-sans, "Plus Jakarta Sans", sans-serif);
+  font-feature-settings: "cv02", "cv03", "cv04";
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-bricolage-grotesque, "Bricolage Grotesque", sans-serif);
+}
+
+:focus-visible {
+  outline: 2px solid #d0bcff;
+  outline-offset: 3px;
 }
 
 .material-symbols-outlined {
